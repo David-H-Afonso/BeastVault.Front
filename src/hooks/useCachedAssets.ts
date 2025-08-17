@@ -22,7 +22,6 @@ export function usePokemonSprite(speciesId: number, form: number = 0, isShiny: b
 				// Try cache first
 				const cached = cacheService.get<string>(cacheKey)
 				if (cached) {
-					console.log(`Cache hit for sprite: ${spriteKey}`)
 					setSprite(cached)
 					setLoading(false)
 					return
@@ -83,7 +82,6 @@ export function usePokeBallIcon(ballName: string) {
 				// Try cache first
 				const cached = cacheService.get<string | null>(cacheKey)
 				if (cached !== null) {
-					console.log(`Cache hit for pokeball: ${ballName}`)
 					setIcon(cached)
 					setLoading(false)
 					return

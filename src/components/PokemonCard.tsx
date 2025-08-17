@@ -1,8 +1,9 @@
 import type { PokemonListItemDto } from '../models/Pokemon'
 import { usePokeBallIcon } from '../hooks/useCachedAssets'
 import { usePokemonInfo } from '../hooks/usePokemonInfo'
-import { getTypeIconUrl } from '../services/Pokeapi'
+import { getTypeIconUrl } from '../utils'
 import { getTypeNameFromId } from '../enums/PokemonTypes'
+import { getBallNameFromId } from '../enums/PokemonBalls'
 import { useCardBackgroundType } from '../hooks/useCardBackgroundType'
 import { CardBackgroundType } from '../enums/CardBackgroundTypes'
 import './PokemonCard.scss'
@@ -13,30 +14,6 @@ interface PokemonCardProps {
 	onDelete: (id: number) => void
 	onDownload: (id: number) => void
 	loading?: boolean
-}
-
-// Helper to get gender symbol
-function getGenderSymbol(gender?: number): string {
-	switch (gender) {
-		case 0:
-			return '♂' // Male
-		case 1:
-			return '♀' // Female
-		default:
-			return '' // Genderless or unknown
-	}
-}
-
-// Helper to get gender color
-function getGenderColor(gender?: number): string {
-	switch (gender) {
-		case 0:
-			return '#6890F0' // Blue for male
-		case 1:
-			return '#EE99AC' // Pink for female
-		default:
-			return '#68A090' // Neutral for genderless
-	}
 }
 
 // Helper to get type class name for CSS
@@ -51,12 +28,14 @@ export function PokemonCard({
 	onDownload,
 	loading = false,
 }: PokemonCardProps) {
-	// Use the cached pokeball icon hook
-	const { icon: ballIcon } = usePokeBallIcon(pokemon.ballName || '')
+	// Note: ballName and teraTypeName need to be retrieved from PokeAPI using IDs
+	// Backend provides ballId and teraType (ID), not names
+	const ballName = getBallNameFromId(pokemon.ballId)
+	const { icon: ballIcon } = usePokeBallIcon(ballName)
 
 	// Get Pokemon information from PokeAPI cache (types and form)
 	const { pokemonInfo } = usePokemonInfo(
-		pokemon.pokedexNumber || pokemon.speciesId, 
+		pokemon.speciesId,
 		pokemon.form,
 		pokemon.canGigantamax || false
 	)
@@ -64,12 +43,12 @@ export function PokemonCard({
 	// Get card background type preference
 	const { backgroundType } = useCardBackgroundType()
 
-	// Use PokeAPI data if available, otherwise fallback to backend data
-	const finalType1 = pokemonInfo.type1 || pokemon.type1
-	const finalType2 = pokemonInfo.type2 || pokemon.type2
-	const finalFormName = pokemonInfo.formName || pokemon.formName
+	// Use PokeAPI data (types and form names come from PokeAPI, not backend)
+	const finalType1 = pokemonInfo.type1
+	const finalType2 = pokemonInfo.type2
+	const finalFormName = pokemonInfo.formName
 	const type1Color = pokemonInfo.colors.type1 || '#68A090'
-	const type2Color = pokemonInfo.colors.type2 || '#68A090'	// Helper function for getting type colors (for tera types that don't use PokeAPI)
+	const type2Color = pokemonInfo.colors.type2 || '#68A090' // Helper function for getting type colors (for tera types that don't use PokeAPI)
 	const getTypeColor = (typeName: string): string => {
 		switch (typeName.toLowerCase()) {
 			case 'normal':
@@ -195,7 +174,7 @@ export function PokemonCard({
 				{sprite ? (
 					<img
 						src={sprite}
-						alt={pokemon.nickname || pokemon.speciesName || 'Pokemon'}
+						alt={pokemon.nickname || `Pokemon #${pokemon.speciesId}`}
 						className='pokemonSprite'
 					/>
 				) : (
@@ -218,14 +197,10 @@ export function PokemonCard({
 				<div className='nameSection'>
 					<div className='nameContainer'>
 						<div className='nameAndBall'>
-							{ballIcon && <img src={ballIcon} alt={pokemon.ballName} className='ballIconInline' />}
+							{ballIcon && <img src={ballIcon} alt='Pokeball' className='ballIconInline' />}
 							<h3 className='pokemonName'>
-								{pokemon.nickname || pokemon.speciesName || 'No Name'}
-								{pokemon.gender !== undefined && (
-									<span className='genderSymbol' style={{ color: getGenderColor(pokemon.gender) }}>
-										{getGenderSymbol(pokemon.gender)}
-									</span>
-								)}
+								{pokemon.nickname || `Pokemon #${pokemon.speciesId}`}
+								{/* TODO: Gender information needs to be retrieved from PokeAPI or backend */}
 							</h3>
 						</div>
 						<div className='levelBadge'>Lv. {pokemon.level}</div>
@@ -242,12 +217,13 @@ export function PokemonCard({
 							)}
 
 							{/* Egg indicator */}
-							{pokemon.isEgg && (
+							{/* TODO: Backend doesn't provide isEgg field */}
+							{/*pokemon.isEgg && (
 								<div className='infoItem eggItem'>
 									<span className='infoIcon'>🥚</span>
 									<span className='infoText'>Egg</span>
 								</div>
-							)}
+							)*/}
 						</div>
 					</div>
 				</div>

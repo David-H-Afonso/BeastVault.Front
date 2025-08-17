@@ -1,3 +1,6 @@
+// Use the official API types
+export type { PokemonListItemDto } from './api/types'
+
 export interface StatsDto {
 	ivHp: number
 	ivAtk: number
@@ -102,37 +105,8 @@ export interface PokemonDetailDto {
 	relearnMoves?: RelearnMoveDto[] | null
 }
 
-export interface PokemonListItemDto {
-	id: number
-	speciesId: number
-	speciesName: string
-	nickname?: string | null
-	level: number
-	isShiny: boolean
-	ballId: number
-	ballName: string
-	teraType?: number | null
-	teraTypeName?: string | null
-	type1: string
-	type2?: string | null
-	spriteKey?: string | null
-	form: number
-	formName?: string | null
-	gender?: number
-	nature?: number
-	ability?: number
-	experience?: number
-	currentFriendship?: number
-	isEgg?: boolean
-	pokedexNumber?: number
-	originGame?: number
-	capturedGeneration?: number
-	originGeneration?: number
-	canGigantamax?: boolean
-}
-
 export interface PokemonListItemDtoPagedResult {
-	items?: PokemonListItemDto[] | null
+	items?: import('./api/types').PokemonListItemDto[] | null
 	total: number
 }
 

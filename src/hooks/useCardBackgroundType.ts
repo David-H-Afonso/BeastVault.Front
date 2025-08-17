@@ -12,6 +12,6 @@ export function useCardBackgroundType() {
 
 	return {
 		backgroundType,
-		setBackgroundType
+		setBackgroundType,
 	}
 }

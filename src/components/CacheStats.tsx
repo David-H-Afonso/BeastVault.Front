@@ -25,14 +25,12 @@ export function CacheStats({ show = false }: CacheStatsProps) {
 	const handleClearCache = () => {
 		cacheService.clear()
 		setStats({ totalItems: 0, totalSize: 0 })
-		console.log('Cache cleared!')
 	}
 
 	const handleCleanupCache = () => {
 		cacheService.cleanup()
 		const newStats = cacheService.getStats()
 		setStats(newStats)
-		console.log('Cache cleaned up!')
 	}
 
 	const formatSize = (bytes: number): string => {

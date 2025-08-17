@@ -2,18 +2,15 @@
 function getApiBaseUrl(): string {
 	// Si estamos en Electron, usar la variable global establecida
 	if (typeof window !== 'undefined' && (window as any).API_BASE_URL) {
-		console.log('🌐 API_BASE_URL desde Electron:', (window as any).API_BASE_URL)
 		return (window as any).API_BASE_URL
 	}
 
 	// Si estamos en desarrollo web normal
 	if (import.meta.env.DEV) {
-		console.log('🌐 API_BASE_URL desarrollo web:', 'https://localhost:7178')
 		return 'https://localhost:7178'
 	}
 
 	// Fallback para producción web
-	console.log('🌐 API_BASE_URL fallback:', 'http://localhost:5000')
 	return 'http://localhost:5000'
 }
 

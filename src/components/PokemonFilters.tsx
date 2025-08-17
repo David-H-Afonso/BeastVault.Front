@@ -55,11 +55,11 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 
 	// Load metadata on component mount
 	useEffect(() => {
-		getPokemonMetadata().then((data) => {
-			console.log('Metadata received:', data)
-			console.log('Generations structure:', data?.generations)
-			setMetadata(data)
-		}).catch(console.error)
+		getPokemonMetadata()
+			.then((data) => {
+				setMetadata(data)
+			})
+			.catch(console.error)
 	}, [])
 
 	// Update take when metadata loads
@@ -344,7 +344,8 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 							{metadata?.generations?.map((gen: any) => {
 								// Handle both number[] and object[] formats
 								const genId = typeof gen === 'number' ? gen : gen.id
-								const genName = typeof gen === 'number' ? `Generation ${gen}` : gen.name || `Generation ${gen.id}`
+								const genName =
+									typeof gen === 'number' ? `Generation ${gen}` : gen.name || `Generation ${gen.id}`
 								return (
 									<option key={`origin-gen-${genId}`} value={genId}>
 										{genName}
@@ -365,7 +366,8 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 							{metadata?.generations?.map((gen: any) => {
 								// Handle both number[] and object[] formats
 								const genId = typeof gen === 'number' ? gen : gen.id
-								const genName = typeof gen === 'number' ? `Generation ${gen}` : gen.name || `Generation ${gen.id}`
+								const genName =
+									typeof gen === 'number' ? `Generation ${gen}` : gen.name || `Generation ${gen.id}`
 								return (
 									<option key={`captured-gen-${genId}`} value={genId}>
 										{genName}

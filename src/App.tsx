@@ -10,8 +10,9 @@ import {
 import type { PokemonListItemDto, PokemonListFilterDto } from './models/Pokemon'
 import { getPokeApiPokemon } from './services/Pokeapi'
 import { ConfirmDialog } from './ConfirmDialog'
-import { PokemonFilters, PokemonCard, CardBackgroundSelector } from './components'
+import { PokemonFilters, PokemonCard } from './components'
 import './App.scss'
+import { CardBackgroundSelector } from './components/CardBackgroundSelector'
 
 // Helper to get the best available sprite in priority order
 function getBestSprite(sprites: any, isShiny: boolean = false) {
@@ -65,18 +66,19 @@ function App() {
 				const filterParams = filters || currentFilters
 				const result = await getPokemonList(filterParams)
 				const pokeList = result.items || []
-				console.log(result)
 				setPokemon(pokeList)
 				setTotalPokemon(result.total || 0)
 				// Create unique combinations of speciesId, form, and canGigantamax
 				const speciesFormCombos = Array.from(
-					new Set(pokeList.map((p) => `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}`))
+					new Set(
+						pokeList.map((p) => `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}`)
+					)
 				)
 				const speciesFetches = await Promise.all(
 					speciesFormCombos.map(async (combo) => {
-						const isGigantamax = combo.includes('-gmax')
 						const baseCombo = combo.replace('-gmax', '')
 						const [speciesId, form] = baseCombo.split('-').map(Number)
+						const isGigantamax = combo.includes('-gmax')
 						const cacheKey = combo
 						if (pokeApiCache.current[cacheKey])
 							return [cacheKey, pokeApiCache.current[cacheKey]] as [string, any]
@@ -97,15 +99,7 @@ function App() {
 					const pokeApi = pokeApiMap[cacheKey]
 					if (!pokeApi) return [p.id, {}]
 					const sprites = pokeApi.sprites
-					
-					// Log for debugging Gigantamax sprites
-					if (p.canGigantamax) {
-						console.log(`Gigantamax Pokemon ${p.speciesName} (ID: ${p.id}):`, {
-							cacheKey,
-							pokemonName: pokeApi.name,
-							spritesAvailable: Object.keys(sprites.other?.showdown || {})
-						})
-					}
+
 					return [
 						p.id,
 						{
