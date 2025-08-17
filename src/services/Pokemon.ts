@@ -2,9 +2,24 @@ import type {
 	PokemonDetailDto,
 	PokemonListFilterDto,
 	PokemonListItemDtoPagedResult,
+	PokemonMetadata,
 } from '../models/Pokemon'
+import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
+
+/**
+ * Fetches metadata for pokemon filters (types, pokeballs, natures, etc.)
+ *
+ * @returns Promise resolving to the pokemon metadata
+ */
+export async function getPokemonMetadata(): Promise<PokemonMetadata> {
+	return customFetch<PokemonMetadata>(`${environment.baseUrl}/pokemon/metadata`, {
+		headers: {
+			Accept: 'application/json',
+		},
+	})
+}
 
 /**
  * Uploads one or more Pokémon PKM files (.pk1 to .pk9) to the backend.
@@ -30,20 +45,41 @@ export async function importPokemonFiles(files: File[]): Promise<PokemonDetailDt
 }
 
 /**
- * Fetches a paginated list of Pokémon with optional filters.
+ * Fetches a paginated list of Pokémon with advanced filtering using the main endpoint.
  *
  * @param params Query parameters for filtering and pagination
  * @returns Promise resolving to the paginated Pokémon list
  */
-export async function getPokemonList(params: PokemonListFilterDto): Promise<{
-	items: PokemonListItemDtoPagedResult
-}> {
-	return customFetch(`${environment.baseUrl}/pokemon`, {
-		params: { ...params } as Record<string, string | number | boolean>,
-		headers: {
-			Accept: 'application/json',
-		},
-	})
+export async function getPokemonList(
+	params: PokemonListFilterDto
+): Promise<PokemonListItemDtoPagedResult> {
+	// Transform SortBy values from frontend enum numbers to backend field names
+	const transformedParams = { ...params }
+
+	if (transformedParams.SortBy !== undefined) {
+		transformedParams.SortBy = mapSortByToBackend(transformedParams.SortBy as any) as any
+	}
+
+	if (transformedParams.ThenSortBy !== undefined) {
+		transformedParams.ThenSortBy = mapSortByToBackend(transformedParams.ThenSortBy as any) as any
+	}
+
+	// Filter out undefined values to keep query string clean
+	const cleanParams = Object.fromEntries(
+		Object.entries(transformedParams).filter(([_, value]) => value !== undefined && value !== null)
+	) as Record<string, string | number | boolean>
+
+	const result = await customFetch<PokemonListItemDtoPagedResult>(
+		`${environment.baseUrl}/pokemon`,
+		{
+			params: cleanParams,
+			headers: {
+				Accept: 'application/json',
+			},
+		}
+	)
+
+	return result
 }
 
 /**
