@@ -137,7 +137,7 @@ export const cacheService = new CacheService()
 // Cache key generators
 export const CacheKeys = {
 	pokeball: (ballName: string) => `pokeball_${ballName.toLowerCase().replace(/\s+/g, '_')}`,
-	pokemon: (speciesId: number, form: number = 0, canGigantamax: boolean = false) => 
+	pokemon: (speciesId: number, form: number = 0, canGigantamax: boolean = false) =>
 		`pokemon_${speciesId}_${form}${canGigantamax ? '_gmax' : ''}`,
 	teraType: (typeName: string) => `tera_type_${typeName.toLowerCase()}`,
 	sprite: (spriteKey: string) => `sprite_${spriteKey}`,

@@ -30,15 +30,15 @@ export async function getPokeApiPokemon(
 			const basePokemon = await customFetch<PokeApiPokemon>(
 				`${POKEAPI_BASE_URL}pokemon/${speciesId}`
 			)
-			
+
 			// Try to fetch the Gigantamax variant
 			const gmaxName = `${basePokemon.name}-gmax`
-			
+
 			try {
 				const gmaxPokemon = await customFetch<PokeApiPokemon>(
 					`${POKEAPI_BASE_URL}pokemon/${gmaxName}`
 				)
-				
+
 				// Cache for 24 hours
 				cacheService.set(cacheKey, gmaxPokemon, 24 * 60 * 60 * 1000)
 				return gmaxPokemon
