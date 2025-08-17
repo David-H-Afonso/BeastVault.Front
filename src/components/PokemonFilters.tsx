@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type {
 	PokemonListFilterDto,
 	SortBy,
@@ -6,6 +6,7 @@ import type {
 	PokemonMetadata,
 } from '../models/Pokemon'
 import { getPokemonMetadata } from '../services/Pokemon'
+import { PokemonBalls, getBallIdFromName } from '../enums/PokemonBalls'
 import './PokemonFilters.scss'
 
 interface PokemonFiltersProps {
@@ -17,21 +18,24 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 	// Metadata state
 	const [metadata, setMetadata] = useState<PokemonMetadata | null>(null)
 
+	// UI state for collapsible sections
+	const [showFilters, setShowFilters] = useState(false)
+
 	// Basic filters
 	const [search, setSearch] = useState('')
 	const [pokedexNumber, setPokedexNumber] = useState<number | undefined>()
 	const [speciesName, setSpeciesName] = useState('')
 	const [nickname, setNickname] = useState('')
 	const [isShiny, setIsShiny] = useState<boolean | undefined>()
-	const [favorite, setFavorite] = useState<boolean | undefined>()
+	// const [favorite, setFavorite] = useState<boolean | undefined>() // TODO: Temporarily disabled - backend service not ready
 
 	// Advanced filters
-	const [form, setForm] = useState<number | undefined>()
-	const [gender, setGender] = useState<number | undefined>()
+	// const [form, setForm] = useState<number | undefined>() // TODO: Temporarily disabled - backend service not ready
+	// const [gender, setGender] = useState<number | undefined>() // TODO: Temporarily disabled - backend service not ready
 	const [originGeneration, setOriginGeneration] = useState<number | undefined>()
 	const [capturedGeneration, setCapturedGeneration] = useState<number | undefined>()
-	const [pokeballId, setPokeballId] = useState<number | undefined>()
-	const [heldItemId, setHeldItemId] = useState<number | undefined>()
+	const [pokeballName, setPokeballName] = useState<string | undefined>()
+	// const [heldItemId, setHeldItemId] = useState<number | undefined>() // TODO: Temporarily disabled - backend service not ready
 
 	// Level range
 	const [minLevel, setMinLevel] = useState<number | undefined>()
@@ -40,11 +44,11 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 	// Sorting
 	const [sortBy, setSortBy] = useState<SortBy | undefined>()
 	const [sortDirection, setSortDirection] = useState<SortDirection | undefined>()
-	const [thenSortBy, setThenSortBy] = useState<SortBy | undefined>()
-	const [thenSortDirection, setThenSortDirection] = useState<SortDirection | undefined>()
+	// const [thenSortBy, setThenSortBy] = useState<SortBy | undefined>() // TODO: Temporarily disabled - backend service not ready
+	// const [thenSortDirection, setThenSortDirection] = useState<SortDirection | undefined>() // TODO: Temporarily disabled - backend service not ready
 
 	// Pagination
-	const [skip, setSkip] = useState(0)
+	// const [skip, setSkip] = useState(0) // TODO: Temporarily disabled - backend service not ready
 	const [take, setTake] = useState(50)
 
 	// Additional filters
@@ -52,6 +56,61 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 	const [ballId, setBallId] = useState<number | undefined>()
 	const [originGame, setOriginGame] = useState<number | undefined>()
 	const [teraType, setTeraType] = useState<number | undefined>()
+
+	// Debounce timer for auto-apply
+	const debounceTimerRef = useRef<number | null>(null)
+
+	// Effect for auto-applying quick search filters
+	useEffect(() => {
+		// Only trigger auto-apply if at least one quick search field has a value
+		if (search || pokedexNumber !== undefined || isShiny !== undefined) {
+			if (debounceTimerRef.current) {
+				clearTimeout(debounceTimerRef.current)
+			}
+
+			debounceTimerRef.current = window.setTimeout(() => {
+				// Create filters object for quick search
+				const filters: PokemonListFilterDto = {
+					Search: search.trim() || undefined,
+					PokedexNumber: pokedexNumber,
+					IsShiny: isShiny,
+					// Keep other filters that are already set
+					SpeciesName: speciesName.trim() || undefined,
+					Nickname: nickname.trim() || undefined,
+					OriginGeneration: originGeneration,
+					CapturedGeneration: capturedGeneration,
+					PokeballId: pokeballName ? getBallIdFromName(pokeballName) : undefined,
+					MinLevel: minLevel,
+					MaxLevel: maxLevel,
+					SortBy: sortBy,
+					SortDirection: sortDirection,
+					Skip: 0,
+					Take: take,
+					SpeciesId: speciesId,
+					BallId: ballId,
+					OriginGame: originGame,
+					TeraType: teraType,
+				}
+				onFiltersChange(filters)
+			}, 2000)
+		}
+		
+		// Cleanup function
+		return () => {
+			if (debounceTimerRef.current) {
+				clearTimeout(debounceTimerRef.current)
+			}
+		}
+	}, [search, pokedexNumber, isShiny, speciesName, nickname, originGeneration, capturedGeneration, pokeballName, minLevel, maxLevel, sortBy, sortDirection, take, speciesId, ballId, originGame, teraType, onFiltersChange])
+
+	// Cleanup timer on unmount
+	useEffect(() => {
+		return () => {
+			if (debounceTimerRef.current) {
+				clearTimeout(debounceTimerRef.current)
+			}
+		}
+	}, [])
 
 	// Load metadata on component mount
 	useEffect(() => {
@@ -77,24 +136,25 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 			SpeciesName: speciesName.trim() || undefined,
 			Nickname: nickname.trim() || undefined,
 			IsShiny: isShiny,
-			Favorite: favorite,
+			// Favorite: favorite, // TODO: Temporarily disabled - backend service not ready
 
-			Form: form,
-			Gender: gender,
+			// Form: form, // TODO: Temporarily disabled - backend service not ready
+			// Gender: gender, // TODO: Temporarily disabled - backend service not ready
 			OriginGeneration: originGeneration,
 			CapturedGeneration: capturedGeneration,
-			PokeballId: pokeballId,
-			HeldItemId: heldItemId,
+			PokeballId: pokeballName ? getBallIdFromName(pokeballName) : undefined,
+			// HeldItemId: heldItemId, // TODO: Temporarily disabled - backend service not ready
 
 			MinLevel: minLevel,
 			MaxLevel: maxLevel,
 
 			SortBy: sortBy,
 			SortDirection: sortDirection,
-			ThenSortBy: thenSortBy,
-			ThenSortDirection: thenSortDirection,
+			// ThenSortBy: thenSortBy, // TODO: Temporarily disabled - backend service not ready
+			// ThenSortDirection: thenSortDirection, // TODO: Temporarily disabled - backend service not ready
 
-			Skip: skip,
+			// Skip: skip, // TODO: Temporarily disabled - backend service not ready
+			Skip: 0, // Hardcoded to 0 since skip is temporarily disabled
 			Take: take,
 
 			SpeciesId: speciesId,
@@ -112,20 +172,20 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 		setSpeciesName('')
 		setNickname('')
 		setIsShiny(undefined)
-		setFavorite(undefined)
-		setForm(undefined)
-		setGender(undefined)
+		// setFavorite(undefined) // TODO: Temporarily disabled - backend service not ready
+		// setForm(undefined) // TODO: Temporarily disabled - backend service not ready
+		// setGender(undefined) // TODO: Temporarily disabled - backend service not ready
 		setOriginGeneration(undefined)
 		setCapturedGeneration(undefined)
-		setPokeballId(undefined)
-		setHeldItemId(undefined)
+		setPokeballName(undefined)
+		// setHeldItemId(undefined) // TODO: Temporarily disabled - backend service not ready
 		setMinLevel(undefined)
 		setMaxLevel(undefined)
 		setSortBy(undefined)
 		setSortDirection(undefined)
-		setThenSortBy(undefined)
-		setThenSortDirection(undefined)
-		setSkip(0)
+		// setThenSortBy(undefined) // TODO: Temporarily disabled - backend service not ready
+		// setThenSortDirection(undefined) // TODO: Temporarily disabled - backend service not ready
+		// setSkip(0) // TODO: Temporarily disabled - backend service not ready
 		setTake(50)
 		setSpeciesId(undefined)
 		setBallId(undefined)
@@ -138,321 +198,229 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 
 	return (
 		<div className='pokemon-filters'>
-			<div className='filters-header'>
-				<h3>🔍 Pokemon Filters</h3>
+			{/* Collapsible Header */}
+			<div className='filters-header' onClick={() => setShowFilters(!showFilters)}>
+				<h3>
+					<span className={`toggle-icon ${showFilters ? 'expanded' : ''}`}>▶</span>
+					🔍 Filters
+				</h3>
+				<span className='filters-count'>
+					{showFilters ? 'Click to collapse' : 'Click to expand filters'}
+				</span>
 			</div>
 
-			{/* Basic Search Filters */}
-			<div className='filters-section'>
-				<h4>🔎 Basic Search</h4>
-				<div className='filters-grid'>
-					<div className='filter-group'>
-						<label>Search</label>
-						<input
-							type='text'
-							placeholder='Search by name, nickname, or species...'
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-						/>
-					</div>
-
-					<div className='filter-group'>
-						<label>Pokédex Number</label>
-						<input
-							type='number'
-							placeholder='Pokédex #'
-							value={pokedexNumber || ''}
-							onChange={(e) =>
-								setPokedexNumber(e.target.value ? parseInt(e.target.value) : undefined)
-							}
-							min='1'
-						/>
-					</div>
-
-					<div className='filter-group'>
-						<label>Species Name</label>
-						<input
-							type='text'
-							placeholder='Species name'
-							value={speciesName}
-							onChange={(e) => setSpeciesName(e.target.value)}
-						/>
-					</div>
-
-					<div className='filter-group'>
-						<label>Nickname</label>
-						<input
-							type='text'
-							placeholder='Nickname'
-							value={nickname}
-							onChange={(e) => setNickname(e.target.value)}
-						/>
-					</div>
-
-					<div className='filter-group'>
-						<label>Shiny Status</label>
-						<select
-							value={isShiny === undefined ? '' : isShiny.toString()}
-							onChange={(e) =>
-								setIsShiny(e.target.value === '' ? undefined : e.target.value === 'true')
-							}>
-							<option value=''>All</option>
-							<option value='true'>Shiny Only</option>
-							<option value='false'>Non-Shiny Only</option>
-						</select>
-					</div>
-
-					<div className='filter-group'>
-						<label>Favorite Status</label>
-						<select
-							value={favorite === undefined ? '' : favorite.toString()}
-							onChange={(e) =>
-								setFavorite(e.target.value === '' ? undefined : e.target.value === 'true')
-							}>
-							<option value=''>All</option>
-							<option value='true'>Favorites Only</option>
-							<option value='false'>Non-Favorites Only</option>
-						</select>
-					</div>
+			{/* Quick Search Row - Always Visible */}
+			<div className='quick-search-row'>
+				<div className='filter-group'>
+					<input
+						type='text'
+						placeholder='🔍 Search Pokemon...'
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className='search-input'
+					/>
+				</div>
+				<div className='filter-group'>
+					<input
+						type='number'
+						placeholder='Pokédex #'
+						value={pokedexNumber || ''}
+						onChange={(e) =>
+							setPokedexNumber(e.target.value ? parseInt(e.target.value) : undefined)
+						}
+						min='1'
+						className='small-input'
+					/>
+				</div>
+				<div className='filter-group'>
+					<select
+						value={isShiny === undefined ? '' : isShiny.toString()}
+						onChange={(e) =>
+							setIsShiny(e.target.value === '' ? undefined : e.target.value === 'true')
+						}
+						className='small-select'>
+						<option value=''>All</option>
+						<option value='true'>✨ Shiny</option>
+						<option value='false'>Regular</option>
+					</select>
 				</div>
 			</div>
 
-			{/* Level Range */}
-			<div className='filters-section'>
-				<h4>⚖️ Level Range</h4>
-				<div className='filters-grid'>
-					<div className='filter-group'>
-						<label>Min Level</label>
-						<input
-							type='number'
-							placeholder='Min level'
-							value={minLevel || ''}
-							onChange={(e) => setMinLevel(e.target.value ? parseInt(e.target.value) : undefined)}
-							min='1'
-							max='100'
-						/>
-					</div>
+			{/* Collapsible Content */}
+			{showFilters && (
+				<div className='filters-content'>
 
-					<div className='filter-group'>
-						<label>Max Level</label>
-						<input
-							type='number'
-							placeholder='Max level'
-							value={maxLevel || ''}
-							onChange={(e) => setMaxLevel(e.target.value ? parseInt(e.target.value) : undefined)}
-							min='1'
-							max='100'
-						/>
-					</div>
-				</div>
-			</div>
+					{/* Compact Filters Grid */}
+					<div className='compact-filters-grid'>
+						<div className='filter-row'>
+							<div className='filter-group'>
+								<label>Species</label>
+								<input
+									type='text'
+									placeholder='Species name'
+									value={speciesName}
+									onChange={(e) => setSpeciesName(e.target.value)}
+								/>
+							</div>
+							<div className='filter-group'>
+								<label>Nickname</label>
+								<input
+									type='text'
+									placeholder='Nickname'
+									value={nickname}
+									onChange={(e) => setNickname(e.target.value)}
+								/>
+							</div>
+						</div>
 
-			{/* Sorting */}
-			<div className='filters-section'>
-				<h4>🎯 Sorting</h4>
-				<div className='filters-grid'>
-					<div className='filter-group'>
-						<label>Sort By</label>
-						<select
-							value={sortBy ?? ''}
-							onChange={(e) =>
-								setSortBy(e.target.value ? (parseInt(e.target.value) as SortBy) : undefined)
-							}>
-							<option value=''>Choose field...</option>
-							{metadata?.sortFields?.map((field) => (
-								<option key={`sort-${field.value}`} value={field.value}>
-									{field.name}
-								</option>
-							)) || []}
-						</select>
-					</div>
+						<div className='filter-row'>
+							<div className='filter-group'>
+								<label>Min Level</label>
+								<input
+									type='number'
+									placeholder='1'
+									value={minLevel || ''}
+									onChange={(e) => setMinLevel(e.target.value ? parseInt(e.target.value) : undefined)}
+									min='1'
+									max='100'
+									className='small-input'
+								/>
+							</div>
+							<div className='filter-group'>
+								<label>Max Level</label>
+								<input
+									type='number'
+									placeholder='100'
+									value={maxLevel || ''}
+									onChange={(e) => setMaxLevel(e.target.value ? parseInt(e.target.value) : undefined)}
+									min='1'
+									max='100'
+									className='small-input'
+								/>
+							</div>
+						</div>
 
-					<div className='filter-group'>
-						<label>Sort Direction</label>
-						<select
-							value={sortDirection ?? ''}
-							onChange={(e) =>
-								setSortDirection(
-									e.target.value ? (parseInt(e.target.value) as SortDirection) : undefined
-								)
-							}>
-							<option value=''>Choose direction...</option>
-							<option value='0'>Ascending</option>
-							<option value='1'>Descending</option>
-						</select>
-					</div>
+						<div className='filter-row'>
+							<div className='filter-group'>
+								<label>Origin Gen</label>
+								<select
+									value={originGeneration ?? ''}
+									onChange={(e) =>
+										setOriginGeneration(e.target.value ? parseInt(e.target.value) : undefined)
+									}>
+									<option value=''>All</option>
+									{metadata?.generations?.map((gen: any) => {
+										const genId = typeof gen === 'number' ? gen : gen.id
+										const genName =
+											typeof gen === 'number' ? `Gen ${gen}` : gen.name || `Gen ${gen.id}`
+										return (
+											<option key={`origin-gen-${genId}`} value={genId}>
+												{genName}
+											</option>
+										)
+									}) || []}
+								</select>
+							</div>
+							<div className='filter-group'>
+								<label>Captured Gen</label>
+								<select
+									value={capturedGeneration ?? ''}
+									onChange={(e) =>
+										setCapturedGeneration(e.target.value ? parseInt(e.target.value) : undefined)
+									}>
+									<option value=''>All</option>
+									{metadata?.generations?.map((gen: any) => {
+										const genId = typeof gen === 'number' ? gen : gen.id
+										const genName =
+											typeof gen === 'number' ? `Gen ${gen}` : gen.name || `Gen ${gen.id}`
+										return (
+											<option key={`captured-gen-${genId}`} value={genId}>
+												{genName}
+											</option>
+										)
+									}) || []}
+								</select>
+							</div>
+						</div>
 
-					<div className='filter-group'>
-						<label>Then Sort By</label>
-						<select
-							value={thenSortBy ?? ''}
-							onChange={(e) =>
-								setThenSortBy(e.target.value ? (parseInt(e.target.value) as SortBy) : undefined)
-							}>
-							<option value=''>None</option>
-							{metadata?.sortFields?.map((field) => (
-								<option key={`then-sort-${field.value}`} value={field.value}>
-									{field.name}
-								</option>
-							)) || []}
-						</select>
-					</div>
-
-					<div className='filter-group'>
-						<label>Then Sort Direction</label>
-						<select
-							value={thenSortDirection ?? ''}
-							onChange={(e) =>
-								setThenSortDirection(
-									e.target.value ? (parseInt(e.target.value) as SortDirection) : undefined
-								)
-							}>
-							<option value=''>Choose direction...</option>
-							<option value='0'>Ascending</option>
-							<option value='1'>Descending</option>
-						</select>
-					</div>
-				</div>
-			</div>
-
-			{/* Advanced Filters */}
-			<div className='filters-section'>
-				<h4>⚙️ Advanced Filters</h4>
-				<div className='filters-grid'>
-					<div className='filter-group'>
-						<label>Gender</label>
-						<select
-							value={gender ?? ''}
-							onChange={(e) => setGender(e.target.value ? parseInt(e.target.value) : undefined)}>
-							<option value=''>All Genders</option>
-							{metadata?.genders?.map((genderOption) => (
-								<option key={`gender-${genderOption.id}`} value={genderOption.id}>
-									{genderOption.name}
-								</option>
-							)) || []}
-						</select>
-					</div>
-
-					<div className='filter-group'>
-						<label>Origin Generation</label>
-						<select
-							value={originGeneration ?? ''}
-							onChange={(e) =>
-								setOriginGeneration(e.target.value ? parseInt(e.target.value) : undefined)
-							}>
-							<option value=''>All Generations</option>
-							{metadata?.generations?.map((gen: any) => {
-								// Handle both number[] and object[] formats
-								const genId = typeof gen === 'number' ? gen : gen.id
-								const genName =
-									typeof gen === 'number' ? `Generation ${gen}` : gen.name || `Generation ${gen.id}`
-								return (
-									<option key={`origin-gen-${genId}`} value={genId}>
-										{genName}
+						<div className='filter-row'>
+							<div className='filter-group'>
+								<label>Pokeball</label>
+								<select
+									value={pokeballName ?? ''}
+									onChange={(e) => setPokeballName(e.target.value || undefined)}>
+									<option value=''>All Balls</option>
+									{Object.entries(PokemonBalls).map(([id, name]) => (
+										<option key={id} value={name}>
+											{id === '0' ? '1º & 2º gen' : name}
+										</option>
+									))}
+								</select>
+							</div>
+							<div className='filter-group'>
+								<label>Items/Page</label>
+								<select value={take} onChange={(e) => setTake(parseInt(e.target.value))}>
+									<option value='25'>25</option>
+									<option value={metadata?.defaultPageSize || 50}>
+										{metadata?.defaultPageSize || 50}
 									</option>
-								)
-							}) || []}
-						</select>
+									<option value='100'>100</option>
+									<option value='200'>200</option>
+								</select>
+							</div>
+						</div>
+
+						<div className='filter-row'>
+							<div className='filter-group'>
+								<label>Sort By</label>
+								<select
+									value={sortBy ?? ''}
+									onChange={(e) =>
+										setSortBy(e.target.value ? (parseInt(e.target.value) as SortBy) : undefined)
+									}>
+									<option value=''>Default</option>
+									{metadata?.sortFields?.map((field) => (
+										<option key={`sort-${field.value}`} value={field.value}>
+											{field.name}
+										</option>
+									)) || []}
+								</select>
+							</div>
+							<div className='filter-group'>
+								<label>Order</label>
+								<select
+									value={sortDirection ?? ''}
+									onChange={(e) =>
+										setSortDirection(
+											e.target.value ? (parseInt(e.target.value) as SortDirection) : undefined
+										)
+									}>
+									<option value=''>Default</option>
+									<option value='0'>A-Z ↑</option>
+									<option value='1'>Z-A ↓</option>
+								</select>
+							</div>
+						</div>
 					</div>
 
-					<div className='filter-group'>
-						<label>Captured Generation</label>
-						<select
-							value={capturedGeneration ?? ''}
-							onChange={(e) =>
-								setCapturedGeneration(e.target.value ? parseInt(e.target.value) : undefined)
-							}>
-							<option value=''>All Generations</option>
-							{metadata?.generations?.map((gen: any) => {
-								// Handle both number[] and object[] formats
-								const genId = typeof gen === 'number' ? gen : gen.id
-								const genName =
-									typeof gen === 'number' ? `Generation ${gen}` : gen.name || `Generation ${gen.id}`
-								return (
-									<option key={`captured-gen-${genId}`} value={genId}>
-										{genName}
-									</option>
-								)
-							}) || []}
-						</select>
+					{/* Action Buttons */}
+					<div className='filters-actions'>
+						<button onClick={handleClearFilters} disabled={loading} className='btn-clear'>
+							🗑️ Clear
+						</button>
+						<button onClick={handleApplyFilters} disabled={loading} className='btn-apply'>
+							{loading ? '⏳ Loading...' : '✅ Apply'}
+						</button>
 					</div>
 
-					<div className='filter-group'>
-						<label>Form</label>
-						<input
-							type='number'
-							placeholder='Form (0 = base form)'
-							value={form ?? ''}
-							onChange={(e) => setForm(e.target.value ? parseInt(e.target.value) : undefined)}
-							min='0'
-						/>
-					</div>
-
-					<div className='filter-group'>
-						<label>Pokeball ID</label>
-						<input
-							type='number'
-							placeholder='Pokeball ID'
-							value={pokeballId ?? ''}
-							onChange={(e) => setPokeballId(e.target.value ? parseInt(e.target.value) : undefined)}
-							min='1'
-						/>
-					</div>
-
-					<div className='filter-group'>
-						<label>Held Item ID</label>
-						<input
-							type='number'
-							placeholder='Held Item ID'
-							value={heldItemId ?? ''}
-							onChange={(e) => setHeldItemId(e.target.value ? parseInt(e.target.value) : undefined)}
-							min='1'
-						/>
+					{/* Info Banner for Disabled Features */}
+					<div className='disabled-features-info'>
+						<small>
+							⚠️ Some advanced filters (Gender, Form, Held Items, Favorites) are temporarily disabled
+						</small>
 					</div>
 				</div>
-			</div>
-
-			{/* Pagination */}
-			<div className='filters-section'>
-				<h4>📄 Pagination</h4>
-				<div className='filters-grid'>
-					<div className='filter-group'>
-						<label>Items per Page</label>
-						<select value={take} onChange={(e) => setTake(parseInt(e.target.value))}>
-							<option value='25'>25</option>
-							<option value={metadata?.defaultPageSize || 50}>
-								{metadata?.defaultPageSize || 50} (Default)
-							</option>
-							<option value='100'>100</option>
-							<option value='200'>200</option>
-							{metadata?.maxPageSize && metadata.maxPageSize !== 200 && (
-								<option value={metadata.maxPageSize}>{metadata.maxPageSize} (Max)</option>
-							)}
-						</select>
-					</div>
-
-					<div className='filter-group'>
-						<label>Skip Items</label>
-						<input
-							type='number'
-							placeholder='Skip'
-							value={skip}
-							onChange={(e) => setSkip(parseInt(e.target.value) || 0)}
-							min='0'
-						/>
-					</div>
-				</div>
-			</div>
-
-			{/* Action Buttons */}
-			<div className='filters-actions'>
-				<button onClick={handleClearFilters} disabled={loading} className='btn-secondary'>
-					Clear Filters
-				</button>
-				<button onClick={handleApplyFilters} disabled={loading} className='btn-primary'>
-					{loading ? 'Loading...' : 'Apply Filters'}
-				</button>
-			</div>
+			)}
 		</div>
 	)
 }
