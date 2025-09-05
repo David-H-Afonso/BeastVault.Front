@@ -1,11 +1,17 @@
-// Función para obtener la URL base del API en producción
+// environment.prod.ts
+
 function getApiBaseUrl(): string {
-	// Si estamos en Electron, usar la variable global establecida
+	// Si estamos en Electron
 	if (typeof window !== 'undefined' && (window as any).API_BASE_URL) {
 		return (window as any).API_BASE_URL
 	}
 
-	// Fallback para producción web
+	// Si definimos la URL en tiempo de build (Docker/Vite)
+	if (import.meta.env.VITE_API_URL) {
+		return import.meta.env.VITE_API_URL as string
+	}
+
+	// Fallback por si acaso
 	return 'http://localhost:5000'
 }
 
