@@ -7,7 +7,7 @@ COPY . .
 # VITE_API_URL lo recibimos en build
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
-RUN npm run build
+RUN npm run build 
 
 # Runtime (sirve los estáticos con un servidor sencillo)
 FROM node:20-alpine
