@@ -13,6 +13,7 @@ import { ConfirmDialog } from './ConfirmDialog'
 import { PokemonFilters, PokemonCard } from './components'
 import './App.scss'
 import { CardBackgroundSelector } from './components/CardBackgroundSelector'
+import banner from './assets/BeastVault-banner.svg'
 
 // Helper to get the best available sprite in priority order
 function getBestSprite(sprites: any, isShiny: boolean = false) {
@@ -256,32 +257,77 @@ function App() {
 
 	return (
 		<div className='app-container'>
-			<h1>Beast Vault</h1>
-
-			{/* File upload and scan controls */}
-			<div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
-				<input
-					type='file'
-					accept='.pk9'
-					onChange={handleFileChange}
-					ref={fileInputRef}
-					className='file-input'
-				/>
-				<button
-					onClick={handleScanDirectory}
-					disabled={loading || scanning}
+			<header
+				className='app-banner'
+				style={{
+					marginBottom: '1rem',
+					position: 'relative',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					flexDirection: 'column',
+				}}>
+				<h1
+					className='visually-hidden'
 					style={{
-						padding: '0.5rem 1rem',
-						background: '#059669',
-						color: 'white',
-						border: 'none',
-						borderRadius: '4px',
-						cursor: scanning ? 'not-allowed' : 'pointer',
-						opacity: scanning ? 0.6 : 1,
+						position: 'absolute',
+						width: '1px',
+						height: '1px',
+						padding: 0,
+						margin: '-1px',
+						overflow: 'hidden',
+						clip: 'rect(0 0 0 0)',
+						whiteSpace: 'nowrap',
+						border: 0,
 					}}>
-					{scanning ? 'Scanning...' : 'Scan Directory'}
-				</button>
-			</div>
+					Beast Vault
+				</h1>
+				{/* Banner Image (rendered white via CSS filter) */}
+				<img
+					src={banner}
+					alt='Beast Vault banner'
+					className='banner-image'
+					style={{
+						width: '100%',
+						height: 'auto',
+						borderRadius: 8,
+						marginTop: 8,
+						/* Make the SVG render white */
+						filter: 'brightness(0) invert(1)',
+					}}
+				/>
+				{/* File upload and scan controls */}
+				<div
+					style={{
+						display: 'flex',
+						gap: '1rem',
+						alignItems: 'center',
+						marginBottom: '1rem',
+						alignSelf: 'flex-start',
+					}}>
+					<input
+						type='file'
+						accept='.pk9'
+						onChange={handleFileChange}
+						ref={fileInputRef}
+						className='file-input'
+					/>
+					<button
+						onClick={handleScanDirectory}
+						disabled={loading || scanning}
+						style={{
+							padding: '0.5rem 1rem',
+							background: '#059669',
+							color: 'white',
+							border: 'none',
+							borderRadius: '4px',
+							cursor: scanning ? 'not-allowed' : 'pointer',
+							opacity: scanning ? 0.6 : 1,
+						}}>
+						{scanning ? 'Scanning...' : 'Scan Directory'}
+					</button>
+				</div>
+			</header>
 
 			{/* Filters Component */}
 			<PokemonFilters onFiltersChange={handleFiltersChange} loading={loading} />
