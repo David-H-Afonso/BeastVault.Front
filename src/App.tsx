@@ -289,6 +289,7 @@ function App() {
 					className='banner-image'
 					style={{
 						width: '100%',
+						maxWidth: '500px',
 						height: 'auto',
 						borderRadius: 8,
 						marginTop: 8,
