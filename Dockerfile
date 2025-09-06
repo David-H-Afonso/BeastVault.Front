@@ -14,16 +14,30 @@ RUN if [ -f package-lock.json ]; then \
     fi
 
 COPY . .
-# VITE_API_URL lo recibimos en build
-ARG VITE_API_URL
+# VITE_API_URL lo recibimos en build (valor por defecto si no se proporciona)
+ARG VITE_API_URL=http://localhost:8080
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Runtime (sirve los estáticos con un servidor sencillo)
 FROM node:20-alpine
 WORKDIR /app
+
+# Instalar serve para servir los archivos estáticos
 RUN npm install -g serve
+
+# Copiar los archivos construidos
 COPY --from=build /app/dist ./dist
+
+# Copiar script de configuración
+COPY update-config.sh /app/update-config.sh
+RUN chmod +x /app/update-config.sh
+
+# Variables de entorno por defecto
+ENV VITE_API_URL=http://localhost:8080
+
 EXPOSE 80
-CMD ["serve", "-s", "dist", "-l", "80"]
+
+# Script de inicio que actualiza la configuración y luego sirve los archivos
+CMD ["/bin/sh", "-c", "/app/update-config.sh && serve -s dist -l 80"]
  
