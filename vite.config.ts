@@ -5,6 +5,20 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
 	plugins: [react()],
 	base: './', // Importante para Electron - usar rutas relativas
+	resolve: {
+		alias: {
+			'@': '/src',
+			'@/assets': '/src/assets',
+			'@/components': '/src/components',
+			'@/hooks': '/src/hooks',
+			'@/services': '/src/services',
+			'@/utils': '/src/utils',
+			'@/models': '/src/models',
+			'@/enums': '/src/enums',
+			'@/store': '/src/store',
+			'@/environments': '/src/environments',
+		},
+	},
 	build: {
 		outDir: 'dist',
 		assetsDir: 'assets',
