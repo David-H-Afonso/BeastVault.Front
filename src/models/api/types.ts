@@ -11,6 +11,7 @@
  * - ✅ Formas dinámicas basadas en Mega Stones y Gigantamax
  * - ✅ Flags CanGigantamax y HasMegaStone para mejor experiencia visual
  * - ✅ Soporte completo para archivos PKM legacy (.pk1, .pk2, etc.)
+ * - ✅ Sistema de tags para Pokemon
  *
  * IMPORTANTE: Este archivo debe actualizarse cada vez que cambien los endpoints o DTOs
  */
@@ -243,6 +244,8 @@ export interface PokemonListItemDto {
 	canGigantamax: boolean
 	/** Si este Pokémon tiene una Mega Piedra equipada (afecta la visualización de la forma) */
 	hasMegaStone: boolean
+	/** Tags asignados a este Pokémon */
+	tags?: TagDto[]
 }
 
 export interface AdvancedPokemonListResponse {
@@ -294,3 +297,41 @@ export const API_CONSTANTS = {
 		FEMALE: 2,
 	} as const,
 } as const
+
+// ===================================
+// TAG SYSTEM INTERFACES
+// ===================================
+
+/**
+ * Tag DTO para el sistema de etiquetas de Pokemon
+ */
+export interface TagDto {
+	id: number
+	name: string
+	imagePath?: string | null
+}
+
+/**
+ * DTO para crear un nuevo tag
+ */
+export interface CreateTagDto {
+	name: string
+	imagePath?: string | null
+}
+
+/**
+ * DTO para actualizar un tag existente
+ */
+export interface UpdateTagDto {
+	id: number
+	name?: string
+	imagePath?: string | null
+}
+
+/**
+ * DTO para asignar tags a un Pokemon
+ */
+export interface PokemonTagAssignmentDto {
+	pokemonId: number
+	tagIds: number[]
+}

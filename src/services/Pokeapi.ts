@@ -1,11 +1,11 @@
-import { customFetch } from '../utils'
 import type { PokeApiPokemon, PokeApiSprites } from '../models/Pokeapi'
 import { cacheService, CacheKeys } from './CacheService'
+import { staticResourceCache } from './StaticResourceCache'
 
 export const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2/'
 
 /**
- * Fetches Pokémon data from PokeAPI by species ID and form with caching.
+ * Fetches Pokémon data from PokeAPI by species ID and form with enhanced caching.
  * @param speciesId Pokémon species ID (e.g. 132 for Ditto)
  * @param form Form number (0 = base form, 1+ = alternate forms)
  * @param canGigantamax Whether this Pokemon can Gigantamax (affects naming)
@@ -27,17 +27,15 @@ export async function getPokeApiPokemon(
 	if (canGigantamax) {
 		try {
 			// First get the base Pokemon to know its name
-			const basePokemon = await customFetch<PokeApiPokemon>(
-				`${POKEAPI_BASE_URL}pokemon/${speciesId}`
-			)
+			const baseUrl = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
+			const basePokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(baseUrl)
 
 			// Try to fetch the Gigantamax variant
 			const gmaxName = `${basePokemon.name}-gmax`
 
 			try {
-				const gmaxPokemon = await customFetch<PokeApiPokemon>(
-					`${POKEAPI_BASE_URL}pokemon/${gmaxName}`
-				)
+				const gmaxUrl = `${POKEAPI_BASE_URL}pokemon/${gmaxName}`
+				const gmaxPokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(gmaxUrl)
 
 				// Cache for 24 hours
 				cacheService.set(cacheKey, gmaxPokemon, 24 * 60 * 60 * 1000)
@@ -55,7 +53,8 @@ export async function getPokeApiPokemon(
 
 	// For form 0 (base form), use the standard pokemon endpoint
 	if (form === 0) {
-		const pokemon = await customFetch<PokeApiPokemon>(`${POKEAPI_BASE_URL}pokemon/${speciesId}`)
+		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
+		const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(url)
 		// Cache for 24 hours
 		cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
 		return pokemon
@@ -69,7 +68,8 @@ export async function getPokeApiPokemon(
 		let speciesData = cacheService.get<any>(speciesCacheKey)
 
 		if (!speciesData) {
-			speciesData = await customFetch<any>(`${POKEAPI_BASE_URL}pokemon-species/${speciesId}`)
+			const speciesUrl = `${POKEAPI_BASE_URL}pokemon-species/${speciesId}`
+			speciesData = await staticResourceCache.fetchWithCache<any>(speciesUrl)
 			cacheService.set(speciesCacheKey, speciesData, 24 * 60 * 60 * 1000)
 		}
 
@@ -80,7 +80,8 @@ export async function getPokeApiPokemon(
 		if (form < varieties.length) {
 			const varietyUrl = varieties[form].pokemon.url
 			const pokemonId = varietyUrl.split('/').filter(Boolean).pop()
-			const pokemon = await customFetch<PokeApiPokemon>(`${POKEAPI_BASE_URL}pokemon/${pokemonId}`)
+			const pokemonUrl = `${POKEAPI_BASE_URL}pokemon/${pokemonId}`
+			const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(pokemonUrl)
 
 			// Cache the result
 			cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
@@ -88,7 +89,8 @@ export async function getPokeApiPokemon(
 		}
 
 		// Fallback to base form if specific form not found
-		const pokemon = await customFetch<PokeApiPokemon>(`${POKEAPI_BASE_URL}pokemon/${speciesId}`)
+		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
+		const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(url)
 		cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
 		return pokemon
 	} catch (error) {
@@ -97,14 +99,15 @@ export async function getPokeApiPokemon(
 			error
 		)
 		// Fallback to base form
-		const pokemon = await customFetch<PokeApiPokemon>(`${POKEAPI_BASE_URL}pokemon/${speciesId}`)
+		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
+		const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(url)
 		cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
 		return pokemon
 	}
 }
 
 /**
- * Fetches Pokéball icon from PokeAPI items endpoint using ball name with caching
+ * Fetches Pokéball icon from PokeAPI items endpoint using ball name with enhanced caching
  * @param ballName Pokéball name (e.g., "Poké Ball", "Beast Ball")
  */
 export async function getPokeBallIcon(ballName: string): Promise<string | null> {
@@ -126,7 +129,8 @@ export async function getPokeBallIcon(ballName: string): Promise<string | null> 
 			.replace(/\s+/g, '-') // Replace spaces with hyphens
 			.replace(/[^a-z0-9-]/g, '') // Remove any other non-alphanumeric characters except hyphens
 
-		const itemData = await customFetch<any>(`${POKEAPI_BASE_URL}item/${urlFriendlyName}`)
+		const itemUrl = `${POKEAPI_BASE_URL}item/${urlFriendlyName}`
+		const itemData = await staticResourceCache.fetchWithCache<any>(itemUrl)
 		const iconUrl = itemData?.sprites?.default || null
 
 		// Cache the result (cache for 7 days since pokeball icons don't change)

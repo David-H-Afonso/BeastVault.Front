@@ -1,0 +1,403 @@
+/**
+ * Beast Vault - Color System & Theme Variables
+ * ============================================
+ * 
+ * Sistema centralizado de colores y variables para temas
+ * Incluye tema oscuro por defecto y preparado para tema claro y personalizados
+ */
+
+// ================================
+// COLORES BASE - PALETA PRINCIPAL
+// ================================
+
+// Grises y neutros
+$color-white: #ffffff;
+$color-black: #000000;
+$color-transparent: transparent;
+
+// Escala de grises (oscuros)
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
+
+// Tonos personalizados de la app
+$slate-700: #334155;
+$slate-800: #1e293b;
+$slate-900: #0f172a;
+
+$blue-gray-600: #475569;
+$blue-gray-700: #334155;
+$blue-gray-800: #1e293b;
+$blue-gray-900: #0f172a;
+
+// Colores principales de la aplicación
+$primary-dark: #242424;
+$secondary-dark: #2d3440;
+$tertiary-dark: #2d3748;
+$accent-dark: #404852;
+$surface-dark: #1e2329;
+$surface-alt: #243142;
+
+// ================================
+// COLORES SEMÁNTICOS
+// ================================
+
+// Azules (Primary/Info)
+$blue-50: #eff6ff;
+$blue-100: #dbeafe;
+$blue-200: #bfdbfe;
+$blue-300: #93c5fd;
+$blue-400: #60a5fa;
+$blue-500: #3b82f6;
+$blue-600: #2563eb;
+$blue-700: #1d4ed8;
+$blue-800: #1e3a8a;
+$blue-900: #1e40af;
+
+// Verdes (Success)
+$green-50: #ecfdf5;
+$green-100: #d1fae5;
+$green-200: #a7f3d0;
+$green-300: #6ee7b7;
+$green-400: #34d399;
+$green-500: #10b981;
+$green-600: #059669;
+$green-700: #047857;
+$green-800: #065f46;
+$green-900: #064e3b;
+
+// Rojos (Error/Danger)
+$red-50: #fef2f2;
+$red-100: #fee2e2;
+$red-200: #fecaca;
+$red-300: #fca5a5;
+$red-400: #f87171;
+$red-500: #ef4444;
+$red-600: #dc2626;
+$red-700: #b91c1c;
+$red-800: #991b1b;
+$red-900: #7f1d1d;
+
+// Amarillos (Warning)
+$yellow-50: #fffbeb;
+$yellow-100: #fef3c7;
+$yellow-200: #fde68a;
+$yellow-300: #fcd34d;
+$yellow-400: #fbbf24;
+$yellow-500: #f59e0b;
+$yellow-600: #d97706;
+$yellow-700: #b45309;
+$yellow-800: #92400e;
+$yellow-900: #78350f;
+
+// Morados (Special/Purple)
+$purple-50: #faf5ff;
+$purple-100: #f3e8ff;
+$purple-200: #e9d5ff;
+$purple-300: #d8b4fe;
+$purple-400: #c084fc;
+$purple-500: #a855f7;
+$purple-600: #9333ea;
+$purple-700: #7c3aed;
+$purple-800: #6b21a8;
+$purple-900: #581c87;
+
+// ================================
+// COLORES POKEMON TYPES
+// ================================
+
+// Colores oficiales de tipos Pokemon
+$type-normal: #a8a77a;
+$type-fire: #ee8130;
+$type-water: #6390f0;
+$type-electric: #f7d02c;
+$type-grass: #7ac74c;
+$type-ice: #96d9d6;
+$type-fighting: #c22e28;
+$type-poison: #a33ea1;
+$type-ground: #e2bf65;
+$type-flying: #a98ff3;
+$type-psychic: #f95587;
+$type-bug: #a6b91a;
+$type-rock: #b6a136;
+$type-ghost: #735797;
+$type-dragon: #6f35fc;
+$type-dark: #705746;
+$type-steel: #b7b7ce;
+$type-fairy: #d685ad;
+
+// ================================
+// COLORES POR GENERACIÓN
+// ================================
+
+// Generación I
+$gen1-red: #ff1111;
+$gen1-blue: #1111ff;
+$gen1-yellow: #ffd733;
+
+// Generación II
+$gen2-gold: #daa520;
+$gen2-silver: #c0c0c0;
+$gen2-crystal: #4fd9ff;
+
+// Generación III
+$gen3-ruby: #a00000;
+$gen3-sapphire: #0000a0;
+$gen3-emerald: #00a000;
+
+$gen3-firered: #ff7327;
+$gen3-leafgreen: #00dd00;
+
+$gen3-colosseum: #b6cae4;
+$gen3-xd: #604e82;
+
+// Generación IV
+$gen4-diamond: #aaaaff;
+$gen4-pearl: #ffaaaa;
+$gen4-platinum: #999999;
+
+$gen4-heartgold: #b69e00;
+$gen4-soulsilver: #c0c0e1;
+
+// Generación V
+$gen5-black: #444444;
+$gen5-white: #e1e1e1;
+
+// Generación VI
+$gen6-x: #6376b8;
+$gen6-y: #ed5540;
+
+$gen6-omegaruby: #cf3025;
+$gen6-alphasapphire: #1768d1;
+
+// Generación VII
+$gen7-sun: #f1912b;
+$gen7-moon: #5599ca;
+
+$gen7-ultrasun: #ec5d2e;
+$gen7-ultramoon: #1f62a3;
+
+// Generación VIII
+$gen8-sword: #00d1f6;
+$gen8-shield: #9e2306;
+
+$gen8-brilliantdiamond: #afede4;
+$gen8-shiningpearl: #e3b6df;
+
+// Generación IX
+$gen9-scarlet: #c91421;
+$gen9-violet: #632ea6;
+
+// Generación ??? (FakemonDex)
+$gen-fakemondex: #9819ff;
+
+// Color por defecto para tipos
+$type-default: #68a090;
+
+// ================================
+// ALPHA/OPACITY LEVELS
+// ================================
+
+// Niveles de opacidad estándar
+$alpha-10: 0.1;
+$alpha-20: 0.2;
+$alpha-30: 0.3;
+$alpha-40: 0.4;
+$alpha-50: 0.5;
+$alpha-60: 0.6;
+$alpha-70: 0.7;
+$alpha-75: 0.75;
+$alpha-80: 0.8;
+$alpha-87: 0.87;
+$alpha-90: 0.9;
+$alpha-95: 0.95;
+
+// ================================
+// SOMBRAS Y EFECTOS
+// ================================
+
+// Sombras estandarizadas
+$shadow-sm: 0 1px 2px rgba($color-black, 0.05);
+$shadow-md: 0 1px 3px rgba($color-black, 0.2);
+$shadow-lg: 0 2px 4px rgba($color-black, 0.3);
+$shadow-xl: 0 4px 12px rgba($color-black, 0.15);
+$shadow-2xl: 0 8px 20px rgba($color-black, 0.4);
+$shadow-3xl: 0 8px 32px rgba($color-black, 0.4);
+
+// Drop shadows para filtros
+$drop-shadow-sm: drop-shadow(0 1px 2px rgba($color-black, 0.3));
+$drop-shadow-md: drop-shadow(0 2px 4px rgba($color-black, 0.2));
+$drop-shadow-lg: drop-shadow(0 0 2em #646cffaa);
+$drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
+
+// ================================
+// TEMA OSCURO (DEFAULT)
+// ================================
+
+// Variables CSS personalizadas para el tema
+:root {
+	// ============ BACKGROUND COLORS ============
+	--bg-primary: #{$primary-dark};
+	--bg-secondary: #{$secondary-dark};
+	--bg-tertiary: #{$tertiary-dark};
+	--bg-surface: #{$surface-dark};
+	--bg-surface-alt: #{$surface-alt};
+	--bg-accent: #{$accent-dark};
+
+	// ============ TEXT COLORS ============
+	--text-primary: #{rgba($color-white, $alpha-87)};
+	--text-secondary: #{rgba($color-white, $alpha-75)};
+	--text-tertiary: #{rgba($color-white, $alpha-60)};
+	--text-muted: #{rgba($color-white, $alpha-50)};
+	--text-disabled: #{rgba($color-white, $alpha-40)};
+	--text-inverse: #{$color-black};
+
+	// ============ BORDER COLORS ============
+	--border-primary: #{$accent-dark};
+	--border-secondary: #{$gray-600};
+	--border-light: #{rgba($color-white, $alpha-10)};
+	--border-medium: #{rgba($color-white, $alpha-20)};
+	--border-strong: #{rgba($color-white, $alpha-40)};
+
+	// ============ STATE COLORS ============
+	--color-success: #{$green-600};
+	--color-success-light: #{$green-500};
+	--color-success-dark: #{$green-700};
+	--color-success-bg: #{rgba($green-600, $alpha-20)};
+	--color-success-border: #{rgba($green-600, $alpha-40)};
+
+	--color-error: #{$red-600};
+	--color-error-light: #{$red-500};
+	--color-error-dark: #{$red-700};
+	--color-error-bg: #{rgba($red-600, $alpha-20)};
+	--color-error-border: #{rgba($red-600, $alpha-40)};
+
+	--color-warning: #{$yellow-400};
+	--color-warning-light: #{$yellow-300};
+	--color-warning-dark: #{$yellow-500};
+	--color-warning-bg: #{rgba($yellow-400, $alpha-10)};
+	--color-warning-border: #{rgba($yellow-400, $alpha-30)};
+
+	--color-info: #{$blue-500};
+	--color-info-light: #{$blue-400};
+	--color-info-dark: #{$blue-600};
+	--color-info-bg: #{rgba($blue-500, $alpha-20)};
+	--color-info-border: #{rgba($blue-500, $alpha-40)};
+
+	// ============ INTERACTIVE COLORS ============
+	--color-primary: #{$blue-500};
+	--color-primary-hover: #{$blue-600};
+	--color-primary-active: #{$blue-700};
+	--color-primary-bg: #{rgba($blue-500, $alpha-20)};
+
+	--color-secondary: #{$gray-600};
+	--color-secondary-hover: #{$gray-500};
+	--color-secondary-active: #{$gray-700};
+
+	// ============ SPECIAL COLORS ============
+	--color-shiny: #{rgba(255, 215, 0, $alpha-20)}; // Dorado para shiny
+	--color-focus: #{$blue-500};
+	--color-focus-ring: #{rgba($blue-500, $alpha-20)};
+
+	// ============ GRADIENTS ============
+	--gradient-primary: linear-gradient(135deg, #{$slate-800} 0%, #{$slate-700} 100%);
+	--gradient-secondary: linear-gradient(135deg, #{$slate-700} 0%, #{$blue-gray-600} 100%);
+	--gradient-surface: linear-gradient(135deg, #{$gray-700} 0%, #{$gray-600} 100%);
+	--gradient-success: linear-gradient(135deg, #{$green-600} 0%, #{$green-500} 100%);
+	--gradient-info: linear-gradient(135deg, #{$blue-500} 0%, #{$blue-600} 100%);
+
+	// ============ OVERLAYS ============
+	--overlay-light: #{rgba($color-black, $alpha-60)};
+	--overlay-medium: #{rgba($color-black, $alpha-70)};
+	--overlay-heavy: #{rgba($color-black, $alpha-80)};
+	--overlay-backdrop: #{rgba($color-black, $alpha-75)};
+
+	// ============ POKEMON TYPE COLORS ============
+	--type-normal: #{$type-normal};
+	--type-fire: #{$type-fire};
+	--type-water: #{$type-water};
+	--type-electric: #{$type-electric};
+	--type-grass: #{$type-grass};
+	--type-ice: #{$type-ice};
+	--type-fighting: #{$type-fighting};
+	--type-poison: #{$type-poison};
+	--type-ground: #{$type-ground};
+	--type-flying: #{$type-flying};
+	--type-psychic: #{$type-psychic};
+	--type-bug: #{$type-bug};
+	--type-rock: #{$type-rock};
+	--type-ghost: #{$type-ghost};
+	--type-dragon: #{$type-dragon};
+	--type-dark-type: #{$type-dark}; // dark-type para evitar conflicto con --color-dark
+	--type-steel: #{$type-steel};
+	--type-fairy: #{$type-fairy};
+	--type-default: #{$type-default};
+
+	// ============ SHADOWS ============
+	--shadow-sm: #{$shadow-sm};
+	--shadow-md: #{$shadow-md};
+	--shadow-lg: #{$shadow-lg};
+	--shadow-xl: #{$shadow-xl};
+	--shadow-2xl: #{$shadow-2xl};
+	--shadow-3xl: #{$shadow-3xl};
+}
+
+// ================================
+// MIXINS ÚTILES
+// ================================
+
+// Mixin para crear variantes con alpha
+@mixin color-alpha($color, $alpha) {
+	color: rgba($color, $alpha);
+}
+
+@mixin bg-alpha($color, $alpha) {
+	background-color: rgba($color, $alpha);
+}
+
+@mixin border-alpha($color, $alpha) {
+	border-color: rgba($color, $alpha);
+}
+
+// Mixin para estados hover/focus
+@mixin interactive-states($base-color, $hover-color: null, $focus-color: null) {
+	color: $base-color;
+
+	&:hover {
+		color: if($hover-color, $hover-color, lighten($base-color, 10%));
+	}
+
+	&:focus {
+		color: if($focus-color, $focus-color, $base-color);
+		outline: 2px solid var(--color-focus-ring);
+	}
+}
+
+// Mixin para gradientes
+@mixin gradient-bg($color1, $color2, $direction: 135deg) {
+	background: linear-gradient($direction, $color1 0%, $color2 100%);
+}
+
+// Mixin para sombras consistentes
+@mixin card-shadow($level: 'md') {
+	@if $level == 'sm' {
+		box-shadow: var(--shadow-sm);
+	} @else if $level == 'md' {
+		box-shadow: var(--shadow-md);
+	} @else if $level == 'lg' {
+		box-shadow: var(--shadow-lg);
+	} @else if $level == 'xl' {
+		box-shadow: var(--shadow-xl);
+	} @else if $level == '2xl' {
+		box-shadow: var(--shadow-2xl);
+	} @else if $level == '3xl' {
+		box-shadow: var(--shadow-3xl);
+	}
+}

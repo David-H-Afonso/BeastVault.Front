@@ -1,10 +1,13 @@
+// Importar el sistema de temas
+@import './styles/themes';
+
 #root {
 	min-width: 100%;
 	width: 100%;
 	margin: 0;
 	padding: 0;
 	font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-	background-color: #242424;
+	background-color: var(--bg-primary);
 	min-height: 100vh;
 }
 
@@ -12,7 +15,7 @@ body {
 	margin: 0;
 	padding: 0;
 	font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-	background-color: #242424;
+	background-color: var(--bg-primary);
 }
 
 .logo {
@@ -36,14 +39,14 @@ body {
 
 	h1 {
 		text-align: center;
-		color: rgba(255, 255, 255, 0.87);
+		color: var(--text-primary);
 		margin-bottom: 1.5rem;
 		font-size: 2rem;
 		font-weight: 700;
 	}
 
 	h2 {
-		color: rgba(255, 255, 255, 0.75);
+		color: var(--text-secondary);
 		margin-bottom: 1rem;
 		font-size: 1.25rem;
 		font-weight: 600;
@@ -52,24 +55,24 @@ body {
 
 .file-input {
 	padding: 0.5rem;
-	border: 2px dashed #4a5568;
+	border: 2px dashed var(--border-secondary);
 	border-radius: 8px;
-	background: #2d3748;
+	background: var(--bg-tertiary);
 	cursor: pointer;
-	color: rgba(255, 255, 255, 0.87);
+	color: var(--text-primary);
 
 	&:hover {
-		border-color: #3b82f6;
-		background: #374151;
+		border-color: var(--color-primary);
+		background: var(--bg-surface);
 	}
 }
 
 .error {
-	color: #fca5a5;
-	background: #7f1d1d;
+	color: var(--color-error-light);
+	background: var(--color-error-dark);
 	padding: 0.75rem;
 	border-radius: 8px;
-	border: 1px solid #b91c1c;
+	border: 1px solid var(--color-error);
 	margin-bottom: 1rem;
 }
 
@@ -78,7 +81,6 @@ body {
 	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 	gap: 0.5rem;
 	margin-top: 1.5rem;
-	max-width: 1400px;
 	margin-left: auto;
 	margin-right: auto;
 
@@ -100,18 +102,18 @@ body {
 
 .pokemon-card {
 	position: relative;
-	background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-	border: 1px solid #6b7280;
+	background: var(--gradient-surface);
+	border: 1px solid var(--border-secondary);
 	border-radius: 10px;
 	padding: 0.75rem;
 	transition: all 0.3s ease;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	@include card-shadow('md');
 
 	&:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-		border-color: #3b82f6;
-		background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+		@include card-shadow('2xl');
+		border-color: var(--color-primary);
+		background: var(--gradient-secondary);
 	}
 }
 
@@ -119,7 +121,7 @@ body {
 	position: absolute;
 	top: 6px;
 	right: 6px;
-	background: #dc2626;
+	background: var(--color-error);
 	color: white;
 	border: none;
 	border-radius: 50%;
@@ -132,7 +134,7 @@ body {
 	transition: all 0.2s ease;
 
 	&:hover:not(:disabled) {
-		background: #b91c1c;
+		background: var(--color-error-dark);
 		transform: scale(1.1);
 	}
 
@@ -164,7 +166,7 @@ body {
 .no-image {
 	font-size: 2rem;
 	opacity: 0.5;
-	color: #9ca3af;
+	color: var(--text-muted);
 }
 
 .pokemon-info {
@@ -174,7 +176,7 @@ body {
 .pokemon-name {
 	font-size: 0.95rem;
 	font-weight: 600;
-	color: rgba(255, 255, 255, 0.87);
+	color: var(--text-primary);
 	margin: 0 0 0.25rem 0;
 	display: flex;
 	align-items: center;
@@ -185,12 +187,12 @@ body {
 }
 
 .shiny-star {
-	color: #fbbf24;
+	color: var(--color-warning);
 	font-size: 1rem;
 }
 
 .pokemon-level {
-	color: rgba(255, 255, 255, 0.6);
+	color: var(--text-tertiary);
 	font-size: 0.75rem;
 	margin: 0;
 	font-weight: 500;
@@ -217,5 +219,85 @@ body {
 }
 
 .read-the-docs {
-	color: #888;
+	color: var(--text-muted);
+}
+
+/* Pokemon Groups Styling */
+.pokemon-groups {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	padding: 8px;
+}
+
+.group-title {
+	background: var(--gradient-primary);
+	color: var(--text-primary);
+	padding: 16px 20px;
+	font-size: 1.1rem;
+	font-weight: 600;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	transition: all 0.2s ease;
+	user-select: none;
+	@include card-shadow('xl');
+}
+
+.group-title.clickable {
+	cursor: pointer;
+}
+
+.group-title.clickable:hover {
+	background: var(--gradient-secondary);
+	color: var(--text-primary);
+}
+
+.group-title .collapse-icon {
+	font-size: 0.9rem;
+	transition: transform 0.2s ease;
+}
+
+.group-title.collapsed .collapse-icon {
+	transform: rotate(-90deg);
+}
+
+.toggle-icon {
+	font-size: 0.8rem;
+	transition: transform 0.2s ease;
+	margin-right: 8px;
+	color: var(--text-secondary);
+}
+
+.toggle-icon.expanded {
+	transform: rotate(90deg);
+}
+
+.pokemon-grid.collapsed {
+	display: none;
+}
+
+/* Specific styling for grids inside groups */
+.pokemon-group .pokemon-grid {
+	padding: 16px;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Empty state styling */
+.empty-group {
+	padding: 24px;
+	text-align: center;
+	color: var(--text-tertiary);
+	font-style: italic;
 }

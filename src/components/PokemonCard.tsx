@@ -1,4 +1,4 @@
-import type { PokemonListItemDto } from '../models/Pokemon'
+import type { PokemonListItemDto } from '../models/api/types'
 import { usePokeBallIcon } from '../hooks/useCachedAssets'
 import { usePokemonInfo } from '../hooks/usePokemonInfo'
 import { getTypeIconUrl } from '../utils'
@@ -6,6 +6,7 @@ import { getTypeNameFromId } from '../enums/PokemonTypes'
 import { getBallNameFromId } from '../enums/PokemonBalls'
 import { useCardBackgroundType } from '../hooks/useCardBackgroundType'
 import { CardBackgroundType } from '../enums/CardBackgroundTypes'
+import { getComputedTypeColor } from '../utils/typeColors'
 import './PokemonCard.scss'
 
 interface PokemonCardProps {
@@ -13,6 +14,7 @@ interface PokemonCardProps {
 	sprite?: string
 	onDelete: (id: number) => void
 	onDownload: (id: number) => void
+	onManageTags: (pokemon: PokemonListItemDto) => void
 	loading?: boolean
 }
 
@@ -26,6 +28,7 @@ export function PokemonCard({
 	sprite,
 	onDelete,
 	onDownload,
+	onManageTags,
 	loading = false,
 }: PokemonCardProps) {
 	// Note: ballName and teraTypeName need to be retrieved from PokeAPI using IDs
@@ -48,49 +51,7 @@ export function PokemonCard({
 	const finalType2 = pokemonInfo.type2
 	const finalFormName = pokemonInfo.formName
 	const type1Color = pokemonInfo.colors.type1 || '#68A090'
-	const type2Color = pokemonInfo.colors.type2 || '#68A090' // Helper function for getting type colors (for tera types that don't use PokeAPI)
-	const getTypeColor = (typeName: string): string => {
-		switch (typeName.toLowerCase()) {
-			case 'normal':
-				return '#A8A878'
-			case 'fire':
-				return '#F08030'
-			case 'water':
-				return '#6890F0'
-			case 'electric':
-				return '#F8D030'
-			case 'grass':
-				return '#78C850'
-			case 'ice':
-				return '#98D8D8'
-			case 'fighting':
-				return '#C03028'
-			case 'poison':
-				return '#A040A0'
-			case 'ground':
-				return '#E0C068'
-			case 'flying':
-				return '#A890F0'
-			case 'psychic':
-				return '#F85888'
-			case 'bug':
-				return '#A8B820'
-			case 'rock':
-				return '#B8A038'
-			case 'ghost':
-				return '#705898'
-			case 'dragon':
-				return '#7038F8'
-			case 'dark':
-				return '#705848'
-			case 'steel':
-				return '#B8B8D0'
-			case 'fairy':
-				return '#EE99AC'
-			default:
-				return '#68A090'
-		}
-	}
+	const type2Color = pokemonInfo.colors.type2 || '#68A090'
 
 	// Generate CSS class and style for dual type borders
 	const getCardClassName = () => {
@@ -126,6 +87,15 @@ export function PokemonCard({
 			{/* Card Header */}
 			<div className='cardHeader'>
 				<div className='cardActions'>
+					<button
+						className='actionBtn tagsBtn'
+						onClick={() => onManageTags(pokemon)}
+						title='Manage tags'
+						disabled={loading}>
+						<svg width='14' height='14' viewBox='0 0 24 24' fill='currentColor'>
+							<path d='M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 2 2 2h11c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z' />
+						</svg>
+					</button>
 					<button
 						className='actionBtn downloadBtn'
 						onClick={() => onDownload(pokemon.id)}
@@ -232,50 +202,78 @@ export function PokemonCard({
 				<div className='typesContainer'>
 					<div className='pokemon-types'>
 						{finalType1 && (
-							<span className='typeBadge' style={{ backgroundColor: type1Color }}>
+							<>
 								<img
 									src={getTypeIconUrl(finalType1)}
 									alt={finalType1}
 									className='typeIcon'
+									style={{ maxWidth: '60px', maxHeight: '60px' }}
 									onError={(e) => {
 										// Hide image on error and just show text
 										e.currentTarget.style.display = 'none'
+										;(e.currentTarget.nextElementSibling as HTMLElement)!.style.display =
+											'inline-block'
 									}}
 								/>
-								<span className='typeText'>{finalType1}</span>
-							</span>
+								<span
+									className='typeBadge'
+									style={{
+										backgroundColor: type1Color,
+										display: 'none', // Initially hidden, shown only if image fails
+									}}>
+									<span className='typeText'>{finalType1}</span>
+								</span>
+							</>
 						)}
 						{finalType2 && (
-							<span className='typeBadge' style={{ backgroundColor: type2Color }}>
+							<>
 								<img
 									src={getTypeIconUrl(finalType2)}
 									alt={finalType2}
 									className='typeIcon'
+									style={{ maxWidth: '60px', maxHeight: '60px' }}
 									onError={(e) => {
 										// Hide image on error and just show text
 										e.currentTarget.style.display = 'none'
+										;(e.currentTarget.nextElementSibling as HTMLElement)!.style.display =
+											'inline-block'
 									}}
 								/>
-								<span className='typeText'>{finalType2}</span>
-							</span>
+								<span
+									className='typeBadge'
+									style={{
+										backgroundColor: type2Color,
+										display: 'none', // Initially hidden, shown only if image fails
+									}}>
+									<span className='typeText'>{finalType2}</span>
+								</span>
+							</>
 						)}
 					</div>
 					<div className='pokemon-teratypes'>
 						{pokemon.teraType !== undefined && pokemon.teraType !== null && (
-							<span
-								className='teraTypeBadge'
-								style={{ backgroundColor: getTypeColor(getTypeNameFromId(pokemon.teraType)) }}>
+							<>
 								<img
 									src={getTypeIconUrl(getTypeNameFromId(pokemon.teraType))}
 									alt={getTypeNameFromId(pokemon.teraType)}
 									className='typeIcon'
+									style={{ maxWidth: '60px', maxHeight: '60px' }}
 									onError={(e) => {
 										// Hide image on error and just show text
 										e.currentTarget.style.display = 'none'
+										;(e.currentTarget.nextElementSibling as HTMLElement)!.style.display =
+											'inline-block'
 									}}
 								/>
-								<span className='typeText'>{getTypeNameFromId(pokemon.teraType)}</span>
-							</span>
+								<span
+									className='typeBadge'
+									style={{
+										backgroundColor: getComputedTypeColor(getTypeNameFromId(pokemon.teraType)),
+										display: 'none', // Initially hidden, shown only if image fails
+									}}>
+									<span className='typeText'>{getTypeNameFromId(pokemon.teraType)}</span>
+								</span>
+							</>
 						)}
 					</div>
 				</div>

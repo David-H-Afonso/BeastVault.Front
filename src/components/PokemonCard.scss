@@ -1,3 +1,6 @@
+// Importar el sistema de temas
+@import '../styles/themes';
+
 .generationBadges {
 	flex-direction: row;
 	margin-top: -5px;
@@ -5,8 +8,8 @@
 }
 
 .generationBadge {
-	background: rgba(0, 0, 0, 0.8);
-	color: #fff;
+	background: var(--overlay-heavy);
+	color: var(--text-inverse);
 	padding: 2px 8px;
 	border-radius: 8px;
 	font-size: 10px;
@@ -16,15 +19,15 @@
 	align-items: center;
 	gap: 3px;
 	width: fit-content;
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 1px 3px var(--shadow-soft);
 }
 
 .originBadge {
-	background: rgba(34, 197, 94, 0.9);
+	background: var(--color-success-bg);
 }
 
 .captureBadge {
-	background: rgba(59, 130, 246, 0.9);
+	background: var(--color-info-bg);
 }
 
 .badgeBallIcon {
@@ -41,15 +44,15 @@
 	font-size: 10px;
 	font-weight: 700;
 }
-/* Base card styling */
 
+/* Base card styling */
 .pokemonCardModern {
-	background: #2d3440;
+	background: var(--bg-secondary);
 	backdrop-filter: blur(8px);
 	border-radius: 18px;
 	padding: 5px;
 	position: relative;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	@include card-shadow('md');
 	transition: all 0.3s ease;
 	color: white;
 	font-family: 'Segoe UI', sans-serif;
@@ -59,7 +62,6 @@
 	min-width: 0;
 	min-height: 0;
 	flex: 1 1 0;
-	border: 3px solid transparent;
 }
 
 .pokemonCardModern::before {
@@ -72,7 +74,7 @@
 	z-index: 0;
 	border-radius: 18px;
 	pointer-events: none;
-	background: var(--card-border-gradient, var(--card-border-color, #444));
+	background: var(--card-border-gradient, var(--border-primary));
 }
 
 .pokemonCardModern > * {
@@ -85,7 +87,7 @@
 
 .pokemonCardModern:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+	@include card-shadow('xl');
 }
 
 /* Grid container for cards (to be used in parent, e.g. .pokemon-grid) */
@@ -97,58 +99,58 @@
 	/* Ensures all cards in a row have the same height */
 }
 .pokemonCardModern.typeNormal {
-	--card-border-gradient: #a8a878;
+	--card-border-gradient: var(--type-normal);
 }
 .pokemonCardModern.typeFire {
-	--card-border-gradient: #f08030;
+	--card-border-gradient: var(--type-fire);
 }
 .pokemonCardModern.typeWater {
-	--card-border-gradient: #6890f0;
+	--card-border-gradient: var(--type-water);
 }
 .pokemonCardModern.typeElectric {
-	--card-border-gradient: #f8d030;
+	--card-border-gradient: var(--type-electric);
 }
 .pokemonCardModern.typeGrass {
-	--card-border-gradient: #78c850;
+	--card-border-gradient: var(--type-grass);
 }
 .pokemonCardModern.typeIce {
-	--card-border-gradient: #98d8d8;
+	--card-border-gradient: var(--type-ice);
 }
 .pokemonCardModern.typeFighting {
-	--card-border-gradient: #c03028;
+	--card-border-gradient: var(--type-fighting);
 }
 .pokemonCardModern.typePoison {
-	--card-border-gradient: #a040a0;
+	--card-border-gradient: var(--type-poison);
 }
 .pokemonCardModern.typeGround {
-	--card-border-gradient: #e0c068;
+	--card-border-gradient: var(--type-ground);
 }
 .pokemonCardModern.typeFlying {
-	--card-border-gradient: #a890f0;
+	--card-border-gradient: var(--type-flying);
 }
 .pokemonCardModern.typePsychic {
-	--card-border-gradient: #f85888;
+	--card-border-gradient: var(--type-psychic);
 }
 .pokemonCardModern.typeBug {
-	--card-border-gradient: #a8b820;
+	--card-border-gradient: var(--type-bug);
 }
 .pokemonCardModern.typeRock {
-	--card-border-gradient: #b8a038;
+	--card-border-gradient: var(--type-rock);
 }
 .pokemonCardModern.typeGhost {
-	--card-border-gradient: #705898;
+	--card-border-gradient: var(--type-ghost);
 }
 .pokemonCardModern.typeDragon {
-	--card-border-gradient: #7038f8;
+	--card-border-gradient: var(--type-dragon);
 }
 .pokemonCardModern.typeDark {
-	--card-border-gradient: #705848;
+	--card-border-gradient: var(--type-dark-type);
 }
 .pokemonCardModern.typeSteel {
-	--card-border-gradient: #b8b8d0;
+	--card-border-gradient: var(--type-steel);
 }
 .pokemonCardModern.typeFairy {
-	--card-border-gradient: #ee99ac;
+	--card-border-gradient: var(--type-fairy);
 }
 
 /* Dual type borders - diagonal gradient */
@@ -183,16 +185,16 @@
 
 /* No type color - base color only */
 .pokemonCardModern.background-no-type-color::before {
-	background: #2d3440 !important;
+	background: var(--bg-secondary) !important;
 }
 
 .pokemonCardModern.background-no-type-color {
-	--card-border-gradient: #444 !important;
+	--card-border-gradient: var(--border-primary) !important;
 }
 
 /* Circle gradient around sprite */
 .pokemonCardModern.background-circle-gradient::before {
-	background: #2d3440;
+	background: var(--bg-secondary);
 }
 
 .pokemonCardModern.background-circle-gradient .pokemonImageContainer::before {
@@ -221,7 +223,7 @@
 
 /* Circle gradient 90° */
 .pokemonCardModern.background-circle-gradient-90::before {
-	background: #2d3440;
+	background: var(--bg-secondary);
 }
 
 .pokemonCardModern.background-circle-gradient-90 .pokemonImageContainer::before {
@@ -250,7 +252,7 @@
 
 /* Bottom split - only bottom 25% of card */
 .pokemonCardModern.background-bottom-split::before {
-	background: #2d3440;
+	background: var(--bg-secondary);
 }
 
 .pokemonCardModern.background-bottom-split::after {
@@ -303,7 +305,7 @@
 }
 
 .actionBtn {
-	background: rgba(255, 255, 255, 0.1);
+	background: var(--overlay-light);
 	border: none;
 	border-radius: 10px;
 	width: 32px;
@@ -317,18 +319,23 @@
 }
 
 .actionBtn:hover {
-	background: rgba(255, 255, 255, 0.2);
+	background: var(--overlay-medium);
 	transform: scale(1.05);
 }
 
 .downloadBtn:hover {
-	background: rgba(37, 99, 235, 0.2) !important;
-	color: #2563eb;
+	background: var(--color-blue-alpha-20) !important;
+	color: var(--color-blue);
 }
 
 .deleteBtn:hover {
-	background: rgba(239, 68, 68, 0.2) !important;
-	color: #dc2626;
+	background: var(--color-red-alpha-20) !important;
+	color: var(--color-red);
+}
+
+.tagsBtn:hover {
+	background: var(--color-purple-alpha-20) !important;
+	color: var(--color-purple);
 }
 
 .generationBadges {
@@ -342,24 +349,24 @@
 	display: flex;
 	align-items: center;
 	gap: 3px;
-	background: rgba(0, 0, 0, 0.75);
+	background: var(--overlay-heavy);
 	color: white;
 	padding: 3px 6px;
 	border-radius: 8px;
 	font-size: 10px;
 	font-weight: 600;
 	backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid var(--border-overlay-light);
 }
 
 .originBadge {
-	background: rgba(59, 130, 246, 0.8); // Blue for origin
-	border-color: rgba(59, 130, 246, 0.3);
+	background: var(--color-blue-alpha-80);
+	border-color: var(--color-blue-alpha-30);
 }
 
 .captureBadge {
-	background: rgba(16, 185, 129, 0.8); // Green for capture
-	border-color: rgba(16, 185, 129, 0.3);
+	background: var(--color-green-alpha-80);
+	border-color: var(--color-green-alpha-30);
 }
 
 .badgeLabel {
@@ -380,7 +387,7 @@
 }
 
 .pokedexBadge {
-	background: rgba(0, 0, 0, 0.8);
+	background: var(--overlay-heavy);
 	color: white;
 	padding: 4px 8px;
 	border-radius: 12px;
@@ -402,13 +409,13 @@
 .pokemonSprite {
 	max-width: max-content;
 	max-height: 80px;
-	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+	filter: drop-shadow(0 2px 4px var(--shadow-soft));
 }
 
 .noImage {
 	width: 80px;
 	height: 80px;
-	background: rgba(255, 255, 255, 0.1);
+	background: var(--overlay-light);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -421,7 +428,7 @@
 	top: 4px;
 	right: 4px;
 	font-size: 14px;
-	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+	filter: drop-shadow(0 1px 2px var(--shadow-medium));
 }
 
 /* Pokemon info section */
@@ -455,11 +462,13 @@
 }
 
 .ballIconInline {
-	width: 20px;
-	height: 20px;
+	width: 14px;
+	height: 14px;
 	object-fit: contain;
 	flex-shrink: 0;
-	margin-top: 4px;
+	scale: 1.8;
+	margin: 0.2rem;
+	margin-right: 5px;
 }
 
 .pokemonName {
@@ -481,7 +490,7 @@
 }
 
 .levelBadge {
-	background: rgba(0, 0, 0, 0.6);
+	background: var(--overlay-medium);
 	color: white;
 	padding: 3px 6px;
 	border-radius: 8px;
@@ -521,8 +530,8 @@
 	color: white;
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-	border: 2px solid rgba(255, 255, 255, 0.4);
+	@include card-shadow('sm');
+	border: 2px solid var(--border-overlay-medium);
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -546,7 +555,7 @@
 	top: -2px;
 	right: -2px;
 	font-size: 8px;
-	color: rgba(255, 255, 255, 0.8);
+	color: var(--text-overlay-light);
 }
 
 .typeBadge {
@@ -557,7 +566,7 @@
 	color: white;
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	@include card-shadow('sm');
 	display: flex;
 	align-items: center;
 	gap: 4px;
@@ -590,7 +599,7 @@
 }
 
 .infoItem.eggItem {
-	color: #f59e0b;
+	color: var(--color-yellow);
 	font-weight: 600;
 }
 
@@ -615,4 +624,28 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	flex: 1;
+}
+
+/* Tags Styling */
+.tagsContainer {
+	margin-top: 8px;
+}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.tagBadge {
+	background: var(--color-purple-alpha-80);
+	color: white;
+	padding: 2px 6px;
+	border-radius: 8px;
+	font-size: 9px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.2px;
+	border: 1px solid var(--color-purple-alpha-30);
+	@include card-shadow('xs');
 }

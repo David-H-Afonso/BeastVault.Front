@@ -7,12 +7,17 @@ import {
 	downloadPkmFileFromDisk,
 	scanPokemonDirectory,
 } from './services/Pokemon'
-import type { PokemonListItemDto, PokemonListFilterDto } from './models/Pokemon'
+import type { PokemonListFilterDto } from './models/Pokemon'
+import type { PokemonListItemDto, TagDto } from './models/api/types'
 import { getPokeApiPokemon } from './services/Pokeapi'
 import { ConfirmDialog } from './ConfirmDialog'
-import { PokemonFilters, PokemonCard } from './components'
+import { PokemonFilters, PokemonCard, PokemonListRow } from './components'
+import { PokemonTagManager } from './components/PokemonTagManager'
+import { useViewMode } from './hooks/useViewMode'
 import './App.scss'
+import './components/PokemonListRow.scss'
 import { CardBackgroundSelector } from './components/CardBackgroundSelector'
+import { ReduxThemeSelector } from './components/ReduxThemeSelector'
 import banner from './assets/BeastVault-banner.svg'
 
 // Helper to get the best available sprite in priority order
@@ -38,6 +43,27 @@ function getBestSprite(sprites: any, isShiny: boolean = false) {
 	return null
 }
 
+// Helper to group Pokemon by tags
+function groupPokemonByTags(pokemon: PokemonListItemDto[]) {
+	const grouped: { [key: string]: PokemonListItemDto[] } = {}
+	const untagged: PokemonListItemDto[] = []
+
+	pokemon.forEach((p) => {
+		if (!p.tags || p.tags.length === 0) {
+			untagged.push(p)
+		} else {
+			p.tags.forEach((tag) => {
+				if (!grouped[tag.name]) {
+					grouped[tag.name] = []
+				}
+				grouped[tag.name].push(p)
+			})
+		}
+	})
+
+	return { grouped, untagged }
+}
+
 function App() {
 	const [pokemon, setPokemon] = useState<PokemonListItemDto[]>([])
 	const [pokeSprites, setPokeSprites] = useState<Record<number, any>>({})
@@ -52,6 +78,16 @@ function App() {
 	const [scanning, setScanning] = useState(false)
 	const [scanResult, setScanResult] = useState<string | null>(null)
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+	// View mode state from Redux
+	const { viewMode, setViewMode } = useViewMode()
+
+	// Tag management state
+	const [tagManagerOpen, setTagManagerOpen] = useState(false)
+	const [selectedPokemonForTags, setSelectedPokemonForTags] = useState<PokemonListItemDto | null>(
+		null
+	)
+	const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
 
 	// Current filters state
 	const [currentFilters, setCurrentFilters] = useState<PokemonListFilterDto>({
@@ -255,6 +291,35 @@ function App() {
 		setPendingDeleteId(null)
 	}
 
+	// Tag management functions
+	const handleManageTags = (pokemon: PokemonListItemDto) => {
+		setSelectedPokemonForTags(pokemon)
+		setTagManagerOpen(true)
+	}
+
+	const handleTagsUpdated = (pokemonId: number, newTags: TagDto[]) => {
+		// Update the pokemon in the list with new tags
+		setPokemon((prev) => prev.map((p) => (p.id === pokemonId ? { ...p, tags: newTags } : p)))
+	}
+
+	const handleTagManagerClose = () => {
+		setTagManagerOpen(false)
+		setSelectedPokemonForTags(null)
+	}
+
+	// Function to toggle collapsed sections for tags view
+	const toggleSectionCollapse = (sectionKey: string) => {
+		setCollapsedSections((prev) => {
+			const newSet = new Set(prev)
+			if (newSet.has(sectionKey)) {
+				newSet.delete(sectionKey)
+			} else {
+				newSet.add(sectionKey)
+			}
+			return newSet
+		})
+	}
+
 	return (
 		<div className='app-container'>
 			<header
@@ -305,28 +370,34 @@ function App() {
 						alignItems: 'center',
 						marginBottom: '1rem',
 						alignSelf: 'flex-start',
+						width: '100%',
+						justifyContent: 'space-between',
+						flexWrap: 'wrap',
 					}}>
-					<input
-						type='file'
-						accept='.pk9'
-						onChange={handleFileChange}
-						ref={fileInputRef}
-						className='file-input'
-					/>
-					<button
-						onClick={handleScanDirectory}
-						disabled={loading || scanning}
-						style={{
-							padding: '0.5rem 1rem',
-							background: '#059669',
-							color: 'white',
-							border: 'none',
-							borderRadius: '4px',
-							cursor: scanning ? 'not-allowed' : 'pointer',
-							opacity: scanning ? 0.6 : 1,
-						}}>
-						{scanning ? 'Scanning...' : 'Scan Directory'}
-					</button>
+					<div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+						<input
+							type='file'
+							accept='.pk9'
+							onChange={handleFileChange}
+							ref={fileInputRef}
+							className='file-input'
+						/>
+						<button
+							onClick={handleScanDirectory}
+							disabled={loading || scanning}
+							style={{
+								padding: '0.5rem 1rem',
+								background: '#059669',
+								color: 'white',
+								border: 'none',
+								borderRadius: '4px',
+								cursor: scanning ? 'not-allowed' : 'pointer',
+								opacity: scanning ? 0.6 : 1,
+							}}>
+							{scanning ? 'Scanning...' : 'Scan Directory'}
+						</button>
+					</div>
+					<ReduxThemeSelector />
 				</div>
 			</header>
 
@@ -355,28 +426,181 @@ function App() {
 						fontSize: '0.9rem',
 					}}>
 					Showing {pokemon.length} of {totalPokemon} Pokémon
-					{currentFilters.Skip && currentFilters.Skip > 0 && (
+					{/* {currentFilters.Skip && currentFilters.Skip > 0 && (
 						<span> (starting from #{currentFilters.Skip + 1})</span>
-					)}
+					)} */}
+				</div>
+
+				{/* View Mode Toggle */}
+				<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+					<button
+						onClick={() => setViewMode('tags')}
+						style={{
+							background: viewMode === 'tags' ? '#3b82f6' : '#6b7280',
+							color: 'white',
+							border: 'none',
+							borderRadius: '6px',
+							padding: '6px 12px',
+							fontSize: '0.8rem',
+							cursor: 'pointer',
+							transition: 'all 0.2s',
+						}}>
+						🏷️ Group by Tags
+					</button>
+					<button
+						onClick={() => setViewMode('grid')}
+						style={{
+							background: viewMode === 'grid' ? '#3b82f6' : '#6b7280',
+							color: 'white',
+							border: 'none',
+							borderRadius: '6px',
+							padding: '6px 12px',
+							fontSize: '0.8rem',
+							cursor: 'pointer',
+							transition: 'all 0.2s',
+						}}>
+						📋 Grid View
+					</button>
+					<button
+						onClick={() => setViewMode('list')}
+						style={{
+							background: viewMode === 'list' ? '#3b82f6' : '#6b7280',
+							color: 'white',
+							border: 'none',
+							borderRadius: '6px',
+							padding: '6px 12px',
+							fontSize: '0.8rem',
+							cursor: 'pointer',
+							transition: 'all 0.2s',
+						}}>
+						📝 List View
+					</button>
 				</div>
 			</div>
-			<div className='pokemon-grid'>
-				{pokemon.length === 0 && !loading && <p>No Pokémon found.</p>}
-				{pokemon.map((p) => {
-					const sprites = pokeSprites[p.id] || {}
-					const bestSprite = getBestSprite(sprites, p.isShiny)
-					return (
-						<PokemonCard
-							key={p.id}
-							pokemon={p}
-							sprite={bestSprite}
-							onDelete={handleDelete}
-							onDownload={handleDownload}
-							loading={loading}
-						/>
-					)
-				})}
-			</div>
+
+			{/* Pokemon Content */}
+			{viewMode === 'tags' ? (
+				// Tagged View - Grouped by tags
+				<div className='pokemon-groups'>
+					{(() => {
+						const { grouped, untagged } = groupPokemonByTags(pokemon)
+						return (
+							<>
+								{/* Tagged Pokemon Groups */}
+								{Object.entries(grouped).map(([tagName, taggedPokemon]) => {
+									const sectionKey = `tag-${tagName}`
+									const isCollapsed = collapsedSections.has(sectionKey)
+									return (
+										<div key={tagName} className='pokemon-group'>
+											<h3
+												className='group-title clickable'
+												onClick={() => toggleSectionCollapse(sectionKey)}>
+												<span className={`toggle-icon ${isCollapsed ? '' : 'expanded'}`}>▶</span>
+												🏷️ {tagName} ({taggedPokemon.length})
+											</h3>
+											{!isCollapsed && (
+												<div className='pokemon-grid'>
+													{taggedPokemon.map((p) => {
+														const sprites = pokeSprites[p.id] || {}
+														const bestSprite = getBestSprite(sprites, p.isShiny)
+														return (
+															<PokemonCard
+																key={p.id}
+																pokemon={p}
+																sprite={bestSprite}
+																onDelete={handleDelete}
+																onDownload={handleDownload}
+																onManageTags={handleManageTags}
+																loading={loading}
+															/>
+														)
+													})}
+												</div>
+											)}
+										</div>
+									)
+								})}
+
+								{/* Untagged Pokemon */}
+								{untagged.length > 0 && (
+									<div className='pokemon-group'>
+										<h3
+											className='group-title clickable'
+											onClick={() => toggleSectionCollapse('untagged')}>
+											<span
+												className={`toggle-icon ${
+													collapsedSections.has('untagged') ? '' : 'expanded'
+												}`}>
+												▶
+											</span>
+											📂 OTHERS (No Tags) ({untagged.length})
+										</h3>
+										{!collapsedSections.has('untagged') && (
+											<div className='pokemon-grid'>
+												{untagged.map((p) => {
+													const sprites = pokeSprites[p.id] || {}
+													const bestSprite = getBestSprite(sprites, p.isShiny)
+													return (
+														<PokemonCard
+															key={p.id}
+															pokemon={p}
+															sprite={bestSprite}
+															onDelete={handleDelete}
+															onDownload={handleDownload}
+															onManageTags={handleManageTags}
+															loading={loading}
+														/>
+													)
+												})}
+											</div>
+										)}
+									</div>
+								)}
+							</>
+						)
+					})()}
+				</div>
+			) : viewMode === 'grid' ? (
+				// Grid View - Original card layout
+				<div className='pokemon-grid'>
+					{pokemon.length === 0 && !loading && <p>No Pokémon found.</p>}
+					{pokemon.map((p) => {
+						const sprites = pokeSprites[p.id] || {}
+						const bestSprite = getBestSprite(sprites, p.isShiny)
+						return (
+							<PokemonCard
+								key={p.id}
+								pokemon={p}
+								sprite={bestSprite}
+								onDelete={handleDelete}
+								onDownload={handleDownload}
+								onManageTags={handleManageTags}
+								loading={loading}
+							/>
+						)
+					})}
+				</div>
+			) : (
+				// List View - Minimal two-column layout
+				<div className='pokemon-list-container'>
+					{pokemon.length === 0 && !loading && <p>No Pokémon found.</p>}
+					{pokemon.map((p) => {
+						const sprites = pokeSprites[p.id] || {}
+						const bestSprite = getBestSprite(sprites, p.isShiny)
+						return (
+							<PokemonListRow
+								key={p.id}
+								pokemon={p}
+								sprite={bestSprite}
+								onDelete={handleDelete}
+								onDownload={handleDownload}
+								onManageTags={handleManageTags}
+								loading={loading}
+							/>
+						)
+					})}
+				</div>
+			)}
 			<ConfirmDialog
 				open={confirmOpen}
 				title='Delete Pokémon'
@@ -428,6 +652,16 @@ function App() {
 				onCancel={handleCancelDownload}
 				hideConfirm
 			/>
+
+			{/* Tag Manager Modal */}
+			{tagManagerOpen && selectedPokemonForTags && (
+				<PokemonTagManager
+					pokemon={selectedPokemonForTags}
+					isOpen={tagManagerOpen}
+					onClose={handleTagManagerClose}
+					onTagsUpdated={handleTagsUpdated}
+				/>
+			)}
 		</div>
 	)
 }

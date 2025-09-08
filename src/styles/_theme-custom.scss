@@ -1,0 +1,189 @@
+/**
+ * Beast Vault - Sistema de Temas Personalizados
+ * =============================================
+ * 
+ * Temas adicionales y variantes especiales
+ */
+
+@import 'variables';
+
+// ================================
+// TEMA POKEMON (Inspirado en los juegos)
+// ================================
+
+[data-theme='pokemon'] {
+	// Colores base inspirados en los juegos de Pokemon
+	--bg-primary: #1a1a2e;
+	--bg-secondary: #16213e; 
+	--bg-tertiary: #0f3460;
+	--bg-surface: #16213e;
+	--bg-surface-alt: #1a1a2e;
+	--bg-accent: #533483;
+	
+	--text-primary: #{rgba($color-white, $alpha-95)};
+	--text-secondary: #{rgba($color-white, $alpha-80)};
+	--text-tertiary: #{rgba($color-white, $alpha-70)};
+	
+	--border-primary: #533483;
+	--border-secondary: #0f3460;
+	
+	--color-primary: #ffcb05; // Amarillo Pokemon
+	--color-primary-hover: #e6b800;
+	--color-primary-active: #cc9900;
+	
+	--gradient-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+	--gradient-secondary: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+}
+
+// ================================
+// TEMA AGUA (Inspirado en tipo Water)
+// ================================
+
+[data-theme='water'] {
+	--bg-primary: #0c1445;
+	--bg-secondary: #1e3a5f; 
+	--bg-tertiary: #2d5aa0;
+	--bg-surface: #1e3a5f;
+	--bg-surface-alt: #0c1445;
+	--bg-accent: #3b82f6;
+	
+	--text-primary: #{rgba($color-white, $alpha-95)};
+	--text-secondary: #{rgba($color-white, $alpha-80)};
+	
+	--color-primary: #6890f0; // Color tipo Water
+	--color-primary-hover: #5a7ee6;
+	--color-primary-active: #4c6bdc;
+	
+	--gradient-primary: linear-gradient(135deg, #0c1445 0%, #1e3a5f 100%);
+	--gradient-secondary: linear-gradient(135deg, #1e3a5f 0%, #2d5aa0 100%);
+}
+
+// ================================
+// TEMA FUEGO (Inspirado en tipo Fire)
+// ================================
+
+[data-theme='fire'] {
+	--bg-primary: #2d0a00;
+	--bg-secondary: #4a1700; 
+	--bg-tertiary: #661f00;
+	--bg-surface: #4a1700;
+	--bg-surface-alt: #2d0a00;
+	--bg-accent: #cc4400;
+	
+	--text-primary: #{rgba($color-white, $alpha-95)};
+	--text-secondary: #{rgba($color-white, $alpha-80)};
+	
+	--color-primary: #f08030; // Color tipo Fire
+	--color-primary-hover: #e6732b;
+	--color-primary-active: #dc6626;
+	
+	--gradient-primary: linear-gradient(135deg, #2d0a00 0%, #4a1700 100%);
+	--gradient-secondary: linear-gradient(135deg, #4a1700 0%, #661f00 100%);
+}
+
+// ================================
+// TEMA HIERBA (Inspirado en tipo Grass)
+// ================================
+
+[data-theme='grass'] {
+	--bg-primary: #0d2818;
+	--bg-secondary: #1a4c32; 
+	--bg-tertiary: #267d39;
+	--bg-surface: #1a4c32;
+	--bg-surface-alt: #0d2818;
+	--bg-accent: #059669;
+	
+	--text-primary: #{rgba($color-white, $alpha-95)};
+	--text-secondary: #{rgba($color-white, $alpha-80)};
+	
+	--color-primary: #78c850; // Color tipo Grass
+	--color-primary-hover: #6bb846;
+	--color-primary-active: #5ea83c;
+	
+	--gradient-primary: linear-gradient(135deg, #0d2818 0%, #1a4c32 100%);
+	--gradient-secondary: linear-gradient(135deg, #1a4c32 0%, #267d39 100%);
+}
+
+// ================================
+// TEMA ELÉCTRICO (Inspirado en tipo Electric)
+// ================================
+
+[data-theme='electric'] {
+	--bg-primary: #1a1400;
+	--bg-secondary: #332800; 
+	--bg-tertiary: #4d3c00;
+	--bg-surface: #332800;
+	--bg-surface-alt: #1a1400;
+	--bg-accent: #b8860b;
+	
+	--text-primary: #{rgba($color-white, $alpha-95)};
+	--text-secondary: #{rgba($color-white, $alpha-80)};
+	
+	--color-primary: #f8d030; // Color tipo Electric
+	--color-primary-hover: #f4c52c;
+	--color-primary-active: #f0ba28;
+	
+	--gradient-primary: linear-gradient(135deg, #1a1400 0%, #332800 100%);
+	--gradient-secondary: linear-gradient(135deg, #332800 0%, #4d3c00 100%);
+}
+
+// ================================
+// TEMA PSÍQUICO (Inspirado en tipo Psychic)
+// ================================
+
+[data-theme='psychic'] {
+	--bg-primary: #2d0a2d;
+	--bg-secondary: #4a1749; 
+	--bg-tertiary: #662d66;
+	--bg-surface: #4a1749;
+	--bg-surface-alt: #2d0a2d;
+	--bg-accent: #9333ea;
+	
+	--text-primary: #{rgba($color-white, $alpha-95)};
+	--text-secondary: #{rgba($color-white, $alpha-80)};
+	
+	--color-primary: #f85888; // Color tipo Psychic
+	--color-primary-hover: #f54c7d;
+	--color-primary-active: #f24072;
+	
+	--gradient-primary: linear-gradient(135deg, #2d0a2d 0%, #4a1749 100%);
+	--gradient-secondary: linear-gradient(135deg, #4a1749 0%, #662d66 100%);
+}
+
+// ================================
+// UTILIDADES PARA CAMBIO DE TEMAS
+// ================================
+
+// Transiciones suaves al cambiar temas
+* {
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+// Clases helper para aplicar temas específicos
+.theme-light {
+	@extend [data-theme='light'];
+}
+
+.theme-pokemon {
+	@extend [data-theme='pokemon'];
+}
+
+.theme-water {
+	@extend [data-theme='water'];
+}
+
+.theme-fire {
+	@extend [data-theme='fire'];
+}
+
+.theme-grass {
+	@extend [data-theme='grass'];
+}
+
+.theme-electric {
+	@extend [data-theme='electric'];
+}
+
+.theme-psychic {
+	@extend [data-theme='psychic'];
+}
