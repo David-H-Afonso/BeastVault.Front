@@ -9,9 +9,7 @@ interface CacheDiagnosticsProps {
 /**
  * Development component to show cache statistics and controls
  */
-export const CacheDiagnostics: React.FC<CacheDiagnosticsProps> = ({ 
-	isVisible = false 
-}) => {
+export const CacheDiagnostics: React.FC<CacheDiagnosticsProps> = ({ isVisible = false }) => {
 	const cacheStats = useCacheStats()
 	const preloadStats = useStaticResourcePreloader()
 
@@ -37,13 +35,10 @@ export const CacheDiagnostics: React.FC<CacheDiagnosticsProps> = ({
 				fontSize: '12px',
 				fontFamily: 'monospace',
 				minWidth: '200px',
-				zIndex: 9999
-			}}
-		>
-			<h4 style={{ margin: '0 0 12px 0', fontSize: '14px' }}>
-				Cache Diagnostics
-			</h4>
-			
+				zIndex: 9999,
+			}}>
+			<h4 style={{ margin: '0 0 12px 0', fontSize: '14px' }}>Cache Diagnostics</h4>
+
 			<div style={{ marginBottom: '12px' }}>
 				<strong>Cache Stats:</strong>
 				<br />
@@ -71,9 +66,8 @@ export const CacheDiagnostics: React.FC<CacheDiagnosticsProps> = ({
 					padding: '6px 12px',
 					borderRadius: '4px',
 					fontSize: '11px',
-					cursor: 'pointer'
-				}}
-			>
+					cursor: 'pointer',
+				}}>
 				Clear Cache
 			</button>
 		</div>

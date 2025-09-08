@@ -1,7 +1,7 @@
 /**
  * Beast Vault - Type Colors Utility
  * ================================
- * 
+ *
  * Centraliza los colores de tipos Pokemon usando las variables CSS definidas
  * Esto asegura consistencia en toda la aplicación
  */
@@ -25,7 +25,7 @@ export const TYPE_COLORS = {
 	dark: 'var(--type-dark-type)',
 	steel: 'var(--type-steel)',
 	fairy: 'var(--type-fairy)',
-} as const;
+} as const
 
 /**
  * Obtiene el color de un tipo Pokemon usando las variables CSS
@@ -33,8 +33,8 @@ export const TYPE_COLORS = {
  * @returns Variable CSS del color del tipo
  */
 export function getTypeColor(typeName: string): string {
-	const typeKey = typeName.toLowerCase() as keyof typeof TYPE_COLORS;
-	return TYPE_COLORS[typeKey] || 'var(--type-default)';
+	const typeKey = typeName.toLowerCase() as keyof typeof TYPE_COLORS
+	return TYPE_COLORS[typeKey] || 'var(--type-default)'
 }
 
 /**
@@ -46,26 +46,26 @@ export function getTypeColor(typeName: string): string {
 export function getComputedTypeColor(typeName: string): string {
 	if (typeof window === 'undefined') {
 		// Fallback para SSR
-		return '#68a090';
+		return '#68a090'
 	}
 
-	const typeKey = typeName.toLowerCase() as keyof typeof TYPE_COLORS;
-	const cssVar = TYPE_COLORS[typeKey] || 'var(--type-default)';
-	
+	const typeKey = typeName.toLowerCase() as keyof typeof TYPE_COLORS
+	const cssVar = TYPE_COLORS[typeKey] || 'var(--type-default)'
+
 	// Crear un elemento temporal para obtener el valor computado
-	const tempElement = document.createElement('div');
-	tempElement.style.color = cssVar;
-	document.body.appendChild(tempElement);
-	
-	const computedColor = window.getComputedStyle(tempElement).color;
-	document.body.removeChild(tempElement);
-	
+	const tempElement = document.createElement('div')
+	tempElement.style.color = cssVar
+	document.body.appendChild(tempElement)
+
+	const computedColor = window.getComputedStyle(tempElement).color
+	document.body.removeChild(tempElement)
+
 	// Convertir rgb a hex si es necesario
 	if (computedColor.startsWith('rgb')) {
-		return rgbToHex(computedColor);
+		return rgbToHex(computedColor)
 	}
-	
-	return computedColor;
+
+	return computedColor
 }
 
 /**
@@ -74,19 +74,19 @@ export function getComputedTypeColor(typeName: string): string {
  * @returns Color en formato hexadecimal
  */
 function rgbToHex(rgb: string): string {
-	const result = rgb.match(/\d+/g);
+	const result = rgb.match(/\d+/g)
 	if (!result || result.length < 3) {
-		return '#68a090'; // Fallback
+		return '#68a090' // Fallback
 	}
-	
-	const r = parseInt(result[0]);
-	const g = parseInt(result[1]);
-	const b = parseInt(result[2]);
-	
-	return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+
+	const r = parseInt(result[0])
+	const g = parseInt(result[1])
+	const b = parseInt(result[2])
+
+	return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }
 
 /**
  * Lista de todos los tipos disponibles
  */
-export const POKEMON_TYPES = Object.keys(TYPE_COLORS) as (keyof typeof TYPE_COLORS)[];
+export const POKEMON_TYPES = Object.keys(TYPE_COLORS) as (keyof typeof TYPE_COLORS)[]

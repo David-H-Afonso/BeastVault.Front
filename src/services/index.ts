@@ -3,28 +3,24 @@ export { staticResourceCache } from './StaticResourceCache'
 export { cacheService, CacheKeys } from './CacheService'
 
 // Re-export optimized PokeAPI functions
-export { 
-	getPokeApiPokemon, 
-	getPokeBallIcon, 
-	getTeraTypeIcon, 
+export {
+	getPokeApiPokemon,
+	getPokeBallIcon,
+	getTeraTypeIcon,
 	getBestSpriteUrl,
-	POKEAPI_BASE_URL 
+	POKEAPI_BASE_URL,
 } from './Pokeapi'
 
 // Export cached resource hooks
-export { 
-	useCachedImage, 
-	useCachedApi, 
-	useImagePreloader 
-} from '../hooks/useCachedResources'
+export { useCachedImage, useCachedApi, useImagePreloader } from '../hooks/useCachedResources'
 
 // Export preloader hooks
-export { 
-	useStaticResourcePreloader, 
-	usePokemonResourcePreloader, 
+export {
+	useStaticResourcePreloader,
+	usePokemonResourcePreloader,
 	useCacheStats,
 	PreloadPriority,
-	type PreloadPriorityType
+	type PreloadPriorityType,
 } from '../hooks/useResourcePreloader'
 
 // Export cached components

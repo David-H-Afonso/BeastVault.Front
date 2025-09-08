@@ -7,7 +7,7 @@ import { cacheService } from './CacheService'
 class StaticResourceCache {
 	private readonly IMAGE_CACHE_PREFIX = 'image_'
 	private readonly API_CACHE_PREFIX = 'api_'
-	
+
 	// Cache durations (in milliseconds)
 	private readonly ONE_WEEK = 7 * 24 * 60 * 60 * 1000
 	private readonly ONE_MONTH = 30 * 24 * 60 * 60 * 1000
@@ -18,7 +18,7 @@ class StaticResourceCache {
 	 */
 	async cacheImage(url: string): Promise<string> {
 		const cacheKey = `${this.IMAGE_CACHE_PREFIX}${this.hashUrl(url)}`
-		
+
 		// Check if already cached
 		const cached = cacheService.get<string>(cacheKey)
 		if (cached) {
@@ -34,10 +34,10 @@ class StaticResourceCache {
 
 			const blob = await response.blob()
 			const base64 = await this.blobToBase64(blob)
-			
+
 			// Cache for 3 months (static images rarely change)
 			cacheService.set(cacheKey, base64, this.THREE_MONTHS)
-			
+
 			return base64
 		} catch (error) {
 			console.warn(`Failed to cache image ${url}:`, error)
@@ -88,8 +88,8 @@ class StaticResourceCache {
 			throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 		}
 
-		const data = await response.json() as T
-		
+		const data = (await response.json()) as T
+
 		// Cache based on URL type
 		let expiry = this.ONE_WEEK
 		if (this.isPokeApiUrl(url)) {
@@ -117,7 +117,7 @@ class StaticResourceCache {
 	 * Batch prefetch multiple images
 	 */
 	async prefetchImages(urls: string[]): Promise<void> {
-		const promises = urls.map(url => this.prefetchImage(url))
+		const promises = urls.map((url) => this.prefetchImage(url))
 		await Promise.allSettled(promises)
 	}
 
@@ -135,7 +135,7 @@ class StaticResourceCache {
 		const stats = cacheService.getStats()
 		return {
 			totalItems: stats.totalItems,
-			totalSize: `${(stats.totalSize / 1024).toFixed(2)} KB`
+			totalSize: `${(stats.totalSize / 1024).toFixed(2)} KB`,
 		}
 	}
 
@@ -146,7 +146,7 @@ class StaticResourceCache {
 		let hash = 0
 		for (let i = 0; i < url.length; i++) {
 			const char = url.charCodeAt(i)
-			hash = ((hash << 5) - hash) + char
+			hash = (hash << 5) - hash + char
 			hash = hash & hash // Convert to 32-bit integer
 		}
 		return Math.abs(hash).toString(36)

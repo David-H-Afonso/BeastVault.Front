@@ -24,7 +24,7 @@ const COMMON_STATIC_RESOURCES = [
 	'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/dark.png',
 	'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/steel.png',
 	'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/fairy.png',
-	
+
 	// Common Pokeball sprites
 	'https://raw.githubusercontent.com/msikma/pokesprite/master/items/ball/poke.png',
 	'https://raw.githubusercontent.com/msikma/pokesprite/master/items/ball/great.png',
@@ -38,13 +38,13 @@ const COMMON_STATIC_RESOURCES = [
  * Preload priority levels for different types of resources
  */
 export const PreloadPriority = {
-	CRITICAL: 0,  // Load immediately
-	HIGH: 1,      // Load after critical
-	MEDIUM: 2,    // Load when idle
-	LOW: 3        // Load in background
+	CRITICAL: 0, // Load immediately
+	HIGH: 1, // Load after critical
+	MEDIUM: 2, // Load when idle
+	LOW: 3, // Load in background
 } as const
 
-export type PreloadPriorityType = typeof PreloadPriority[keyof typeof PreloadPriority]
+export type PreloadPriorityType = (typeof PreloadPriority)[keyof typeof PreloadPriority]
 
 /**
  * Hook for preloading static resources with priority-based loading
@@ -54,7 +54,7 @@ export function useStaticResourcePreloader() {
 		total: 0,
 		loaded: 0,
 		failed: 0,
-		isComplete: false
+		isComplete: false,
 	})
 
 	useEffect(() => {
@@ -62,7 +62,7 @@ export function useStaticResourcePreloader() {
 
 		const preloadResources = async () => {
 			const totalResources = COMMON_STATIC_RESOURCES.length
-			setPreloadStats(prev => ({ ...prev, total: totalResources }))
+			setPreloadStats((prev) => ({ ...prev, total: totalResources }))
 
 			let loaded = 0
 			let failed = 0
@@ -84,7 +84,7 @@ export function useStaticResourcePreloader() {
 				})
 
 				const results = await Promise.allSettled(promises)
-				
+
 				results.forEach((result) => {
 					if (result.status === 'fulfilled') {
 						if (result.value.success) {
@@ -102,12 +102,12 @@ export function useStaticResourcePreloader() {
 						total: totalResources,
 						loaded,
 						failed,
-						isComplete: loaded + failed >= totalResources
+						isComplete: loaded + failed >= totalResources,
 					})
 				}
 
 				// Small delay between batches to not block UI
-				await new Promise(resolve => setTimeout(resolve, 100))
+				await new Promise((resolve) => setTimeout(resolve, 100))
 			}
 		}
 
@@ -132,7 +132,7 @@ export function usePokemonResourcePreloader(pokemonIds: number[]) {
 	const [preloadStats, setPreloadStats] = useState({
 		total: 0,
 		loaded: 0,
-		isComplete: false
+		isComplete: false,
 	})
 
 	useEffect(() => {
@@ -144,16 +144,22 @@ export function usePokemonResourcePreloader(pokemonIds: number[]) {
 			const spriteUrls: string[] = []
 
 			// Generate sprite URLs for the given Pokemon IDs
-			pokemonIds.forEach(id => {
+			pokemonIds.forEach((id) => {
 				// Official artwork sprites (most commonly used)
-				spriteUrls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`)
+				spriteUrls.push(
+					`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+				)
 				// Home sprites as backup
-				spriteUrls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`)
+				spriteUrls.push(
+					`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`
+				)
 				// Small sprites for list views
-				spriteUrls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`)
+				spriteUrls.push(
+					`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+				)
 			})
 
-			setPreloadStats(prev => ({ ...prev, total: spriteUrls.length }))
+			setPreloadStats((prev) => ({ ...prev, total: spriteUrls.length }))
 
 			let loaded = 0
 			const batchSize = 3
@@ -162,9 +168,7 @@ export function usePokemonResourcePreloader(pokemonIds: number[]) {
 				if (isCancelled) break
 
 				const batch = spriteUrls.slice(i, i + batchSize)
-				await Promise.allSettled(
-					batch.map(url => staticResourceCache.prefetchImage(url))
-				)
+				await Promise.allSettled(batch.map((url) => staticResourceCache.prefetchImage(url)))
 
 				loaded += batch.length
 
@@ -172,12 +176,12 @@ export function usePokemonResourcePreloader(pokemonIds: number[]) {
 					setPreloadStats({
 						total: spriteUrls.length,
 						loaded,
-						isComplete: loaded >= spriteUrls.length
+						isComplete: loaded >= spriteUrls.length,
 					})
 				}
 
 				// Small delay between batches
-				await new Promise(resolve => setTimeout(resolve, 50))
+				await new Promise((resolve) => setTimeout(resolve, 50))
 			}
 		}
 

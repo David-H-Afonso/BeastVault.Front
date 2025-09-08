@@ -34,7 +34,8 @@ export function useCachedImage(url: string | null): {
 		}
 
 		// Cache the image asynchronously
-		staticResourceCache.cacheImage(url)
+		staticResourceCache
+			.cacheImage(url)
 			.then((cachedUrl) => {
 				setImageUrl(cachedUrl)
 				setIsLoading(false)
@@ -88,11 +89,11 @@ export function useCachedApi<T>(
 		fetchData()
 	}, [fetchData])
 
-	return { 
-		data, 
-		isLoading, 
-		error, 
-		refetch: fetchData 
+	return {
+		data,
+		isLoading,
+		error,
+		refetch: fetchData,
 	}
 }
 
@@ -131,6 +132,6 @@ export function useImagePreloader(urls: string[]): {
 	return {
 		loadedCount,
 		totalCount,
-		isComplete: loadedCount === totalCount && totalCount > 0
+		isComplete: loadedCount === totalCount && totalCount > 0,
 	}
 }

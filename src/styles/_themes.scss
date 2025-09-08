@@ -18,97 +18,249 @@
 // ================================
 
 // Clases para usar variables CSS directamente
-.bg-primary { background-color: var(--bg-primary); }
-.bg-secondary { background-color: var(--bg-secondary); }
-.bg-tertiary { background-color: var(--bg-tertiary); }
-.bg-surface { background-color: var(--bg-surface); }
-.bg-surface-alt { background-color: var(--bg-surface-alt); }
-.bg-accent { background-color: var(--bg-accent); }
+.bg-primary {
+	background-color: var(--bg-primary);
+}
+.bg-secondary {
+	background-color: var(--bg-secondary);
+}
+.bg-tertiary {
+	background-color: var(--bg-tertiary);
+}
+.bg-surface {
+	background-color: var(--bg-surface);
+}
+.bg-surface-alt {
+	background-color: var(--bg-surface-alt);
+}
+.bg-accent {
+	background-color: var(--bg-accent);
+}
 
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-tertiary { color: var(--text-tertiary); }
-.text-muted { color: var(--text-muted); }
-.text-disabled { color: var(--text-disabled); }
-.text-inverse { color: var(--text-inverse); }
+.text-primary {
+	color: var(--text-primary);
+}
+.text-secondary {
+	color: var(--text-secondary);
+}
+.text-tertiary {
+	color: var(--text-tertiary);
+}
+.text-muted {
+	color: var(--text-muted);
+}
+.text-disabled {
+	color: var(--text-disabled);
+}
+.text-inverse {
+	color: var(--text-inverse);
+}
 
-.border-primary { border-color: var(--border-primary); }
-.border-secondary { border-color: var(--border-secondary); }
-.border-light { border-color: var(--border-light); }
-.border-medium { border-color: var(--border-medium); }
-.border-strong { border-color: var(--border-strong); }
+.border-primary {
+	border-color: var(--border-primary);
+}
+.border-secondary {
+	border-color: var(--border-secondary);
+}
+.border-light {
+	border-color: var(--border-light);
+}
+.border-medium {
+	border-color: var(--border-medium);
+}
+.border-strong {
+	border-color: var(--border-strong);
+}
 
 // Estados
-.text-success { color: var(--color-success); }
-.text-error { color: var(--color-error); }
-.text-warning { color: var(--color-warning); }
-.text-info { color: var(--color-info); }
+.text-success {
+	color: var(--color-success);
+}
+.text-error {
+	color: var(--color-error);
+}
+.text-warning {
+	color: var(--color-warning);
+}
+.text-info {
+	color: var(--color-info);
+}
 
-.bg-success { background-color: var(--color-success-bg); }
-.bg-error { background-color: var(--color-error-bg); }
-.bg-warning { background-color: var(--color-warning-bg); }
-.bg-info { background-color: var(--color-info-bg); }
+.bg-success {
+	background-color: var(--color-success-bg);
+}
+.bg-error {
+	background-color: var(--color-error-bg);
+}
+.bg-warning {
+	background-color: var(--color-warning-bg);
+}
+.bg-info {
+	background-color: var(--color-info-bg);
+}
 
 // Sombras
-.shadow-sm { box-shadow: var(--shadow-sm); }
-.shadow-md { box-shadow: var(--shadow-md); }
-.shadow-lg { box-shadow: var(--shadow-lg); }
-.shadow-xl { box-shadow: var(--shadow-xl); }
-.shadow-2xl { box-shadow: var(--shadow-2xl); }
-.shadow-3xl { box-shadow: var(--shadow-3xl); }
+.shadow-sm {
+	box-shadow: var(--shadow-sm);
+}
+.shadow-md {
+	box-shadow: var(--shadow-md);
+}
+.shadow-lg {
+	box-shadow: var(--shadow-lg);
+}
+.shadow-xl {
+	box-shadow: var(--shadow-xl);
+}
+.shadow-2xl {
+	box-shadow: var(--shadow-2xl);
+}
+.shadow-3xl {
+	box-shadow: var(--shadow-3xl);
+}
 
 // Overlays
-.overlay-light { background-color: var(--overlay-light); }
-.overlay-medium { background-color: var(--overlay-medium); }
-.overlay-heavy { background-color: var(--overlay-heavy); }
-.overlay-backdrop { background-color: var(--overlay-backdrop); }
+.overlay-light {
+	background-color: var(--overlay-light);
+}
+.overlay-medium {
+	background-color: var(--overlay-medium);
+}
+.overlay-heavy {
+	background-color: var(--overlay-heavy);
+}
+.overlay-backdrop {
+	background-color: var(--overlay-backdrop);
+}
 
 // Gradientes
-.gradient-primary { background: var(--gradient-primary); }
-.gradient-secondary { background: var(--gradient-secondary); }
-.gradient-surface { background: var(--gradient-surface); }
-.gradient-success { background: var(--gradient-success); }
-.gradient-info { background: var(--gradient-info); }
+.gradient-primary {
+	background: var(--gradient-primary);
+}
+.gradient-secondary {
+	background: var(--gradient-secondary);
+}
+.gradient-surface {
+	background: var(--gradient-surface);
+}
+.gradient-success {
+	background: var(--gradient-success);
+}
+.gradient-info {
+	background: var(--gradient-info);
+}
 
 // ================================
 // POKEMON TYPE UTILITIES
 // ================================
 
-.type-normal { color: var(--type-normal); }
-.type-fire { color: var(--type-fire); }
-.type-water { color: var(--type-water); }
-.type-electric { color: var(--type-electric); }
-.type-grass { color: var(--type-grass); }
-.type-ice { color: var(--type-ice); }
-.type-fighting { color: var(--type-fighting); }
-.type-poison { color: var(--type-poison); }
-.type-ground { color: var(--type-ground); }
-.type-flying { color: var(--type-flying); }
-.type-psychic { color: var(--type-psychic); }
-.type-bug { color: var(--type-bug); }
-.type-rock { color: var(--type-rock); }
-.type-ghost { color: var(--type-ghost); }
-.type-dragon { color: var(--type-dragon); }
-.type-dark-type { color: var(--type-dark-type); }
-.type-steel { color: var(--type-steel); }
-.type-fairy { color: var(--type-fairy); }
+.type-normal {
+	color: var(--type-normal);
+}
+.type-fire {
+	color: var(--type-fire);
+}
+.type-water {
+	color: var(--type-water);
+}
+.type-electric {
+	color: var(--type-electric);
+}
+.type-grass {
+	color: var(--type-grass);
+}
+.type-ice {
+	color: var(--type-ice);
+}
+.type-fighting {
+	color: var(--type-fighting);
+}
+.type-poison {
+	color: var(--type-poison);
+}
+.type-ground {
+	color: var(--type-ground);
+}
+.type-flying {
+	color: var(--type-flying);
+}
+.type-psychic {
+	color: var(--type-psychic);
+}
+.type-bug {
+	color: var(--type-bug);
+}
+.type-rock {
+	color: var(--type-rock);
+}
+.type-ghost {
+	color: var(--type-ghost);
+}
+.type-dragon {
+	color: var(--type-dragon);
+}
+.type-dark-type {
+	color: var(--type-dark-type);
+}
+.type-steel {
+	color: var(--type-steel);
+}
+.type-fairy {
+	color: var(--type-fairy);
+}
 
 // Fondos de tipos Pokemon
-.bg-type-normal { background-color: var(--type-normal); }
-.bg-type-fire { background-color: var(--type-fire); }
-.bg-type-water { background-color: var(--type-water); }
-.bg-type-electric { background-color: var(--type-electric); }
-.bg-type-grass { background-color: var(--type-grass); }
-.bg-type-ice { background-color: var(--type-ice); }
-.bg-type-fighting { background-color: var(--type-fighting); }
-.bg-type-poison { background-color: var(--type-poison); }
-.bg-type-ground { background-color: var(--type-ground); }
-.bg-type-flying { background-color: var(--type-flying); }
-.bg-type-psychic { background-color: var(--type-psychic); }
-.bg-type-bug { background-color: var(--type-bug); }
-.bg-type-rock { background-color: var(--type-rock); }
-.bg-type-ghost { background-color: var(--type-ghost); }
-.bg-type-dragon { background-color: var(--type-dragon); }
-.bg-type-dark-type { background-color: var(--type-dark-type); }
-.bg-type-steel { background-color: var(--type-steel); }
-.bg-type-fairy { background-color: var(--type-fairy); }
+.bg-type-normal {
+	background-color: var(--type-normal);
+}
+.bg-type-fire {
+	background-color: var(--type-fire);
+}
+.bg-type-water {
+	background-color: var(--type-water);
+}
+.bg-type-electric {
+	background-color: var(--type-electric);
+}
+.bg-type-grass {
+	background-color: var(--type-grass);
+}
+.bg-type-ice {
+	background-color: var(--type-ice);
+}
+.bg-type-fighting {
+	background-color: var(--type-fighting);
+}
+.bg-type-poison {
+	background-color: var(--type-poison);
+}
+.bg-type-ground {
+	background-color: var(--type-ground);
+}
+.bg-type-flying {
+	background-color: var(--type-flying);
+}
+.bg-type-psychic {
+	background-color: var(--type-psychic);
+}
+.bg-type-bug {
+	background-color: var(--type-bug);
+}
+.bg-type-rock {
+	background-color: var(--type-rock);
+}
+.bg-type-ghost {
+	background-color: var(--type-ghost);
+}
+.bg-type-dragon {
+	background-color: var(--type-dragon);
+}
+.bg-type-dark-type {
+	background-color: var(--type-dark-type);
+}
+.bg-type-steel {
+	background-color: var(--type-steel);
+}
+.bg-type-fairy {
+	background-color: var(--type-fairy);
+}

@@ -70,7 +70,8 @@
 			flex-direction: column;
 			gap: 2px;
 
-			input, select {
+			input,
+			select {
 				padding: 6px 8px;
 				border: 1px solid #404852;
 				border-radius: 4px;
@@ -94,7 +95,8 @@
 				font-weight: 500;
 			}
 
-			.small-input, .small-select {
+			.small-input,
+			.small-select {
 				max-width: 120px;
 			}
 		}
@@ -157,7 +159,7 @@
 
 			select {
 				cursor: pointer;
-				
+
 				option {
 					background: #1e2329;
 					color: rgba(255, 255, 255, 0.9);

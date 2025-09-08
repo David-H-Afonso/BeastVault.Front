@@ -75,9 +75,9 @@
 
 // Estilos específicos para cada tema en el preview
 .theme-option {
-	&[data-theme="light"] {
+	&[data-theme='light'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -90,9 +90,9 @@
 		}
 	}
 
-	&[data-theme="dark"] {
+	&[data-theme='dark'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -105,9 +105,9 @@
 		}
 	}
 
-	&[data-theme="pokemon"] {
+	&[data-theme='pokemon'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -120,9 +120,9 @@
 		}
 	}
 
-	&[data-theme="water"] {
+	&[data-theme='water'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -135,9 +135,9 @@
 		}
 	}
 
-	&[data-theme="fire"] {
+	&[data-theme='fire'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -150,9 +150,9 @@
 		}
 	}
 
-	&[data-theme="grass"] {
+	&[data-theme='grass'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -165,9 +165,9 @@
 		}
 	}
 
-	&[data-theme="electric"] {
+	&[data-theme='electric'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -180,9 +180,9 @@
 		}
 	}
 
-	&[data-theme="psychic"] {
+	&[data-theme='psychic'] {
 		position: relative;
-		
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -322,35 +322,35 @@
 	border-radius: 4px;
 	border: 1px solid var(--border-primary);
 	position: relative;
-	
+
 	&--dark {
 		background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
 	}
-	
+
 	&--light {
 		background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
 	}
-	
+
 	&--pokemon {
 		background: linear-gradient(135deg, #3b4cca 0%, #ffcb05 100%);
 	}
-	
+
 	&--water {
 		background: linear-gradient(135deg, #6890f0 0%, #3b82f6 100%);
 	}
-	
+
 	&--fire {
 		background: linear-gradient(135deg, #f08030 0%, #dc2626 100%);
 	}
-	
+
 	&--grass {
 		background: linear-gradient(135deg, #78c850 0%, #16a34a 100%);
 	}
-	
+
 	&--electric {
 		background: linear-gradient(135deg, #f8d030 0%, #eab308 100%);
 	}
-	
+
 	&--psychic {
 		background: linear-gradient(135deg, #f85888 0%, #ec4899 100%);
 	}

@@ -2,7 +2,15 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { CardBackgroundType, type CardBackgroundTypeName } from '../enums/CardBackgroundTypes'
 
 export type ViewMode = 'tags' | 'grid' | 'list'
-export type ThemeName = 'dark' | 'light' | 'pokemon' | 'water' | 'fire' | 'grass' | 'electric' | 'psychic'
+export type ThemeName =
+	| 'dark'
+	| 'light'
+	| 'pokemon'
+	| 'water'
+	| 'fire'
+	| 'grass'
+	| 'electric'
+	| 'psychic'
 
 interface BackgroundState {
 	backgroundType: CardBackgroundTypeName
@@ -36,7 +44,16 @@ const loadInitialState = (): BackgroundState => {
 		}
 
 		if (savedTheme) {
-			const validThemes: ThemeName[] = ['dark', 'light', 'pokemon', 'water', 'fire', 'grass', 'electric', 'psychic']
+			const validThemes: ThemeName[] = [
+				'dark',
+				'light',
+				'pokemon',
+				'water',
+				'fire',
+				'grass',
+				'electric',
+				'psychic',
+			]
 			if (validThemes.includes(savedTheme as ThemeName)) {
 				theme = savedTheme as ThemeName
 			}

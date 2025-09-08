@@ -14,12 +14,12 @@
 [data-theme='light'] {
 	// ============ BACKGROUND COLORS ============
 	--bg-primary: #{$gray-50};
-	--bg-secondary: #{$color-white}; 
+	--bg-secondary: #{$color-white};
 	--bg-tertiary: #{$gray-100};
 	--bg-surface: #{$color-white};
 	--bg-surface-alt: #{$gray-100};
 	--bg-accent: #{$gray-200};
-	
+
 	// ============ TEXT COLORS ============
 	--text-primary: #{rgba($color-black, $alpha-87)};
 	--text-secondary: #{rgba($color-black, $alpha-75)};
@@ -27,39 +27,39 @@
 	--text-muted: #{rgba($color-black, $alpha-50)};
 	--text-disabled: #{rgba($color-black, $alpha-40)};
 	--text-inverse: #{$color-white};
-	
+
 	// ============ BORDER COLORS ============
 	--border-primary: #{$gray-300};
 	--border-secondary: #{$gray-200};
 	--border-light: #{rgba($color-black, $alpha-10)};
 	--border-medium: #{rgba($color-black, $alpha-20)};
 	--border-strong: #{rgba($color-black, $alpha-40)};
-	
+
 	// ============ STATE COLORS ============
 	// Los colores de estado se mantienen igual pero ajustamos los fondos
 	--color-success-bg: #{rgba($green-500, $alpha-10)};
 	--color-success-border: #{rgba($green-500, $alpha-30)};
-	
+
 	--color-error-bg: #{rgba($red-500, $alpha-10)};
 	--color-error-border: #{rgba($red-500, $alpha-30)};
-	
+
 	--color-warning-bg: #{rgba($yellow-500, $alpha-10)};
 	--color-warning-border: #{rgba($yellow-500, $alpha-30)};
-	
+
 	--color-info-bg: #{rgba($blue-500, $alpha-10)};
 	--color-info-border: #{rgba($blue-500, $alpha-30)};
-	
+
 	// ============ GRADIENTS ============
 	--gradient-primary: linear-gradient(135deg, #{$gray-100} 0%, #{$gray-200} 100%);
 	--gradient-secondary: linear-gradient(135deg, #{$gray-200} 0%, #{$gray-300} 100%);
 	--gradient-surface: linear-gradient(135deg, #{$color-white} 0%, #{$gray-100} 100%);
-	
+
 	// ============ OVERLAYS ============
 	--overlay-light: #{rgba($color-white, $alpha-60)};
 	--overlay-medium: #{rgba($color-white, $alpha-70)};
 	--overlay-heavy: #{rgba($color-white, $alpha-80)};
 	--overlay-backdrop: #{rgba($color-black, $alpha-50)};
-	
+
 	// ============ SHADOWS (más suaves en tema claro) ============
 	--shadow-sm: 0 1px 2px rgba(#{$color-black}, 0.05);
 	--shadow-md: 0 1px 3px rgba(#{$color-black}, 0.1);

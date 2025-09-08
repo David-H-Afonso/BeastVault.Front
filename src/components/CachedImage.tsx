@@ -22,26 +22,25 @@ export const CachedImage: React.FC<CachedImageProps> = ({
 	width,
 	height,
 	onLoad,
-	onError
+	onError,
 }) => {
 	const { imageUrl, isLoading, error } = useCachedImage(src)
 
 	// Handle loading state
 	if (isLoading && !imageUrl) {
 		return (
-			<div 
+			<div
 				className={`cached-image-loading ${className || ''}`}
-				style={{ 
-					width: width || 'auto', 
+				style={{
+					width: width || 'auto',
 					height: height || 'auto',
 					backgroundColor: '#f0f0f0',
 					display: 'flex',
 					alignItems: 'center',
 					justifyContent: 'center',
 					fontSize: '12px',
-					color: '#666'
-				}}
-			>
+					color: '#666',
+				}}>
 				Loading...
 			</div>
 		)
@@ -50,19 +49,18 @@ export const CachedImage: React.FC<CachedImageProps> = ({
 	// Handle error state
 	if (error || !imageUrl) {
 		return (
-			<div 
+			<div
 				className={`cached-image-error ${className || ''}`}
-				style={{ 
-					width: width || 'auto', 
+				style={{
+					width: width || 'auto',
 					height: height || 'auto',
 					backgroundColor: '#ffe6e6',
 					display: 'flex',
 					alignItems: 'center',
 					justifyContent: 'center',
 					fontSize: '12px',
-					color: '#d00'
-				}}
-			>
+					color: '#d00',
+				}}>
 				Failed to load
 			</div>
 		)
@@ -79,7 +77,7 @@ export const CachedImage: React.FC<CachedImageProps> = ({
 			onError={onError}
 			style={{
 				transition: 'opacity 0.2s ease-in-out',
-				opacity: isLoading ? 0.7 : 1
+				opacity: isLoading ? 0.7 : 1,
 			}}
 		/>
 	)
