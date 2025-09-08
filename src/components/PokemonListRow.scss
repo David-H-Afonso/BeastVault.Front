@@ -1,5 +1,5 @@
 // Importar el sistema de temas
-@import '../styles/themes';
+@use '@/assets/styles' as *;
 
 .pokemon-list-row {
 	display: flex;

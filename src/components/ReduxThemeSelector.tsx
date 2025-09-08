@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useTheme } from '../hooks/useTheme'
-import type { ThemeName } from '../store/backgroundSlice'
+import { useTheme } from '@/hooks/useTheme'
+import type { ThemeName } from '@/store/backgroundSlice'
 import './ThemeSelector.scss'
 
 const AVAILABLE_THEMES: ThemeName[] = [

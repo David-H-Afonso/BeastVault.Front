@@ -5,7 +5,7 @@
  * Temas adicionales y variantes especiales
  */
 
-@import 'variables';
+@use 'variables' as *;
 
 // ================================
 // TEMA POKEMON (Inspirado en los juegos)
@@ -159,15 +159,8 @@
 	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-// Clases helper para aplicar temas específicos
-.theme-light {
-	@extend [data-theme='light'];
-}
-
-.theme-pokemon {
-	@extend [data-theme='pokemon'];
-}
-
+// Clases helper para aplicar temas específicos (versión alternativa sin @extend)
+// Nota: En versiones futuras se puede usar @extend cuando se resuelvan los problemas de dependencias
 .theme-water {
 	@extend [data-theme='water'];
 }

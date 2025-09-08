@@ -314,7 +314,7 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--gradient-info: linear-gradient(135deg, #{$blue-500} 0%, #{$blue-600} 100%);
 
 	// ============ OVERLAYS ============
-	--overlay-light: #{rgba($color-black, $alpha-60)};
+	--overlay-light: #{rgba($color-black, $alpha-40)};
 	--overlay-medium: #{rgba($color-black, $alpha-70)};
 	--overlay-heavy: #{rgba($color-black, $alpha-80)};
 	--overlay-backdrop: #{rgba($color-black, $alpha-75)};

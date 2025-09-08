@@ -1,5 +1,5 @@
 // Importar el sistema de temas
-@import '../styles/themes';
+@use '@/assets/styles' as *;
 
 .generationBadges {
 	flex-direction: row;
@@ -23,11 +23,13 @@
 }
 
 .originBadge {
-	background: var(--color-success-bg);
+	background: var(--color-info) !important;
+	color: white !important;
 }
 
 .captureBadge {
-	background: var(--color-info-bg);
+	background: var(--color-success) !important;
+	color: white !important;
 }
 
 .badgeBallIcon {
@@ -54,7 +56,7 @@
 	position: relative;
 	@include card-shadow('md');
 	transition: all 0.3s ease;
-	color: white;
+	color: white; // Mantener blanco por defecto para temas oscuros
 	font-family: 'Segoe UI', sans-serif;
 	display: flex;
 	flex-direction: column;
@@ -315,7 +317,11 @@
 	justify-content: center;
 	cursor: pointer;
 	transition: all 0.2s ease;
-	color: white;
+	color: white; // Mantener blanco por defecto
+}
+
+.actionBtn:first-child {
+	margin-left: 4px;
 }
 
 .actionBtn:hover {
@@ -350,7 +356,7 @@
 	align-items: center;
 	gap: 3px;
 	background: var(--overlay-heavy);
-	color: white;
+	color: white; // Mantener blanco por defecto
 	padding: 3px 6px;
 	border-radius: 8px;
 	font-size: 10px;
@@ -360,13 +366,15 @@
 }
 
 .originBadge {
-	background: var(--color-blue-alpha-80);
-	border-color: var(--color-blue-alpha-30);
+	background: var(--color-info) !important;
+	border-color: var(--color-info-border) !important;
+	color: white !important;
 }
 
 .captureBadge {
-	background: var(--color-green-alpha-80);
-	border-color: var(--color-green-alpha-30);
+	background: var(--color-success) !important;
+	border-color: var(--color-success-border) !important;
+	color: white !important;
 }
 
 .badgeLabel {
@@ -387,7 +395,7 @@
 }
 
 .pokedexBadge {
-	background: var(--overlay-heavy);
+	background: var(--overlay-light);
 	color: white;
 	padding: 4px 8px;
 	border-radius: 12px;
@@ -490,8 +498,8 @@
 }
 
 .levelBadge {
-	background: var(--overlay-medium);
-	color: white;
+	background: var(--overlay-light);
+	color: white; // Mantener blanco por defecto
 	padding: 3px 6px;
 	border-radius: 8px;
 	font-size: 11px;
@@ -527,7 +535,7 @@
 	border-radius: 10px;
 	font-size: 10px;
 	font-weight: 600;
-	color: white;
+	color: var(--text-inverse);
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
 	@include card-shadow('sm');
@@ -563,7 +571,7 @@
 	border-radius: 10px;
 	font-size: 10px;
 	font-weight: 600;
-	color: white;
+	color: var(--text-inverse);
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
 	@include card-shadow('sm');
@@ -639,7 +647,7 @@
 
 .tagBadge {
 	background: var(--color-purple-alpha-80);
-	color: white;
+	color: var(--text-inverse);
 	padding: 2px 6px;
 	border-radius: 8px;
 	font-size: 9px;
@@ -648,4 +656,131 @@
 	letter-spacing: 0.2px;
 	border: 1px solid var(--color-purple-alpha-30);
 	@include card-shadow('xs');
+}
+
+// ================================
+// TEMA CLARO - AJUSTES ESPECÍFICOS
+// ================================
+
+[data-theme='light'] {
+	.pokemonCardModern {
+		background: var(--card-bg);
+		border-color: var(--card-border);
+		color: var(--card-text);
+		box-shadow: var(--shadow-md);
+
+		// Cuando no hay color de fondo por tipos, asegurar contraste
+		&.background-no-type-color {
+			background: var(--card-bg);
+			color: var(--card-text);
+
+			.pokemonName {
+				color: var(--card-text);
+			}
+
+			.levelBadge {
+				background: var(--btn-secondary-bg);
+				color: var(--btn-secondary-text);
+			}
+
+			.generationBadge {
+				background: var(--btn-secondary-bg);
+				color: var(--btn-secondary-text);
+			}
+
+			.pokedexBadge {
+				background: var(--btn-secondary-bg);
+				color: var(--btn-secondary-text);
+			}
+
+			.actionBtn {
+				color: var(--btn-ghost-text);
+
+				&:hover {
+					background: var(--btn-ghost-hover);
+				}
+			}
+		}
+
+		// Mejorar legibilidad de badges en tema claro
+		.typeBadge {
+			// Los type badges mantienen sus colores de tipo pero con mejor contraste
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		}
+
+		.teraTypeBadge {
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		}
+
+		.tagBadge {
+			background: var(--color-purple);
+			color: var(--text-inverse);
+		}
+
+		// Mejor contraste para iconos
+		.genderSymbol {
+			&.male {
+				color: var(--color-info);
+			}
+			&.female {
+				color: var(--color-error);
+			}
+		}
+
+		// Ajustar overlays para mejor visibilidad
+		.overlay-light {
+			background: var(--overlay-light);
+		}
+
+		.overlay-medium {
+			background: var(--overlay-medium);
+		}
+
+		.overlay-heavy {
+			background: var(--overlay-heavy);
+		}
+	}
+}
+
+// ================================
+// TEMA CLARO - TEXTOS ESPECÍFICOS
+// ================================
+
+:global([data-theme='light']) {
+	.pokemonCardModern {
+		.pokemonName {
+			color: var(--text-primary) !important;
+		}
+
+		.pokemonId {
+			color: var(--text-primary) !important;
+		}
+	}
+
+	.levelBadge {
+		color: var(--text-primary) !important;
+	}
+
+	.generationBadge {
+		color: var(--text-primary) !important;
+	}
+
+	.pokedexBadge {
+		background: var(--color-primary) !important;
+		color: white !important;
+	}
+
+	.originBadge {
+		background: var(--color-info) !important;
+		color: white !important;
+	}
+
+	.captureBadge {
+		background: var(--color-success) !important;
+		color: white !important;
+	}
+
+	.actionBtn {
+		color: var(--text-primary) !important;
+	}
 }

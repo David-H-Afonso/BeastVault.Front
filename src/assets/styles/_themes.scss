@@ -7,11 +7,11 @@
  */
 
 // Importar variables base
-@import 'variables';
+@use 'variables' as *;
 
 // Importar temas
-@import 'theme-light';
-@import 'theme-custom';
+@use 'theme-light' as *;
+@use 'theme-custom' as *;
 
 // ================================
 // CLASES UTILITARIAS GLOBALES

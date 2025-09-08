@@ -1,0 +1,163 @@
+/**
+ * Beast Vault - Tema Claro
+ * ========================
+ * 
+ * Variante clara del sistema de colores
+ * Optimizado para legibilidad en entornos con mucha luz
+ */
+
+@use 'variables' as *;
+
+// ================================
+// TEMA CLARO
+// ================================
+
+[data-theme='light'] {
+	// ============ BACKGROUND COLORS ============
+	--bg-primary: #{$gray-50};
+	--bg-secondary: #{$color-white};
+	--bg-tertiary: #{$gray-100};
+	--bg-surface: #{$color-white};
+	--bg-surface-alt: #{$gray-100};
+	--bg-accent: #{$gray-200};
+	--bg-hover: #{$gray-100};
+	--bg-active: #{$gray-200};
+	--bg-selected: #{rgba($blue-500, 0.1)};
+
+	// ============ TEXT COLORS ============
+	--text-primary: #{$gray-900};
+	--text-secondary: #{$gray-700};
+	--text-tertiary: #{$gray-600};
+	--text-muted: #{$gray-500};
+	--text-disabled: #{$gray-400};
+	--text-inverse: #{$color-white};
+	--text-link: #{$blue-600};
+	--text-link-hover: #{$blue-700};
+
+	// ============ HEADER & NAVIGATION ============
+	--header-bg: #{$color-white};
+	--header-text: #{$gray-900};
+	--header-border: #{$gray-200};
+	--nav-link: #{$gray-700};
+	--nav-link-hover: #{$gray-900};
+	--nav-link-active: #{$blue-600};
+
+	// ============ BORDER COLORS ============
+	--border-primary: #{$gray-300};
+	--border-secondary: #{$gray-200};
+	--border-light: #{$gray-100};
+	--border-medium: #{$gray-300};
+	--border-strong: #{$gray-400};
+	--border-interactive: #{$gray-300};
+	--border-focus: #{$blue-500};
+
+	// ============ BUTTON COLORS ============
+	--btn-primary-bg: #{$blue-600};
+	--btn-primary-hover: #{$blue-700};
+	--btn-primary-active: #{$blue-800};
+	--btn-primary-text: #{$color-white};
+
+	--btn-secondary-bg: #{$gray-100};
+	--btn-secondary-hover: #{$gray-200};
+	--btn-secondary-active: #{$gray-300};
+	--btn-secondary-text: #{$gray-900};
+
+	--btn-ghost-bg: transparent;
+	--btn-ghost-hover: #{$gray-100};
+	--btn-ghost-active: #{$gray-200};
+	--btn-ghost-text: #{$gray-700};
+
+	// ============ FORM COLORS ============
+	--input-bg: #{$color-white};
+	--input-border: #{$gray-300};
+	--input-border-focus: #{$blue-500};
+	--input-text: #{$gray-900};
+	--input-placeholder: #{$gray-500};
+	--input-disabled-bg: #{$gray-100};
+	--input-disabled-text: #{$gray-400};
+
+	// ============ STATE COLORS ============
+	--color-success: #{$green-600};
+	--color-success-bg: #{rgba($green-100, 0.5)};
+	--color-success-border: #{$green-300};
+	--color-success-text: #{$green-800};
+
+	--color-error: #{$red-600};
+	--color-error-bg: #{rgba($red-100, 0.5)};
+	--color-error-border: #{$red-300};
+	--color-error-text: #{$red-800};
+
+	--color-warning: #{$yellow-600};
+	--color-warning-bg: #{rgba($yellow-100, 0.5)};
+	--color-warning-border: #{$yellow-300};
+	--color-warning-text: #{$yellow-800};
+
+	--color-info: #{$blue-600};
+	--color-info-bg: #{rgba($blue-100, 0.5)};
+	--color-info-border: #{$blue-300};
+	--color-info-text: #{$blue-800};
+
+	// ============ POKEMON CARD SPECIFIC ============
+	--card-bg: #{$color-white};
+	--card-border: #{$gray-200};
+	--card-shadow: #{rgba($color-black, 0.1)};
+	--card-text: #{$gray-900};
+	--card-text-secondary: #{$gray-600};
+	--card-hover-bg: #{$gray-50};
+	--card-hover-border: #{$gray-300};
+
+	// ============ FILTER & SEARCH ============
+	--filter-bg: #{$color-white};
+	--filter-border: #{$gray-200};
+	--filter-text: #{$gray-900};
+	--search-bg: #{$color-white};
+	--search-border: #{$gray-300};
+	--search-focus-border: #{$blue-500};
+
+	// ============ SCROLLBAR ============
+	--scrollbar-track: #{$gray-100};
+	--scrollbar-thumb: #{$gray-300};
+	--scrollbar-thumb-hover: #{$gray-400};
+
+	// ============ GRADIENTS ============
+	--gradient-primary: linear-gradient(135deg, #{$color-white} 0%, #{$gray-100} 100%);
+	--gradient-secondary: linear-gradient(135deg, #{$gray-100} 0%, #{$gray-200} 100%);
+	--gradient-surface: linear-gradient(135deg, #{$color-white} 0%, #{$gray-50} 100%);
+	--gradient-pokemon: linear-gradient(135deg, #{$blue-50} 0%, #{$blue-100} 100%);
+
+	// ============ OVERLAYS ============
+	--overlay-light: #{rgba($color-white, 0.8)};
+	--overlay-medium: #{rgba($color-white, 0.9)};
+	--overlay-heavy: #{rgba($color-white, 0.95)};
+	--overlay-backdrop: #{rgba($color-black, 0.5)};
+	--overlay-modal: #{rgba($color-black, 0.6)};
+
+	// ============ SHADOWS (optimizadas para tema claro) ============
+	--shadow-sm: 0 1px 2px rgba(#{$color-black}, 0.05);
+	--shadow-md: 0 1px 3px rgba(#{$color-black}, 0.1), 0 1px 2px rgba(#{$color-black}, 0.06);
+	--shadow-lg: 0 4px 6px rgba(#{$color-black}, 0.1), 0 2px 4px rgba(#{$color-black}, 0.06);
+	--shadow-xl: 0 10px 15px rgba(#{$color-black}, 0.1), 0 4px 6px rgba(#{$color-black}, 0.05);
+	--shadow-2xl: 0 20px 25px rgba(#{$color-black}, 0.1), 0 10px 10px rgba(#{$color-black}, 0.04);
+	--shadow-3xl: 0 25px 50px rgba(#{$color-black}, 0.15);
+
+	// ============ SPECIFIC LIGHT THEME ADJUSTMENTS ============
+	// Logo and brand adjustments for light theme
+	--logo-filter: none; // Sin filtro para mantener colores originales
+	--brand-primary: #{$blue-600};
+	--brand-secondary: #{$gray-800};
+	
+	// Icon adjustments
+	--icon-filter: none;
+	--icon-opacity: 1;
+	
+	// Focus ring más visible en tema claro
+	--color-focus-ring: #{rgba($blue-500, 0.6)};
+	--focus-ring-width: 2px;
+	--focus-ring-offset: 1px;
+
+	// ============ HIGH CONTRAST VARIANTS ============
+	// Para mejor legibilidad en tema claro
+	--text-contrast-high: #{$color-black};
+	--bg-contrast-high: #{$color-white};
+	--border-contrast-high: #{$gray-900};
+}

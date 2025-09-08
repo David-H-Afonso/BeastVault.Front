@@ -1,0 +1,35 @@
+/**
+ * Beast Vault - Styles Index
+ * ==========================
+ * 
+ * Punto de entrada único para todos los estilos del sistema de temas
+ * Importa todos los archivos necesarios en el orden correcto
+ * 
+ * Uso:
+ * @use '~/assets/styles' as *;
+ * o
+ * @use '../assets/styles' as *;
+ */
+
+// ================================
+// FORWARD DE VARIABLES Y MIXINS
+// ================================
+
+// Forward variables y mixins para que estén disponibles en archivos que importen este módulo
+@forward 'variables';
+
+// ================================
+// ORDEN DE IMPORTACIÓN
+// ================================
+
+// 1. Variables base (deben ir primero)
+@use 'variables' as *;
+
+// 2. Tema claro
+@use 'theme-light' as *;
+
+// 3. Temas personalizados (Pokemon, Water, Fire, etc.)
+@use 'theme-custom' as *;
+
+// 4. Sistema de temas principal (incluye clases utilitarias)
+@use 'themes' as *;
