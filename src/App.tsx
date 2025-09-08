@@ -16,31 +16,90 @@ import { PokemonTagManager } from './components/PokemonTagManager'
 import { useViewMode } from './hooks/useViewMode'
 import './App.scss'
 import './components/PokemonListRow.scss'
-import { CardBackgroundSelector } from './components/CardBackgroundSelector'
+import { UIOptionsSelector } from './components/UIOptionsSelector'
 import { ReduxThemeSelector } from './components/ReduxThemeSelector'
+import { useSpriteType } from './hooks/useSpriteType'
+import { SpriteType } from './enums/SpriteTypes'
 import banner from './assets/BeastVault-banner.svg'
 
-// Helper to get the best available sprite in priority order
-function getBestSprite(sprites: any, isShiny: boolean = false) {
-	// Priority: showdown > home > official artwork > pokeapi default
-	// If Pokemon is shiny, prefer shiny versions
-	if (isShiny) {
-		if (sprites.showdownShiny) return sprites.showdownShiny
-		if (sprites.showdown) return sprites.showdown
-		if (sprites.homeShiny) return sprites.homeShiny
-		if (sprites.home) return sprites.home
-		if (sprites.officialShiny) return sprites.officialShiny
-		if (sprites.official) return sprites.official
-		if (sprites.shiny) return sprites.shiny
-		if (sprites.default) return sprites.default
-	} else {
-		if (sprites.showdown) return sprites.showdown
-		if (sprites.home) return sprites.home
-		if (sprites.official) return sprites.official
-		if (sprites.default) return sprites.default
-		if (sprites.shiny) return sprites.shiny
+// Helper to get the best available sprite based on user preference
+function getBestSpriteByType(
+	sprites: any,
+	spriteType: SpriteType,
+	isShiny: boolean = false
+): string | null {
+	switch (spriteType) {
+		case SpriteType.GIFS:
+			// GIFs animados (Showdown)
+			if (isShiny) {
+				return (
+					sprites.showdownShiny ||
+					sprites.showdown ||
+					sprites.homeShiny ||
+					sprites.home ||
+					sprites.shiny ||
+					sprites.default
+				)
+			}
+			return sprites.showdown || sprites.home || sprites.default
+
+		case SpriteType.HOME:
+			// Pokemon HOME sprites
+			if (isShiny) {
+				return (
+					sprites.homeShiny ||
+					sprites.home ||
+					sprites.officialShiny ||
+					sprites.official ||
+					sprites.shiny ||
+					sprites.default
+				)
+			}
+			return sprites.home || sprites.official || sprites.default
+
+		case SpriteType.OFFICIAL:
+			// Official artwork
+			if (isShiny) {
+				return (
+					sprites.officialShiny ||
+					sprites.official ||
+					sprites.homeShiny ||
+					sprites.home ||
+					sprites.shiny ||
+					sprites.default
+				)
+			}
+			return sprites.official || sprites.home || sprites.default
+
+		case SpriteType.DEFAULT:
+			// PokeAPI default sprites
+			if (isShiny) {
+				return sprites.shiny || sprites.default || sprites.homeShiny || sprites.home
+			}
+			return sprites.default || sprites.home
+
+		case SpriteType.SPRITES:
+		default:
+			// GitHub sprites (gen 1-8 + gen 9, misma lógica que useCorrectBoxSprite)
+			if (isShiny) {
+				return (
+					sprites.githubShiny ||
+					sprites.githubRegular ||
+					sprites.showdown ||
+					sprites.home ||
+					sprites.official ||
+					sprites.default
+				)
+			}
+			return (
+				sprites.githubRegular ||
+				sprites.githubShiny ||
+				sprites.showdown ||
+				sprites.home ||
+				sprites.official ||
+				sprites.default
+			)
 	}
-	return null
 }
 
 // Helper to group Pokemon by tags
@@ -65,6 +124,7 @@ function groupPokemonByTags(pokemon: PokemonListItemDto[]) {
 }
 
 function App() {
+	const { spriteType } = useSpriteType()
 	const [pokemon, setPokemon] = useState<PokemonListItemDto[]>([])
 	const [pokeSprites, setPokeSprites] = useState<Record<number, any>>({})
 	const [totalPokemon, setTotalPokemon] = useState(0)
@@ -137,6 +197,36 @@ function App() {
 					if (!pokeApi) return [p.id, {}]
 					const sprites = pokeApi.sprites
 
+					// Helper function to get generation
+					const getGeneration = (speciesId: number): number => {
+						if (speciesId <= 151) return 1
+						if (speciesId <= 251) return 2
+						if (speciesId <= 386) return 3
+						if (speciesId <= 493) return 4
+						if (speciesId <= 649) return 5
+						if (speciesId <= 721) return 6
+						if (speciesId <= 809) return 7
+						if (speciesId <= 898) return 8
+						return 9
+					}
+
+					// Build GitHub sprite URLs (same logic as useCorrectBoxSprite)
+					const generation = getGeneration(p.speciesId)
+					const pokemonName = pokeApi.name
+					let githubBaseUrl: string
+
+					if (generation <= 8) {
+						// Use pokesprite for Gen 1-8
+						githubBaseUrl =
+							'https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8'
+					} else {
+						// Use pokemon-sprites for Gen 9+
+						githubBaseUrl = 'https://raw.githubusercontent.com/bamq/pokemon-sprites/main/pokemon'
+					}
+
+					const githubRegular = `${githubBaseUrl}/regular/${pokemonName}.png`
+					const githubShiny = `${githubBaseUrl}/shiny/${pokemonName}.png`
+
 					return [
 						p.id,
 						{
@@ -156,6 +246,9 @@ function App() {
 							showdown: sprites.other?.showdown?.front_default || '',
 							showdownShiny: sprites.other?.showdown?.front_shiny || '',
 							versions: sprites.versions || {},
+							// GitHub sprites (gen 1-8 + gen 9)
+							githubRegular: githubRegular,
+							githubShiny: githubShiny,
 						},
 					]
 				})
@@ -404,8 +497,8 @@ function App() {
 			{/* Filters Component */}
 			<PokemonFilters onFiltersChange={handleFiltersChange} loading={loading} />
 
-			{/* Card Background Selector */}
-			<CardBackgroundSelector />
+			{/* UI Options Selector (unified card background and sprite type) */}
+			<UIOptionsSelector />
 
 			{loading && <p>Loading...</p>}
 			{scanning && <p>Scanning directory for new Pokémon files...</p>}
@@ -502,7 +595,8 @@ function App() {
 												<div className='pokemon-grid'>
 													{taggedPokemon.map((p) => {
 														const sprites = pokeSprites[p.id] || {}
-														const bestSprite = getBestSprite(sprites, p.isShiny)
+														const bestSprite =
+															getBestSpriteByType(sprites, spriteType, p.isShiny) || undefined
 														return (
 															<PokemonCard
 																key={p.id}
@@ -539,7 +633,8 @@ function App() {
 											<div className='pokemon-grid'>
 												{untagged.map((p) => {
 													const sprites = pokeSprites[p.id] || {}
-													const bestSprite = getBestSprite(sprites, p.isShiny)
+													const bestSprite =
+														getBestSpriteByType(sprites, spriteType, p.isShiny) || undefined
 													return (
 														<PokemonCard
 															key={p.id}
@@ -566,7 +661,7 @@ function App() {
 					{pokemon.length === 0 && !loading && <p>No Pokémon found.</p>}
 					{pokemon.map((p) => {
 						const sprites = pokeSprites[p.id] || {}
-						const bestSprite = getBestSprite(sprites, p.isShiny)
+						const bestSprite = getBestSpriteByType(sprites, spriteType, p.isShiny) || undefined
 						return (
 							<PokemonCard
 								key={p.id}
@@ -586,7 +681,7 @@ function App() {
 					{pokemon.length === 0 && !loading && <p>No Pokémon found.</p>}
 					{pokemon.map((p) => {
 						const sprites = pokeSprites[p.id] || {}
-						const bestSprite = getBestSprite(sprites, p.isShiny)
+						const bestSprite = getBestSpriteByType(sprites, spriteType, p.isShiny) || undefined
 						return (
 							<PokemonListRow
 								key={p.id}

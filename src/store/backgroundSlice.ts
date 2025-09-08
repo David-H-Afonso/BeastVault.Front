@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { CardBackgroundType, type CardBackgroundTypeName } from '../enums/CardBackgroundTypes'
+import { SpriteType, type SpriteTypeName } from '../enums/SpriteTypes'
 
 export type ViewMode = 'tags' | 'grid' | 'list'
 export type ThemeName =
@@ -16,6 +17,7 @@ interface BackgroundState {
 	backgroundType: CardBackgroundTypeName
 	viewMode: ViewMode
 	theme: ThemeName
+	spriteType: SpriteTypeName
 }
 
 // Load initial state from localStorage if available
@@ -24,10 +26,12 @@ const loadInitialState = (): BackgroundState => {
 		const savedBackground = localStorage.getItem('cardBackgroundType')
 		const savedViewMode = localStorage.getItem('viewMode')
 		const savedTheme = localStorage.getItem('theme')
+		const savedSpriteType = localStorage.getItem('pokemon-sprite-type')
 
 		let backgroundType: CardBackgroundTypeName = CardBackgroundType.DIAGONAL_45
 		let viewMode: ViewMode = 'grid'
 		let theme: ThemeName = 'dark'
+		let spriteType: SpriteTypeName = SpriteType.SPRITES
 
 		if (savedBackground) {
 			const validValues = Object.values(CardBackgroundType)
@@ -59,11 +63,23 @@ const loadInitialState = (): BackgroundState => {
 			}
 		}
 
-		return { backgroundType, viewMode, theme }
+		if (savedSpriteType) {
+			const validSprites = Object.values(SpriteType)
+			if (validSprites.includes(savedSpriteType as SpriteTypeName)) {
+				spriteType = savedSpriteType as SpriteTypeName
+			}
+		}
+
+		return { backgroundType, viewMode, theme, spriteType }
 	} catch (error) {
 		console.warn('Failed to load state from localStorage:', error)
 	}
-	return { backgroundType: CardBackgroundType.DIAGONAL_45, viewMode: 'grid', theme: 'dark' }
+	return {
+		backgroundType: CardBackgroundType.DIAGONAL_45,
+		viewMode: 'grid',
+		theme: 'dark',
+		spriteType: SpriteType.SPRITES,
+	}
 }
 
 const initialState: BackgroundState = loadInitialState()
@@ -99,8 +115,17 @@ const backgroundSlice = createSlice({
 				console.warn('Failed to save theme to localStorage:', error)
 			}
 		},
+		setSpriteType: (state, action: PayloadAction<SpriteTypeName>) => {
+			state.spriteType = action.payload
+			// Persist to localStorage
+			try {
+				localStorage.setItem('pokemon-sprite-type', action.payload)
+			} catch (error) {
+				console.warn('Failed to save sprite type to localStorage:', error)
+			}
+		},
 	},
 })
 
-export const { setBackgroundType, setViewMode, setTheme } = backgroundSlice.actions
+export const { setBackgroundType, setViewMode, setTheme, setSpriteType } = backgroundSlice.actions
 export default backgroundSlice.reducer
