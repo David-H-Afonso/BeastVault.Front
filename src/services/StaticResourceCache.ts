@@ -4,6 +4,10 @@ import { cacheService } from './CacheService'
  * Static Resource Cache Service
  * Handles caching of static resources like sprites, icons, and API responses
  */
+/**
+ * Static Resource Cache Service
+ * Handles caching of static resources like sprites, icons, and API responses
+ */
 class StaticResourceCache {
 	private readonly IMAGE_CACHE_PREFIX = 'image_'
 	private readonly API_CACHE_PREFIX = 'api_'
@@ -20,7 +24,7 @@ class StaticResourceCache {
 		const cacheKey = `${this.IMAGE_CACHE_PREFIX}${this.hashUrl(url)}`
 
 		// Check if already cached
-		const cached = cacheService.get<string>(cacheKey)
+		const cached = await cacheService.get<string>(cacheKey)
 		if (cached) {
 			return cached
 		}
@@ -49,27 +53,27 @@ class StaticResourceCache {
 	/**
 	 * Get cached image or return original URL
 	 */
-	getCachedImage(url: string): string {
+	async getCachedImage(url: string): Promise<string> {
 		const cacheKey = `${this.IMAGE_CACHE_PREFIX}${this.hashUrl(url)}`
-		const cached = cacheService.get<string>(cacheKey)
+		const cached = await cacheService.get<string>(cacheKey)
 		return cached || url
 	}
 
 	/**
 	 * Cache API response data
 	 */
-	cacheApiResponse<T>(url: string, data: T, customExpiry?: number): void {
+	async cacheApiResponse<T>(url: string, data: T, customExpiry?: number): Promise<void> {
 		const cacheKey = `${this.API_CACHE_PREFIX}${this.hashUrl(url)}`
 		const expiry = customExpiry || this.ONE_WEEK
-		cacheService.set(cacheKey, data, expiry)
+		await cacheService.set(cacheKey, data, expiry)
 	}
 
 	/**
 	 * Get cached API response
 	 */
-	getCachedApiResponse<T>(url: string): T | null {
+	async getCachedApiResponse<T>(url: string): Promise<T | null> {
 		const cacheKey = `${this.API_CACHE_PREFIX}${this.hashUrl(url)}`
-		return cacheService.get<T>(cacheKey)
+		return await cacheService.get<T>(cacheKey)
 	}
 
 	/**
@@ -77,7 +81,7 @@ class StaticResourceCache {
 	 */
 	async fetchWithCache<T>(url: string, options?: RequestInit): Promise<T> {
 		// Check cache first
-		const cached = this.getCachedApiResponse<T>(url)
+		const cached = await this.getCachedApiResponse<T>(url)
 		if (cached) {
 			return cached
 		}
@@ -98,7 +102,9 @@ class StaticResourceCache {
 			expiry = this.THREE_MONTHS // Static sprites never change
 		}
 
-		this.cacheApiResponse(url, data, expiry)
+		// Cache the response
+		await this.cacheApiResponse(url, data, expiry)
+
 		return data
 	}
 
@@ -124,15 +130,15 @@ class StaticResourceCache {
 	/**
 	 * Clear all static resource caches
 	 */
-	clearAll(): void {
-		cacheService.clear()
+	async clearAll(): Promise<void> {
+		await cacheService.clear()
 	}
 
 	/**
 	 * Get cache statistics
 	 */
-	getCacheStats(): { totalItems: number; totalSize: string } {
-		const stats = cacheService.getStats()
+	async getCacheStats(): Promise<{ totalItems: number; totalSize: string }> {
+		const stats = await cacheService.getStats()
 		return {
 			totalItems: stats.totalItems,
 			totalSize: `${(stats.totalSize / 1024).toFixed(2)} KB`,

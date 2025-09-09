@@ -10,8 +10,8 @@ export function CacheStats({ show = false }: CacheStatsProps) {
 
 	useEffect(() => {
 		if (show) {
-			const updateStats = () => {
-				const currentStats = cacheService.getStats()
+			const updateStats = async () => {
+				const currentStats = await cacheService.getStats()
 				setStats(currentStats)
 			}
 
@@ -22,14 +22,14 @@ export function CacheStats({ show = false }: CacheStatsProps) {
 		}
 	}, [show])
 
-	const handleClearCache = () => {
-		cacheService.clear()
+	const handleClearCache = async () => {
+		await cacheService.clear()
 		setStats({ totalItems: 0, totalSize: 0 })
 	}
 
-	const handleCleanupCache = () => {
-		cacheService.cleanup()
-		const newStats = cacheService.getStats()
+	const handleCleanupCache = async () => {
+		await cacheService.cleanup()
+		const newStats = await cacheService.getStats()
 		setStats(newStats)
 	}
 

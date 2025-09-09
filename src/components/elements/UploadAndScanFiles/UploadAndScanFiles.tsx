@@ -1,45 +1,40 @@
-import { importPokemonFiles, scanPokemonDirectory } from '@/services/Pokemon'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { usePokemon } from '@/hooks/usePokemon'
 import { Modal } from '../Modal/Modal'
 import './UploadAndScanFiles.scss'
 
 interface UploadAndScanFilesProps {
 	isOpen: boolean
 	onClose: () => void
-	onRefreshList?: () => Promise<void>
 }
 
-export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({
-	isOpen,
-	onClose,
-	onRefreshList,
-}) => {
-	const [loading, setLoading] = useState(false)
-	const [scanning, setScanning] = useState(false)
-	const [scanResult, setScanResult] = useState<string | null>(null)
-	const [error, setError] = useState<string | null>(null)
+export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({ isOpen, onClose }) => {
+	const {
+		importing,
+		scanning,
+		importResult,
+		error,
+		importFiles,
+		scanPokemonDirectory,
+		clearCurrentError,
+		clearCurrentImportResult,
+		refreshPokemon,
+	} = usePokemon()
+
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 
 	// Scan directory function
 	const handleScanDirectory = useCallback(async () => {
-		setScanning(true)
-		setError(null)
-		setScanResult(null)
+		clearCurrentError()
+		clearCurrentImportResult()
 		try {
-			const result = await scanPokemonDirectory()
-			setScanResult(
-				`Scan completed: ${result.summary.newlyImported} new, ${result.summary.alreadyImported} existing, ${result.summary.errors} errors`
-			)
-			// Refresh the list after scanning
-			if (onRefreshList) {
-				await onRefreshList()
-			}
+			await scanPokemonDirectory()
+			// Refresh the Pokemon list after scanning
+			await refreshPokemon()
 		} catch (e: any) {
-			setError(e.message || 'Failed to scan directory')
-		} finally {
-			setScanning(false)
+			console.error('Scan failed:', e.message || 'Failed to scan directory')
 		}
-	}, [onRefreshList])
+	}, [scanPokemonDirectory, clearCurrentError, clearCurrentImportResult, refreshPokemon])
 
 	// Auto-scan directory when modal opens
 	useEffect(() => {
@@ -50,18 +45,15 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({
 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (!e.target.files || e.target.files.length === 0) return
-		setLoading(true)
-		setError(null)
-		setScanResult(null)
+		clearCurrentError()
+		clearCurrentImportResult()
 		try {
-			await importPokemonFiles([e.target.files[0]])
-			if (onRefreshList) {
-				await onRefreshList()
-			}
+			await importFiles([e.target.files[0]])
+			// Refresh the Pokemon list after import
+			await refreshPokemon()
 		} catch (e: any) {
-			setError(e.message || 'Failed to upload file')
+			console.error('Import failed:', e.message || 'Failed to upload file')
 		} finally {
-			setLoading(false)
 			if (fileInputRef.current) fileInputRef.current.value = ''
 		}
 	}
@@ -82,18 +74,14 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({
 					onDrop={async (e) => {
 						e.preventDefault()
 						if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return
-						setLoading(true)
-						setError(null)
-						setScanResult(null)
+						clearCurrentError()
+						clearCurrentImportResult()
 						try {
-							await importPokemonFiles(Array.from(e.dataTransfer.files))
-							if (onRefreshList) {
-								await onRefreshList()
-							}
+							await importFiles(Array.from(e.dataTransfer.files))
+							// Refresh the Pokemon list after import
+							await refreshPokemon()
 						} catch (e: any) {
-							setError(e.message || 'Failed to upload files')
-						} finally {
-							setLoading(false)
+							console.error('Import failed:', e.message || 'Failed to upload files')
 						}
 					}}>
 					<p>Drag and drop your files here, or click to upload</p>
@@ -104,7 +92,7 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({
 						onChange={handleFileChange}
 						ref={fileInputRef}
 						multiple
-						disabled={loading || scanning}
+						disabled={importing || scanning}
 						style={{ display: 'none' }}
 					/>
 				</div>
@@ -112,14 +100,14 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({
 				<div className='scan-container'>
 					<div className='scan-button'>
 						<h3>Or scan the default directory for new files:</h3>
-						<button onClick={handleScanDirectory} disabled={loading || scanning}>
+						<button onClick={handleScanDirectory} disabled={importing || scanning}>
 							Scan Directory
 						</button>
 					</div>
 
 					<div className='scan-messages'>
 						{/* Status Messages */}
-						{loading && (
+						{importing && (
 							<div className='upload-scan__status upload-scan__status--loading'>
 								⏳ Uploading file...
 							</div>
@@ -135,9 +123,9 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({
 							<div className='upload-scan__status upload-scan__status--error'>❌ {error}</div>
 						)}
 
-						{scanResult && (
+						{importResult && (
 							<div className='upload-scan__status upload-scan__status--success'>
-								✅ {scanResult}
+								✅ {importResult}
 							</div>
 						)}
 					</div>

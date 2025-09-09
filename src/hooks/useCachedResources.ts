@@ -21,31 +21,33 @@ export function useCachedImage(url: string | null): {
 			return
 		}
 
-		setIsLoading(true)
-		setError(null)
+		const loadImage = async () => {
+			setIsLoading(true)
+			setError(null)
 
-		// First, check if we have a cached version
-		const cached = staticResourceCache.getCachedImage(url)
-		if (cached !== url) {
-			// We have a cached base64 version
-			setImageUrl(cached)
-			setIsLoading(false)
-			return
-		}
+			// First, check if we have a cached version
+			const cached = await staticResourceCache.getCachedImage(url)
+			if (cached !== url) {
+				// We have a cached base64 version
+				setImageUrl(cached)
+				setIsLoading(false)
+				return
+			}
 
-		// Cache the image asynchronously
-		staticResourceCache
-			.cacheImage(url)
-			.then((cachedUrl) => {
+			// Cache the image asynchronously
+			try {
+				const cachedUrl = await staticResourceCache.cacheImage(url)
 				setImageUrl(cachedUrl)
 				setIsLoading(false)
-			})
-			.catch((err) => {
+			} catch (err: any) {
 				console.warn('Failed to cache image:', err)
 				setImageUrl(url) // Fallback to original URL
 				setError(err.message)
 				setIsLoading(false)
-			})
+			}
+		}
+
+		loadImage()
 	}, [url])
 
 	return { imageUrl, isLoading, error }

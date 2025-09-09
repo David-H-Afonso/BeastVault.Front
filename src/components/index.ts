@@ -2,3 +2,4 @@
 export { PokemonFilters } from './PokemonFilters'
 export { PokemonCard } from './elements/PokemonCard/PokemonCard'
 export { PokemonListRow } from './elements/PokemonRow/PokemonListRow'
+export { PokemonCacheDiagnostics } from './PokemonCacheDiagnostics'

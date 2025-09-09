@@ -202,8 +202,8 @@ export function useCacheStats() {
 	const [stats, setStats] = useState({ totalItems: 0, totalSize: '0 KB' })
 
 	useEffect(() => {
-		const updateStats = () => {
-			const cacheStats = staticResourceCache.getCacheStats()
+		const updateStats = async () => {
+			const cacheStats = await staticResourceCache.getCacheStats()
 			setStats(cacheStats)
 		}
 
