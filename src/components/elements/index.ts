@@ -1,5 +1,6 @@
 export { LayoutSelector } from './LayoutSelector/LayoutSelector'
 export { Modal } from './Modal/Modal'
+export { Pagination } from './Pagination/Pagination'
 export { PokemonCard } from './PokemonCard/PokemonCard'
 export { PokemonFilters } from './Filters/PokemonFilters'
 export { PokemonListRow } from './PokemonRow/PokemonListRow'

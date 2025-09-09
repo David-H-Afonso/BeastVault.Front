@@ -7,6 +7,8 @@ import { useSpriteType } from '@/hooks/useSpriteType'
 import { usePokemon } from '@/hooks/usePokemon'
 import { getBestSpriteByType, groupPokemonByTags } from '@/utils'
 import HomeComponent from '../components/HomeComponent'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { updateFilters } from '@/store/features/pokemon'
 
 /**
  * Contenedor principal de la página Home
@@ -37,6 +39,7 @@ const Home = () => {
 	const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false)
 	const [pendingDownloadId, setPendingDownloadId] = useState<number | null>(null)
 	const [downloadLoading, setDownloadLoading] = useState(false)
+	const dispatch = useAppDispatch()
 
 	// Estado para gestión de tags
 	const [tagManagerOpen, setTagManagerOpen] = useState(false)
@@ -215,6 +218,24 @@ const Home = () => {
 		fetchPokemon()
 	}, [fetchPokemon])
 
+	// Pagination
+	const itemsPerPage = useAppSelector((state) => state.pokemon.currentFilters.Take) || 20
+	const onItemsPerPageChange = (itemsPerPage: number) => {
+		console.log(itemsPerPage)
+		dispatch(updateFilters({ Take: itemsPerPage }))
+	}
+	const totalPages = Math.ceil(totalPokemon / itemsPerPage) || 1
+
+	const currentPage = Math.floor(
+		(useAppSelector((state) => state.pokemon.currentFilters.Skip) || 0) / itemsPerPage + 1
+	)
+
+	const onPageChange = (page: number) => {
+		const take = itemsPerPage
+		const newSkip = (page - 1) * take
+		dispatch(updateFilters({ Skip: newSkip }))
+	}
+
 	return (
 		<HomeComponent
 			processedPokemon={processedPokemonData()}
@@ -241,6 +262,11 @@ const Home = () => {
 			handleTagsUpdated={handleTagsUpdated}
 			handleTagManagerClose={handleTagManagerClose}
 			toggleSectionCollapse={toggleSectionCollapse}
+			itemsPerPage={itemsPerPage}
+			onItemsPerPageChange={onItemsPerPageChange}
+			totalPages={totalPages}
+			currentPage={currentPage}
+			onPageChange={onPageChange}
 		/>
 	)
 }

@@ -2,7 +2,7 @@ import type { PokemonListItemDto, TagDto } from '@/models/api/types'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { ViewMode } from '@/models/store/StylesSetting'
 import { ConfirmDialog } from '@/ConfirmDialog'
-import { PokemonFilters, PokemonCard, PokemonListRow } from '@/components/elements'
+import { PokemonFilters, PokemonCard, PokemonListRow, Pagination } from '@/components/elements'
 import { TagManager } from '@/components/elements/TagManager/TagManager'
 import './HomeComponent.scss'
 
@@ -51,6 +51,13 @@ interface HomeComponentProps {
 	handleTagsUpdated: (pokemonId: number, newTags: TagDto[]) => void
 	handleTagManagerClose: () => void
 	toggleSectionCollapse: (sectionKey: string) => void
+
+	// Paginación
+	itemsPerPage: number
+	onItemsPerPageChange: (itemsPerPage: number) => void
+	totalPages: number
+	currentPage: number
+	onPageChange: (page: number) => void
 }
 
 /**
@@ -89,6 +96,13 @@ const HomeComponent = ({
 	handleTagsUpdated,
 	handleTagManagerClose,
 	toggleSectionCollapse,
+
+	// Paginación
+	itemsPerPage,
+	onItemsPerPageChange,
+	totalPages,
+	currentPage,
+	onPageChange,
 }: HomeComponentProps) => {
 	/**
 	 * Renderiza el header de la aplicación
@@ -133,17 +147,6 @@ const HomeComponent = ({
 				alignItems: 'center',
 				marginBottom: '1rem',
 			}}>
-			<h2>Pokémon Collection</h2>
-
-			{/* Información de resultados */}
-			<div
-				style={{
-					color: 'rgba(255, 255, 255, 0.75)',
-					fontSize: '0.9rem',
-				}}>
-				Showing {processedPokemon.length} of {totalPokemon} Pokémon
-			</div>
-
 			{/* Selector de modo de vista */}
 			<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
 				<button
@@ -390,6 +393,18 @@ const HomeComponent = ({
 					onTagsUpdated={handleTagsUpdated}
 				/>
 			)}
+
+			<Pagination
+				currentPage={currentPage}
+				itemsPerPage={itemsPerPage}
+				onItemsPerPageChange={onItemsPerPageChange}
+				onPageChange={onPageChange}
+				totalItems={totalPokemon}
+				totalPages={totalPages}
+				disabled={loading}
+				key={totalPokemon}
+				loading={loading}
+			/>
 		</div>
 	)
 }
