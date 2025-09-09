@@ -28,23 +28,18 @@ export const fetchPokemonList = createAsyncThunk<
 		pokemon: PokemonListItemDto[]
 		sprites: Record<number, PokemonSprites>
 		total: number
-		cache: Record<string, any>
 		tags?: any[]
 	},
 	PokemonListFilterDto,
 	{ state: { pokemon: PokemonState } }
->('pokemon/fetchPokemonList', async (filters, { getState, rejectWithValue }) => {
+>('pokemon/fetchPokemonList', async (filters, { rejectWithValue }) => {
 	try {
-		const state = getState().pokemon
-		const pokeApiCache = { ...state.pokeApiCache }
-
-		const result = await getPokemonListWithSprites(filters, pokeApiCache)
+		const result = await getPokemonListWithSprites(filters)
 
 		return {
 			pokemon: result.pokemon,
 			sprites: result.sprites,
 			total: result.total,
-			cache: pokeApiCache,
 		}
 	} catch (error: any) {
 		return rejectWithValue(error.message || 'Failed to fetch Pokémon list')
@@ -96,7 +91,6 @@ export const fetchPokemonByTagsGrouped = createAsyncThunk<
 		pokemon: PokemonListItemDto[]
 		sprites: Record<number, PokemonSprites>
 		total: number
-		cache: Record<string, any>
 		tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]
 	},
 	{
@@ -110,22 +104,19 @@ export const fetchPokemonByTagsGrouped = createAsyncThunk<
 	{ state: { pokemon: PokemonState } }
 >(
 	'pokemon/fetchPokemonByTagsGrouped',
-	async ({ filters, currentPage, take }, { getState, rejectWithValue }) => {
+	async ({ filters, currentPage, take }, { rejectWithValue }) => {
 		try {
-			const state = getState().pokemon
-			const pokeApiCache = { ...state.pokeApiCache }
-
 			// Get all tags
 			const allTags = await getTagsWithPokemon()
 			const skipPerTag = (currentPage - 1) * take
 
 			// Fetch pokemon for each tag
 			const tagPromises = allTags.map((tag) =>
-				fetchPokemonForTag(tag.id, tag.name, filters, skipPerTag, take, pokeApiCache)
+				fetchPokemonForTag(tag.id, tag.name, filters, skipPerTag, take)
 			)
 
 			// Fetch untagged pokemon
-			const untaggedPromise = fetchUntaggedPokemon(filters, skipPerTag, take, pokeApiCache)
+			const untaggedPromise = fetchUntaggedPokemon(filters, skipPerTag, take)
 
 			// Wait for all results
 			const results = await Promise.all([...tagPromises, untaggedPromise])
@@ -133,14 +124,13 @@ export const fetchPokemonByTagsGrouped = createAsyncThunk<
 			// Combine all results
 			const { allPokemon, allSprites, tagGroups } = combineTagResults(results)
 
-			const result = await getPokemonListWithSprites(filters, pokeApiCache)
+			const result = await getPokemonListWithSprites(filters)
 			const totalPokemon = result.total
 
 			return {
 				pokemon: allPokemon,
 				sprites: allSprites,
 				total: totalPokemon,
-				cache: pokeApiCache,
 				tagGroups,
 			}
 		} catch (error: any) {

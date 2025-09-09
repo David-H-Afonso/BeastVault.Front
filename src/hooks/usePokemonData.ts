@@ -1,19 +1,29 @@
 import { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { getPokeApiPokemon } from '../services/Pokeapi'
 import { PokemonNameService } from '../services/PokemonNameService'
 import type { PokeApiPokemon } from '../models/Pokeapi'
 import { getComputedTypeColor } from '../utils/typeColors'
+import { storePokemonData, selectPokemonData } from '../store/features/assets/assetsSlice'
+import type { RootState } from '../store'
 
 /**
  * Hook unificado para obtener información completa de Pokemon
- * Consolida usePokemonInfo, usePokemonFullName, usePokemonSpeciesName y usePokemonTypes
+ * Usa Redux cache en lugar de CacheService para mejor rendimiento
  */
 export function usePokemonData(
 	speciesId?: number,
 	form: number = 0,
 	canGigantamax: boolean = false
 ) {
-	const [pokemonData, setPokemonData] = useState<{
+	const dispatch = useDispatch()
+	
+	// Check Redux storage first
+	const storedData = useSelector((state: RootState) => 
+		speciesId ? selectPokemonData(state, speciesId, form) : null
+	)
+
+	const [pokemonData, setPokemonDataLocal] = useState<{
 		// Types
 		type1?: string
 		type2?: string
@@ -32,11 +42,50 @@ export function usePokemonData(
 
 	useEffect(() => {
 		if (!speciesId) {
-			setPokemonData({ colors: {} })
+			setPokemonDataLocal({ colors: {} })
 			return
 		}
 
-		const fetchPokemonData = async () => {
+		// If we have stored data, use it immediately
+		if (storedData) {
+			setPokemonDataLocal({
+				type1: storedData.type1,
+				type2: storedData.type2,
+				colors: storedData.colors,
+				formName: storedData.formName,
+				fullName: undefined, // We'll still fetch this if needed
+				speciesName: undefined, // We'll still fetch this if needed
+				pokeApiData: storedData.pokeApiData,
+			})
+			
+			// Still fetch names if not stored (they're less critical)
+			fetchNamesOnly(speciesId, form)
+			return
+		}
+
+		// No stored data, fetch everything
+		fetchPokemonData()
+		
+		async function fetchNamesOnly(speciesId: number, form: number) {
+			try {
+				const [fullName, speciesName] = await Promise.all([
+					PokemonNameService.getFullName(speciesId, form),
+					PokemonNameService.getSpeciesName(speciesId),
+				])
+				
+				setPokemonDataLocal(prev => ({
+					...prev,
+					fullName,
+					speciesName,
+				}))
+			} catch (err) {
+				console.warn('Error fetching Pokemon names:', err)
+			}
+		}
+
+		async function fetchPokemonData() {
+			if (!speciesId) return // Early return if no speciesId
+			
 			setLoading(true)
 			setError(null)
 
@@ -70,14 +119,25 @@ export function usePokemonData(
 				}
 				// Add other form handling logic here...
 
-				setPokemonData({
+				const newData = {
 					type1,
 					type2,
 					colors,
-					fullName,
-					speciesName,
 					formName,
 					pokeApiData,
+				}
+
+				// Store in Redux memory
+				dispatch(storePokemonData({
+					speciesId,
+					form,
+					data: newData,
+				}))
+
+				setPokemonDataLocal({
+					...newData,
+					fullName,
+					speciesName,
 				})
 			} catch (err) {
 				console.error('Error fetching Pokemon data:', err)
@@ -86,9 +146,7 @@ export function usePokemonData(
 				setLoading(false)
 			}
 		}
-
-		fetchPokemonData()
-	}, [speciesId, form, canGigantamax])
+	}, [speciesId, form, canGigantamax, storedData, dispatch])
 
 	// Helper methods
 	const getTypes = () => {

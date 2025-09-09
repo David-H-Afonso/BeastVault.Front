@@ -1,6 +1,5 @@
-// Export all cache-related services and utilities
-export { staticResourceCache } from './StaticResourceCache'
-export { cacheService, CacheKeys } from './CacheService'
+// Export services and utilities
+export { simpleFetcher } from '../utils/simpleFetcher'
 
 // Re-export optimized PokeAPI functions
 export {
@@ -11,18 +10,24 @@ export {
 	POKEAPI_BASE_URL,
 } from './Pokeapi'
 
-// Export cached resource hooks
-export { useCachedImage, useCachedApi, useImagePreloader } from '../hooks/useCachedResources'
-
-// Export preloader hooks
+// Export Pokemon service functions
 export {
-	useStaticResourcePreloader,
-	usePokemonResourcePreloader,
-	useCacheStats,
-	PreloadPriority,
-	type PreloadPriorityType,
-} from '../hooks/useResourcePreloader'
+	getPokemonMetadata,
+	importPokemonFiles,
+	getPokemonListWithSprites,
+	getPokemonList,
+	deletePokemonFromDatabase,
+	deletePokemonCompletely,
+	downloadFileById,
+	downloadPkmFileFromDisk,
+	scanPokemonDirectory,
+} from './Pokemon'
 
-// Export cached components
-export { CachedImage } from '@/utils/cache/CachedImage'
-export { CacheDiagnostics } from '@/utils/cache/CacheDiagnostics'
+// Export TaggedPokemon service functions
+export * from './TaggedPokemon'
+
+// Export Tags service functions  
+export * from './Tags'
+
+// Export Theme service functions
+export * from './ThemeService'

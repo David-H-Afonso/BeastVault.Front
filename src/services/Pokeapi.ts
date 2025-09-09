@@ -1,6 +1,6 @@
 import type { PokeApiPokemon, PokeApiSprites } from '../models/Pokeapi'
 import { cacheService, CacheKeys } from './CacheService'
-import { staticResourceCache } from './StaticResourceCache'
+import { simpleFetcher } from '../utils/simpleFetcher'
 
 export const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2/'
 
@@ -28,14 +28,14 @@ export async function getPokeApiPokemon(
 		try {
 			// First get the base Pokemon to know its name
 			const baseUrl = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
-			const basePokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(baseUrl)
+			const basePokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(baseUrl)
 
 			// Try to fetch the Gigantamax variant
 			const gmaxName = `${basePokemon.name}-gmax`
 
 			try {
 				const gmaxUrl = `${POKEAPI_BASE_URL}pokemon/${gmaxName}`
-				const gmaxPokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(gmaxUrl)
+				const gmaxPokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(gmaxUrl)
 
 				// Cache for 24 hours
 				cacheService.set(cacheKey, gmaxPokemon, 24 * 60 * 60 * 1000)
@@ -54,7 +54,7 @@ export async function getPokeApiPokemon(
 	// For form 0 (base form), use the standard pokemon endpoint
 	if (form === 0) {
 		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
-		const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(url)
+		const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(url)
 		// Cache for 24 hours
 		await cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
 		return pokemon
@@ -69,7 +69,7 @@ export async function getPokeApiPokemon(
 
 		if (!speciesData) {
 			const speciesUrl = `${POKEAPI_BASE_URL}pokemon-species/${speciesId}`
-			speciesData = await staticResourceCache.fetchWithCache<any>(speciesUrl)
+			speciesData = await simpleFetcher.fetchWithCache<any>(speciesUrl)
 			await cacheService.set(speciesCacheKey, speciesData, 24 * 60 * 60 * 1000)
 		}
 
@@ -81,7 +81,7 @@ export async function getPokeApiPokemon(
 			const varietyUrl = varieties[form].pokemon.url
 			const pokemonId = varietyUrl.split('/').filter(Boolean).pop()
 			const pokemonUrl = `${POKEAPI_BASE_URL}pokemon/${pokemonId}`
-			const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(pokemonUrl)
+			const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(pokemonUrl)
 
 			// Cache the result
 			await cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
@@ -90,7 +90,7 @@ export async function getPokeApiPokemon(
 
 		// Fallback to base form if specific form not found
 		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
-		const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(url)
+		const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(url)
 		await cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
 		return pokemon
 	} catch (error) {
@@ -100,7 +100,7 @@ export async function getPokeApiPokemon(
 		)
 		// Fallback to base form
 		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
-		const pokemon = await staticResourceCache.fetchWithCache<PokeApiPokemon>(url)
+		const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(url)
 		await cacheService.set(cacheKey, pokemon, 24 * 60 * 60 * 1000)
 		return pokemon
 	}
@@ -120,12 +120,11 @@ export async function getPokeBallIcon(ballName: string): Promise<string | null> 
 	}
 
 	try {
-		console.log(ballName)
 		if (!ballName) {
 			console.warn('Ball name is null or undefined')
 			return null
 		}
-		
+
 		// Convert ball name to URL-friendly format
 		// "Poké Ball" -> "poke-ball", "Beast Ball" -> "beast-ball", etc.
 		const urlFriendlyName = ballName
@@ -135,7 +134,7 @@ export async function getPokeBallIcon(ballName: string): Promise<string | null> 
 			.replace(/[^a-z0-9-]/g, '') // Remove any other non-alphanumeric characters except hyphens
 
 		const itemUrl = `${POKEAPI_BASE_URL}item/${urlFriendlyName}`
-		const itemData = await staticResourceCache.fetchWithCache<any>(itemUrl)
+		const itemData = await simpleFetcher.fetchWithCache<any>(itemUrl)
 		const iconUrl = itemData?.sprites?.default || null
 
 		// Cache the result (cache for 7 days since pokeball icons don't change)

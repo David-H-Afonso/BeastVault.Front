@@ -31,7 +31,6 @@ import {
 } from '@/store/features/pokemon'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { TagDto } from '@/models/api/types'
-import { PokemonCacheManager } from '@/utils'
 
 /**
  * Custom hook for managing Pokemon data through Redux
@@ -97,12 +96,8 @@ export const usePokemon = () => {
 	}, [dispatch])
 
 	const clearAllPokeApiCache = useCallback(async () => {
-		// Clear Redux cache
+		// Clear Redux memory storage
 		dispatch(clearCache())
-		// Clear Cache Storage
-		await PokemonCacheManager.clearOldCacheStorage()
-		// Clear legacy localStorage cache
-		PokemonCacheManager.clearOldLocalStorageCache()
 	}, [dispatch])
 
 	const clearCurrentImportResult = useCallback(() => {

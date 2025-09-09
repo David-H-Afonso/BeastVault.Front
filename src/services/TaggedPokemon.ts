@@ -22,22 +22,18 @@ export async function fetchPokemonForTag(
 		'tagIds' | 'tagNames' | 'anyTagIds' | 'anyTagNames' | 'hasNoTags'
 	>,
 	skip: number,
-	take: number,
-	cache: Record<string, any>
+	take: number
 ): Promise<{
 	tagName: string
 	pokemon: PokemonListItemDto[]
 	sprites: Record<number, PokemonSprites>
 }> {
-	const result = await getPokemonListWithSprites(
-		{
-			...filters,
-			tagIds: [tagId],
-			Skip: skip,
-			Take: take,
-		},
-		cache
-	)
+	const result = await getPokemonListWithSprites({
+		...filters,
+		tagIds: [tagId],
+		Skip: skip,
+		Take: take,
+	})
 
 	return {
 		tagName,
@@ -55,22 +51,18 @@ export async function fetchUntaggedPokemon(
 		'tagIds' | 'tagNames' | 'anyTagIds' | 'anyTagNames' | 'hasNoTags'
 	>,
 	skip: number,
-	take: number,
-	cache: Record<string, any>
+	take: number
 ): Promise<{
 	tagName: string
 	pokemon: PokemonListItemDto[]
 	sprites: Record<number, PokemonSprites>
 }> {
-	const result = await getPokemonListWithSprites(
-		{
-			...filters,
-			hasNoTags: true,
-			Skip: skip,
-			Take: take,
-		},
-		cache
-	)
+	const result = await getPokemonListWithSprites({
+		...filters,
+		hasNoTags: true,
+		Skip: skip,
+		Take: take,
+	})
 
 	return {
 		tagName: 'No Tags',

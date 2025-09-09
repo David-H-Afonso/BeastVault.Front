@@ -5,6 +5,7 @@ import storage from 'redux-persist/lib/storage'
 import pokemonReducer from './features/pokemon/pokemonSlice'
 import { layoutReducer } from './features/layout'
 import styleSettingsReducer from './features/styleSettings/styleSettingsSlice'
+import assetsReducer from './features/assets/assetsSlice'
 
 /**
  * CENTRALIZED PERSISTENCE CONFIGURATION
@@ -23,7 +24,7 @@ import styleSettingsReducer from './features/styleSettings/styleSettingsSlice'
 const persistConfig = {
 	key: 'root',
 	storage,
-	whitelist: ['pokemon', 'styleSettings', 'layout'], // Persist all main features
+	whitelist: ['pokemon', 'styleSettings', 'layout'], // Don't persist assets (memory only)
 	// Note: We can add blacklist here for any specific parts we don't want to persist
 	// Transform configurations can be added here for complex data transformations
 }
@@ -33,6 +34,7 @@ const rootReducer = combineReducers({
 	pokemon: pokemonReducer,
 	layout: layoutReducer,
 	styleSettings: styleSettingsReducer,
+	assets: assetsReducer, // Memory-only assets storage (not persisted)
 })
 
 // Create persisted reducer - Single point of persistence configuration

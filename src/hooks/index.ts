@@ -1,11 +1,6 @@
-export { useCachedImage, useCachedApi, useImagePreloader } from './useCachedResources'
+// Main hooks exports - cleaned up and simplified
 export { usePokemon } from './usePokemon'
 export { usePokemonData } from './usePokemonData'
-export { usePokemonSprite, usePokeBallIcon } from './useCachedAssets'
+export { usePokeBallIcon } from './useAssets'
 export { useSprites } from './useSprites'
-export {
-	useStaticResourcePreloader,
-	usePokemonResourcePreloader,
-	useCacheStats,
-} from './useResourcePreloader'
 export { useUISettings } from './useUISettings'

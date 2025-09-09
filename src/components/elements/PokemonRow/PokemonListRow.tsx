@@ -1,5 +1,5 @@
 import type { PokemonListItemDto } from '../../../models/api/types'
-import { usePokeBallIcon } from '../../../hooks/useCachedAssets'
+import { usePokeBallIcon } from '../../../hooks/useAssets'
 import { getBallNameFromId } from '../../../models/enums/PokemonBalls'
 import './PokemonListRow.scss'
 

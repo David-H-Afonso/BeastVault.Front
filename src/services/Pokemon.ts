@@ -9,7 +9,6 @@ import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
 import { getPokeApiPokemon } from './Pokeapi'
-import { PokemonCacheManager } from '../utils/pokemonCacheManager'
 
 /**
  * Fetches metadata for pokemon filters (types, pokeballs, natures, etc.)
@@ -52,12 +51,10 @@ export async function importPokemonFiles(files: File[]): Promise<PokemonDetailDt
  * This combines the main Pokemon list with sprite data in a single service call.
  *
  * @param params Query parameters for filtering and pagination
- * @param pokeApiCache Cache object to store PokeAPI responses (passed by reference)
  * @returns Promise resolving to Pokemon list, sprites, and total count
  */
 export async function getPokemonListWithSprites(
-	params: PokemonListFilterDto,
-	pokeApiCache: Record<string, any> = {}
+	params: PokemonListFilterDto
 ): Promise<{
 	pokemon: PokemonListItemDto[]
 	sprites: Record<
@@ -85,14 +82,8 @@ export async function getPokemonListWithSprites(
 	>
 	total: number
 }> {
-	// Clean old localStorage cache to prevent QuotaExceededError (legacy cleanup)
-	PokemonCacheManager.clearOldLocalStorageCache()
-
-	// Clean up expired Cache Storage entries
-	PokemonCacheManager.cleanupCacheStorage()
-
-	// Manage cache size to prevent memory issues
-	const managedCache = PokemonCacheManager.manageCache(pokeApiCache)
+	// Cache management is now handled by Redux memory store
+	// No need for legacy cache cleanup
 
 	// First get the Pokemon list
 	const result = await getPokemonList(params)
@@ -112,16 +103,10 @@ export async function getPokemonListWithSprites(
 			const isGigantamax = combo.includes('-gmax')
 			const cacheKey = combo
 
-			if (managedCache[cacheKey]) {
-				return [cacheKey, managedCache[cacheKey]] as [string, any]
-			}
-
 			try {
 				const pokeApi = await getPokeApiPokemon(speciesId, form, isGigantamax)
-				managedCache[cacheKey] = pokeApi
 				return [cacheKey, pokeApi] as [string, any]
 			} catch {
-				managedCache[cacheKey] = null
 				return [cacheKey, null] as [string, any]
 			}
 		})

@@ -117,7 +117,6 @@ const pokemonSlice = createSlice({
 				state.pokemon = action.payload.pokemon
 				state.sprites = { ...state.sprites, ...action.payload.sprites }
 				state.totalPokemon = action.payload.total
-				state.pokeApiCache = action.payload.cache // Update cache
 				state.lastFetch = Date.now()
 			})
 			.addCase(fetchPokemonList.rejected, (state, action) => {
@@ -181,7 +180,6 @@ const pokemonSlice = createSlice({
 				state.sprites = { ...state.sprites, ...action.payload.sprites }
 				state.totalPokemon = action.payload.total
 				state.tagGroups = action.payload.tagGroups
-				state.pokeApiCache = action.payload.cache
 				state.lastFetch = Date.now()
 			})
 			.addCase(fetchPokemonByTagsGrouped.rejected, (state, action) => {

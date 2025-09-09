@@ -8,7 +8,6 @@ import { getBestSpriteByType, groupPokemonByTags } from '@/utils'
 import HomeComponent from '../components/HomeComponent'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateFilters } from '@/store/features/pokemon'
-import NewHomeComponent from '../components/NewHomeComponent'
 
 /**
  * Contenedor principal de la página Home
@@ -339,8 +338,6 @@ const Home = () => {
 			onPageChange={onPageChange}
 		/>
 	)
-
-	return <NewHomeComponent loading={loading} processedPokemon={processedPokemonData()} />
 }
 
 export default Home
