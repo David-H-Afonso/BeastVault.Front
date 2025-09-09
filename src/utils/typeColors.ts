@@ -33,6 +33,7 @@ export const TYPE_COLORS = {
  * @returns Variable CSS del color del tipo
  */
 export function getTypeColor(typeName: string): string {
+	if (!typeName) return 'var(--type-default)'
 	const typeKey = typeName.toLowerCase() as keyof typeof TYPE_COLORS
 	return TYPE_COLORS[typeKey] || 'var(--type-default)'
 }
@@ -48,6 +49,8 @@ export function getComputedTypeColor(typeName: string): string {
 		// Fallback para SSR
 		return '#68a090'
 	}
+
+	if (!typeName) return '#68a090'
 
 	const typeKey = typeName.toLowerCase() as keyof typeof TYPE_COLORS
 	const cssVar = TYPE_COLORS[typeKey] || 'var(--type-default)'

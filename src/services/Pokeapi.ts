@@ -121,6 +121,11 @@ export async function getPokeBallIcon(ballName: string): Promise<string | null> 
 
 	try {
 		console.log(ballName)
+		if (!ballName) {
+			console.warn('Ball name is null or undefined')
+			return null
+		}
+		
 		// Convert ball name to URL-friendly format
 		// "Poké Ball" -> "poke-ball", "Beast Ball" -> "beast-ball", etc.
 		const urlFriendlyName = ballName
@@ -151,7 +156,12 @@ export async function getPokeBallIcon(ballName: string): Promise<string | null> 
  * Gets Tera type icon from external source (GitHub or similar) with caching
  * @param teraTypeName Tera type name (e.g., "Fire", "Water")
  */
-export async function getTeraTypeIcon(teraTypeName: string): Promise<string> {
+export async function getTeraTypeIcon(teraTypeName: string): Promise<string | null> {
+	if (!teraTypeName) {
+		console.warn('Tera type name is null or undefined')
+		return null
+	}
+
 	const cacheKey = CacheKeys.teraType(teraTypeName)
 
 	// Try cache first

@@ -56,6 +56,7 @@ export const getBallNameFromId = (ballId: number): string => {
  * @returns Pokeball ID or -1 if not found
  */
 export const getBallIdFromName = (ballName: string): number => {
+	if (!ballName) return -1
 	const entries = Object.entries(PokemonBalls)
 	const entry = entries.find(([, name]) => name.toLowerCase() === ballName.toLowerCase())
 	return entry ? Number(entry[0]) : -1

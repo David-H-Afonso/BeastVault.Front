@@ -26,6 +26,7 @@ export const getTypeNameFromId = (typeId: number): string => {
 }
 
 export const getTypeIdFromName = (typeName: string): number => {
+	if (!typeName) return -1
 	const entries = Object.entries(PokemonTypes)
 	const entry = entries.find(([, name]) => name.toLowerCase() === typeName.toLowerCase())
 	return entry ? Number(entry[0]) : -1

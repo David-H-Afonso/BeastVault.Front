@@ -31,18 +31,19 @@ export function PokemonListRow({
 
 	// Handle forms using the backend formName
 	if (formName) {
+		const formNameLower = formName.toLowerCase()
 		// Handle different form naming patterns
-		if (formName.toLowerCase().includes('gigantamax') || pokemon.canGigantamax) {
+		if (formNameLower.includes('gigantamax') || pokemon.canGigantamax) {
 			fullSpeciesName = `Gigantamax ${speciesName}`
-		} else if (formName.toLowerCase().includes('mega')) {
+		} else if (formNameLower.includes('mega')) {
 			fullSpeciesName = `Mega ${speciesName}`
-		} else if (['galar', 'galarian'].some((term) => formName.toLowerCase().includes(term))) {
+		} else if (['galar', 'galarian'].some((term) => formNameLower.includes(term))) {
 			fullSpeciesName = `Galarian ${speciesName}`
-		} else if (['alola', 'alolan'].some((term) => formName.toLowerCase().includes(term))) {
+		} else if (['alola', 'alolan'].some((term) => formNameLower.includes(term))) {
 			fullSpeciesName = `Alolan ${speciesName}`
-		} else if (['hisui', 'hisuian'].some((term) => formName.toLowerCase().includes(term))) {
+		} else if (['hisui', 'hisuian'].some((term) => formNameLower.includes(term))) {
 			fullSpeciesName = `Hisuian ${speciesName}`
-		} else if (['paldea', 'paldean'].some((term) => formName.toLowerCase().includes(term))) {
+		} else if (['paldea', 'paldean'].some((term) => formNameLower.includes(term))) {
 			fullSpeciesName = `Paldean ${speciesName}`
 		} else {
 			// For other forms like "Crowned", "Dada", etc., show as suffix

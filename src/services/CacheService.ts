@@ -13,9 +13,21 @@ class CacheService {
 	private readonly DEFAULT_EXPIRY = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
 
 	/**
+	 * Check if Cache API is available
+	 */
+	private isCacheAvailable(): boolean {
+		return typeof caches !== 'undefined' && caches !== null
+	}
+
+	/**
 	 * Store data in cache with expiry
 	 */
 	async set<T>(key: string, data: T, expiryMs?: number): Promise<void> {
+		if (!this.isCacheAvailable()) {
+			console.warn('Cache API not available, skipping cache set')
+			return
+		}
+
 		try {
 			const cache = await caches.open(this.CACHE_NAME)
 			const expiry = expiryMs || this.DEFAULT_EXPIRY
@@ -37,6 +49,11 @@ class CacheService {
 	 * Get data from cache if not expired
 	 */
 	async get<T>(key: string): Promise<T | null> {
+		if (!this.isCacheAvailable()) {
+			console.warn('Cache API not available, skipping cache get')
+			return null
+		}
+
 		try {
 			const cache = await caches.open(this.CACHE_NAME)
 			const response = await cache.match(key)
@@ -63,6 +80,11 @@ class CacheService {
 	 * Delete specific cache entry
 	 */
 	async delete(key: string): Promise<void> {
+		if (!this.isCacheAvailable()) {
+			console.warn('Cache API not available, skipping cache delete')
+			return
+		}
+
 		try {
 			const cache = await caches.open(this.CACHE_NAME)
 			await cache.delete(key)
@@ -75,6 +97,11 @@ class CacheService {
 	 * Clear all cache entries
 	 */
 	async clear(): Promise<void> {
+		if (!this.isCacheAvailable()) {
+			console.warn('Cache API not available, skipping cache clear')
+			return
+		}
+
 		try {
 			await caches.delete(this.CACHE_NAME)
 		} catch (error) {
@@ -86,6 +113,11 @@ class CacheService {
 	 * Get cache statistics
 	 */
 	async getStats(): Promise<{ totalItems: number; totalSize: number }> {
+		if (!this.isCacheAvailable()) {
+			console.warn('Cache API not available, returning empty stats')
+			return { totalItems: 0, totalSize: 0 }
+		}
+
 		try {
 			const cache = await caches.open(this.CACHE_NAME)
 			const keys = await cache.keys()
@@ -144,10 +176,16 @@ export const cacheService = new CacheService()
 
 // Cache key generators
 export const CacheKeys = {
-	pokeball: (ballName: string) => `pokeball_${ballName.toLowerCase().replace(/\s+/g, '_')}`,
+	pokeball: (ballName: string) => {
+		if (!ballName) return 'pokeball_unknown'
+		return `pokeball_${ballName.toLowerCase().replace(/\s+/g, '_')}`
+	},
 	pokemon: (speciesId: number, form: number = 0, canGigantamax: boolean = false) =>
 		`pokemon_${speciesId}_${form}${canGigantamax ? '_gmax' : ''}`,
-	teraType: (typeName: string) => `tera_type_${typeName.toLowerCase()}`,
+	teraType: (typeName: string) => {
+		if (!typeName) return 'tera_type_unknown'
+		return `tera_type_${typeName.toLowerCase()}`
+	},
 	sprite: (spriteKey: string) => `sprite_${spriteKey}`,
 } as const
 
