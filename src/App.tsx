@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import {
-	importPokemonFiles,
 	getPokemonList,
 	deletePokemonFromDatabase,
 	downloadFileById,
 	downloadPkmFileFromDisk,
-	scanPokemonDirectory,
 } from './services/Pokemon'
 import type { PokemonListFilterDto } from './models/Pokemon'
 import type { PokemonListItemDto, TagDto } from './models/api/types'
@@ -16,10 +14,8 @@ import { TagManager } from './components/elements/TagManager/TagManager'
 import { useViewMode } from './hooks/useViewMode'
 import './App.scss'
 import './components/elements/PokemonRow/PokemonListRow.scss'
-import { ThemeSelector } from '@/components/elements'
 import { useSpriteType } from './hooks/useSpriteType'
 import { SpriteType } from './enums/SpriteTypes'
-import { BeastVaultBanner as banner } from '@/assets/images'
 
 // Helper to get the best available sprite based on user preference
 function getBestSpriteByType(
