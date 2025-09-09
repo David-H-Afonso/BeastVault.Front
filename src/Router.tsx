@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import App from './App'
 import Settings from '@/components/Settings/containers/Settings'
 import PageNotFound from '@/components/PageNotFound/containers/PageNotFound'
-import { AppLayout } from './components/AppLayout'
+import { AppLayout } from './layouts/AppLayout'
 
 export const router = createBrowserRouter([
 	{

@@ -1,6 +1,6 @@
 import React from 'react'
-import { useCacheStats, useStaticResourcePreloader } from '../hooks/useResourcePreloader'
-import { staticResourceCache } from '../services/StaticResourceCache'
+import { useCacheStats, useStaticResourcePreloader } from '../../hooks/useResourcePreloader'
+import { staticResourceCache } from '../../services/StaticResourceCache'
 
 interface CacheDiagnosticsProps {
 	isVisible?: boolean

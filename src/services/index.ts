@@ -25,4 +25,4 @@ export {
 
 // Export cached components
 export { CachedImage } from '../components/CachedImage'
-export { CacheDiagnostics } from '../components/CacheDiagnostics'
+export { CacheDiagnostics } from '../utils/cache/CacheDiagnostics'
