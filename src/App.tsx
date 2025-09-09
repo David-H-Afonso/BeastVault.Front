@@ -1,9 +1,9 @@
 import './App.scss'
 import './components/elements/PokemonRow/PokemonListRow.scss'
-import HomeComponent from './components/Home/components/HomeComponent'
+import Home from './components/Home/containers/Home'
 
 function App() {
-	return <HomeComponent />
+	return <Home />
 }
 
 export default App
