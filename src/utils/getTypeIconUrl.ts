@@ -8,9 +8,36 @@ export function getTypeIconUrl(typeName: string): string {
 
 	const typeNameLower = typeName.toLowerCase()
 
-	// Use Pokemon type icons from a reliable CDN
-	// These are the standard Pokemon type icons used across the franchise
-	return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-viii/sword-shield/${typeNameLower}.png`
+	// Map type names to their IDs for the sprite URLs
+	const typeIdMap: { [key: string]: number } = {
+		normal: 1,
+		fighting: 2,
+		flying: 3,
+		poison: 4,
+		ground: 5,
+		rock: 6,
+		bug: 7,
+		ghost: 8,
+		steel: 9,
+		fire: 10,
+		water: 11,
+		grass: 12,
+		electric: 13,
+		psychic: 14,
+		ice: 15,
+		dragon: 16,
+		dark: 17,
+		fairy: 18,
+	}
+
+	const typeId = typeIdMap[typeNameLower]
+	if (!typeId) {
+		// Fallback to original name-based URL if type not found
+		return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-vi/omega-ruby-alpha-sapphire/${typeNameLower}.png`
+	}
+
+	// Use type ID instead of name for the URL
+	return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-vi/omega-ruby-alpha-sapphire/${typeId}.png`
 }
 
 /**

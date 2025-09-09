@@ -1,0 +1,786 @@
+// Importar el sistema de temas
+@use '@/assets/styles' as *;
+
+.generationBadges {
+	flex-direction: row;
+	margin-top: -5px;
+	justify-content: space-between;
+}
+
+.generationBadge {
+	background: var(--overlay-heavy);
+	color: var(--text-inverse);
+	padding: 2px 8px;
+	border-radius: 8px;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.3px;
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	width: fit-content;
+	box-shadow: 0 1px 3px var(--shadow-soft);
+}
+
+.originBadge {
+	background: var(--color-info) !important;
+	color: white !important;
+}
+
+.captureBadge {
+	background: var(--color-success) !important;
+	color: white !important;
+}
+
+.badgeBallIcon {
+	width: 10px;
+	height: 10px;
+}
+
+.badgeLabel {
+	font-size: 8px;
+	opacity: 0.9;
+}
+
+.badgeValue {
+	font-size: 10px;
+	font-weight: 700;
+}
+
+/* Base card styling */
+.pokemonCardModern {
+	background: var(--bg-secondary);
+	backdrop-filter: blur(8px);
+	border-radius: 18px;
+	padding: 5px;
+	position: relative;
+	@include card-shadow('md');
+	transition: all 0.3s ease;
+	color: white; // Mantener blanco por defecto para temas oscuros
+	font-family: 'Segoe UI', sans-serif;
+	display: flex;
+	flex-direction: column;
+	border: 3px solid transparent;
+	min-width: 0;
+	min-height: 0;
+	flex: 1 1 0;
+}
+
+.pokemonCardModern::before {
+	content: '';
+	position: absolute;
+	top: -3px;
+	left: -3px;
+	right: -3px;
+	bottom: -3px;
+	z-index: 0;
+	border-radius: 18px;
+	pointer-events: none;
+	background: var(--card-border-gradient, var(--border-primary));
+}
+
+.pokemonCardModern > * {
+	position: relative;
+	z-index: 1;
+	transition: box-shadow 0.2s, border-color 0.2s;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+.pokemonCardModern:hover {
+	transform: translateY(-2px);
+	@include card-shadow('xl');
+}
+
+/* Grid container for cards (to be used in parent, e.g. .pokemon-grid) */
+.pokemon-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	align-items: stretch;
+	/* Ensures all cards in a row have the same height */
+}
+.pokemonCardModern.typeNormal {
+	--card-border-gradient: var(--type-normal);
+}
+.pokemonCardModern.typeFire {
+	--card-border-gradient: var(--type-fire);
+}
+.pokemonCardModern.typeWater {
+	--card-border-gradient: var(--type-water);
+}
+.pokemonCardModern.typeElectric {
+	--card-border-gradient: var(--type-electric);
+}
+.pokemonCardModern.typeGrass {
+	--card-border-gradient: var(--type-grass);
+}
+.pokemonCardModern.typeIce {
+	--card-border-gradient: var(--type-ice);
+}
+.pokemonCardModern.typeFighting {
+	--card-border-gradient: var(--type-fighting);
+}
+.pokemonCardModern.typePoison {
+	--card-border-gradient: var(--type-poison);
+}
+.pokemonCardModern.typeGround {
+	--card-border-gradient: var(--type-ground);
+}
+.pokemonCardModern.typeFlying {
+	--card-border-gradient: var(--type-flying);
+}
+.pokemonCardModern.typePsychic {
+	--card-border-gradient: var(--type-psychic);
+}
+.pokemonCardModern.typeBug {
+	--card-border-gradient: var(--type-bug);
+}
+.pokemonCardModern.typeRock {
+	--card-border-gradient: var(--type-rock);
+}
+.pokemonCardModern.typeGhost {
+	--card-border-gradient: var(--type-ghost);
+}
+.pokemonCardModern.typeDragon {
+	--card-border-gradient: var(--type-dragon);
+}
+.pokemonCardModern.typeDark {
+	--card-border-gradient: var(--type-dark-type);
+}
+.pokemonCardModern.typeSteel {
+	--card-border-gradient: var(--type-steel);
+}
+.pokemonCardModern.typeFairy {
+	--card-border-gradient: var(--type-fairy);
+}
+
+/* Dual type borders - diagonal gradient */
+.pokemonCardModern.dualType {
+	--card-border-gradient: linear-gradient(45deg, var(--type1-color), var(--type2-color));
+}
+
+.pokemonCardModern.dualType::before {
+	content: '';
+	position: absolute;
+	top: -3px;
+	left: -3px;
+	right: -3px;
+	bottom: -3px;
+	z-index: 0;
+	border-radius: 18px;
+	pointer-events: none;
+	background: linear-gradient(45deg, var(--type1-color), var(--type2-color));
+}
+
+/* Background type variations */
+
+/* Diagonal 45° (default) */
+.pokemonCardModern.background-diagonal-45.dualType::before {
+	background: linear-gradient(45deg, var(--type1-color), var(--type2-color));
+}
+
+/* Diagonal 90° (straight) */
+.pokemonCardModern.background-diagonal-90.dualType::before {
+	background: linear-gradient(90deg, var(--type1-color), var(--type2-color));
+}
+
+/* No type color - base color only */
+.pokemonCardModern.background-no-type-color::before {
+	background: var(--bg-secondary) !important;
+}
+
+.pokemonCardModern.background-no-type-color {
+	--card-border-gradient: var(--border-primary) !important;
+}
+
+/* Circle gradient around sprite */
+.pokemonCardModern.background-circle-gradient::before {
+	background: var(--bg-secondary);
+}
+
+.pokemonCardModern.background-circle-gradient .pokemonImageContainer::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 75px;
+	height: 75px;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	background: linear-gradient(
+		45deg,
+		var(--type1-color, #68a090),
+		var(--type2-color, var(--type1-color, #68a090))
+	);
+	opacity: 0.3;
+	z-index: 0;
+	pointer-events: none;
+	filter: blur(8px);
+}
+
+.pokemonCardModern.background-circle-gradient.dualType .pokemonImageContainer::before {
+	background: linear-gradient(45deg, var(--type1-color), var(--type2-color));
+}
+
+/* Circle gradient 90° */
+.pokemonCardModern.background-circle-gradient-90::before {
+	background: var(--bg-secondary);
+}
+
+.pokemonCardModern.background-circle-gradient-90 .pokemonImageContainer::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 75px;
+	height: 75px;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	background: linear-gradient(
+		90deg,
+		var(--type1-color, #68a090),
+		var(--type2-color, var(--type1-color, #68a090))
+	);
+	opacity: 0.3;
+	z-index: 0;
+	pointer-events: none;
+	filter: blur(8px);
+}
+
+.pokemonCardModern.background-circle-gradient-90.dualType .pokemonImageContainer::before {
+	background: linear-gradient(90deg, var(--type1-color), var(--type2-color));
+}
+
+/* Bottom split - only bottom 25% of card */
+.pokemonCardModern.background-bottom-split::before {
+	background: var(--bg-secondary);
+}
+
+.pokemonCardModern.background-bottom-split::after {
+	content: '';
+	position: absolute;
+	bottom: -3px;
+	left: -3px;
+	right: -3px;
+	height: 25%;
+	z-index: 0;
+	border-radius: 0 0 18px 18px;
+	background: linear-gradient(
+		90deg,
+		var(--type1-color, #68a090) 50%,
+		var(--type2-color, var(--type1-color, #68a090)) 50%
+	);
+	opacity: 0.6;
+	filter: blur(8px);
+	pointer-events: none;
+}
+
+.pokemonCardModern.background-bottom-split.dualType::after {
+	background: linear-gradient(90deg, var(--type1-color) 50%, var(--type2-color) 50%);
+}
+
+.pokemonCardModern.dualType > * {
+	position: relative;
+	z-index: 1;
+}
+
+/* Card header */
+.cardHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 12px;
+	border-color: var(--card-border-color);
+	border-radius: 18px !important;
+	.cardActions {
+		display: flex;
+		gap: 6px;
+	}
+
+	.cardHeaderGenInfo {
+		display: flex;
+		min-width: fit-content;
+		gap: 20px;
+		padding-right: 5px;
+	}
+}
+
+.actionBtn {
+	background: var(--overlay-light);
+	border: none;
+	border-radius: 10px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	color: white; // Mantener blanco por defecto
+}
+
+.actionBtn:first-child {
+	margin-left: 4px;
+}
+
+.actionBtn:hover {
+	background: var(--overlay-medium);
+	transform: scale(1.05);
+}
+
+.downloadBtn:hover {
+	background: var(--color-blue-alpha-20) !important;
+	color: var(--color-blue);
+}
+
+.deleteBtn:hover {
+	background: var(--color-red-alpha-20) !important;
+	color: var(--color-red);
+}
+
+.tagsBtn:hover {
+	background: var(--color-purple-alpha-20) !important;
+	color: var(--color-purple);
+}
+
+.generationBadges {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.generationBadge {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	background: var(--overlay-heavy);
+	color: white; // Mantener blanco por defecto
+	padding: 3px 6px;
+	border-radius: 8px;
+	font-size: 10px;
+	font-weight: 600;
+	backdrop-filter: blur(10px);
+	border: 1px solid var(--border-overlay-light);
+}
+
+.originBadge {
+	background: var(--color-info) !important;
+	border-color: var(--color-info-border) !important;
+	color: white !important;
+}
+
+.captureBadge {
+	background: var(--color-success) !important;
+	border-color: var(--color-success-border) !important;
+	color: white !important;
+}
+
+.badgeLabel {
+	font-size: 9px;
+	opacity: 0.8;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+}
+
+.badgeValue {
+	font-weight: 700;
+}
+
+.badgeBallIcon {
+	width: 12px;
+	height: 12px;
+	filter: brightness(1.2);
+}
+
+.pokedexBadge {
+	background: var(--overlay-light);
+	color: white;
+	padding: 4px 8px;
+	border-radius: 12px;
+	font-size: 11px;
+	font-weight: bold;
+	backdrop-filter: blur(10px);
+}
+
+/* Pokemon image section */
+.pokemonImageContainer {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100px;
+	margin-bottom: 14px;
+}
+
+.pokemonSprite {
+	max-width: max-content;
+	max-height: 80px;
+	filter: drop-shadow(0 2px 4px var(--shadow-soft));
+}
+
+.noImage {
+	width: 80px;
+	height: 80px;
+	background: var(--overlay-light);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+}
+
+.shinyIndicator {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	font-size: 14px;
+	filter: drop-shadow(0 1px 2px var(--shadow-medium));
+}
+
+/* Pokemon info section */
+.pokemonInfoContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	flex-grow: 1;
+	min-height: 0;
+}
+
+.nameSection {
+	.nameContainer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 8px;
+	}
+
+	.additionalNameContainer {
+		margin-top: -5px;
+		height: 6px;
+	}
+}
+
+.nameAndBall {
+	display: flex;
+	align-items: center;
+	max-width: fit-content;
+	overflow: hidden;
+}
+
+.ballIconInline {
+	width: 14px;
+	height: 14px;
+	object-fit: contain;
+	flex-shrink: 0;
+	scale: 1.8;
+	margin: 0.2rem;
+	margin-right: 5px;
+}
+
+.pokemonName {
+	font-size: 16px;
+	font-weight: 700;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	max-width: fit-content;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.genderSymbol {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.levelBadge {
+	background: var(--overlay-light);
+	color: white; // Mantener blanco por defecto
+	padding: 3px 6px;
+	border-radius: 8px;
+	font-size: 11px;
+	font-weight: 600;
+	backdrop-filter: blur(10px);
+	height: 20px;
+	display: flex;
+	align-items: center;
+}
+
+.typesContainer {
+	.pokemon-types {
+		display: flex;
+		gap: 4px;
+		margin-bottom: 8px;
+		flex-wrap: wrap;
+		align-items: center;
+		height: 100%;
+	}
+
+	.pokemon-teratypes {
+		display: flex;
+		height: 100%;
+		align-items: center;
+	}
+
+	display: flex;
+	justify-content: space-between;
+}
+
+.teraTypeBadge {
+	padding: 3px 8px;
+	border-radius: 10px;
+	font-size: 10px;
+	font-weight: 600;
+	color: var(--text-inverse);
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	@include card-shadow('sm');
+	border: 2px solid var(--border-overlay-medium);
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	.typeIcon {
+		width: 12px;
+		height: 12px;
+		object-fit: contain;
+		filter: brightness(1.2) contrast(1.1);
+	}
+
+	.typeText {
+		flex-shrink: 0;
+	}
+}
+
+.teraTypeBadge::before {
+	content: '✦';
+	position: absolute;
+	top: -2px;
+	right: -2px;
+	font-size: 8px;
+	color: var(--text-overlay-light);
+}
+
+.typeBadge {
+	padding: 3px 8px;
+	border-radius: 10px;
+	font-size: 10px;
+	font-weight: 600;
+	color: var(--text-inverse);
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	@include card-shadow('sm');
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	.typeIcon {
+		width: 12px;
+		height: 12px;
+		object-fit: contain;
+		filter: brightness(1.2) contrast(1.1);
+	}
+
+	.typeText {
+		flex-shrink: 0;
+	}
+}
+
+.additionalInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: auto;
+}
+
+.infoItem {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 10px;
+	opacity: 0.9;
+}
+
+.infoItem.eggItem {
+	color: var(--color-yellow);
+	font-weight: 600;
+}
+
+.infoIcon {
+	width: 12px;
+	height: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+}
+
+.ballIcon,
+.teraIcon {
+	width: 20px;
+	height: 20px;
+	object-fit: contain;
+}
+
+.infoText {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1;
+}
+
+/* Tags Styling */
+.tagsContainer {
+	margin-top: 8px;
+}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.tagBadge {
+	background: var(--color-purple-alpha-80);
+	color: var(--text-inverse);
+	padding: 2px 6px;
+	border-radius: 8px;
+	font-size: 9px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.2px;
+	border: 1px solid var(--color-purple-alpha-30);
+	@include card-shadow('xs');
+}
+
+// ================================
+// TEMA CLARO - AJUSTES ESPECÍFICOS
+// ================================
+
+[data-theme='light'] {
+	.pokemonCardModern {
+		background: var(--card-bg);
+		border-color: var(--card-border);
+		color: var(--card-text);
+		box-shadow: var(--shadow-md);
+
+		// Cuando no hay color de fondo por tipos, asegurar contraste
+		&.background-no-type-color {
+			background: var(--card-bg);
+			color: var(--card-text);
+
+			.pokemonName {
+				color: var(--card-text);
+			}
+
+			.levelBadge {
+				background: var(--btn-secondary-bg);
+				color: var(--btn-secondary-text);
+			}
+
+			.generationBadge {
+				background: var(--btn-secondary-bg);
+				color: var(--btn-secondary-text);
+			}
+
+			.pokedexBadge {
+				background: var(--btn-secondary-bg);
+				color: var(--btn-secondary-text);
+			}
+
+			.actionBtn {
+				color: var(--btn-ghost-text);
+
+				&:hover {
+					background: var(--btn-ghost-hover);
+				}
+			}
+		}
+
+		// Mejorar legibilidad de badges en tema claro
+		.typeBadge {
+			// Los type badges mantienen sus colores de tipo pero con mejor contraste
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		}
+
+		.teraTypeBadge {
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		}
+
+		.tagBadge {
+			background: var(--color-purple);
+			color: var(--text-inverse);
+		}
+
+		// Mejor contraste para iconos
+		.genderSymbol {
+			&.male {
+				color: var(--color-info);
+			}
+			&.female {
+				color: var(--color-error);
+			}
+		}
+
+		// Ajustar overlays para mejor visibilidad
+		.overlay-light {
+			background: var(--overlay-light);
+		}
+
+		.overlay-medium {
+			background: var(--overlay-medium);
+		}
+
+		.overlay-heavy {
+			background: var(--overlay-heavy);
+		}
+	}
+}
+
+// ================================
+// TEMA CLARO - TEXTOS ESPECÍFICOS
+// ================================
+
+:global([data-theme='light']) {
+	.pokemonCardModern {
+		.pokemonName {
+			color: var(--text-primary) !important;
+		}
+
+		.pokemonId {
+			color: var(--text-primary) !important;
+		}
+	}
+
+	.levelBadge {
+		color: var(--text-primary) !important;
+	}
+
+	.generationBadge {
+		color: var(--text-primary) !important;
+	}
+
+	.pokedexBadge {
+		background: var(--color-primary) !important;
+		color: white !important;
+	}
+
+	.originBadge {
+		background: var(--color-info) !important;
+		color: white !important;
+	}
+
+	.captureBadge {
+		background: var(--color-success) !important;
+		color: white !important;
+	}
+
+	.actionBtn {
+		color: var(--text-primary) !important;
+	}
+}

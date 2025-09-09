@@ -4,9 +4,12 @@ import type {
 	PokemonListItemDtoPagedResult,
 	PokemonMetadata,
 } from '../models/Pokemon'
+import type { PokemonListItemDto } from '../models/api/types'
 import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
+import { getPokeApiPokemon } from './Pokeapi'
+import { PokemonCacheManager } from '../utils/pokemonCacheManager'
 
 /**
  * Fetches metadata for pokemon filters (types, pokeballs, natures, etc.)
@@ -42,6 +45,176 @@ export async function importPokemonFiles(files: File[]): Promise<PokemonDetailDt
 		},
 	})
 	return data
+}
+
+/**
+ * Fetches a paginated list of Pokémon with advanced filtering and their sprites from PokeAPI.
+ * This combines the main Pokemon list with sprite data in a single service call.
+ *
+ * @param params Query parameters for filtering and pagination
+ * @param pokeApiCache Cache object to store PokeAPI responses (passed by reference)
+ * @returns Promise resolving to Pokemon list, sprites, and total count
+ */
+export async function getPokemonListWithSprites(
+	params: PokemonListFilterDto,
+	pokeApiCache: Record<string, any> = {}
+): Promise<{
+	pokemon: PokemonListItemDto[]
+	sprites: Record<
+		number,
+		{
+			default: string
+			shiny: string
+			back_default: string
+			back_shiny: string
+			front_female: string
+			front_shiny_female: string
+			back_female: string
+			back_shiny_female: string
+			official: string
+			officialShiny: string
+			home: string
+			homeShiny: string
+			dreamWorld: string
+			showdown: string
+			showdownShiny: string
+			versions: any
+			githubRegular: string
+			githubShiny: string
+		}
+	>
+	total: number
+}> {
+	// Clean old localStorage cache to prevent QuotaExceededError (legacy cleanup)
+	PokemonCacheManager.clearOldLocalStorageCache()
+
+	// Clean up expired Cache Storage entries
+	PokemonCacheManager.cleanupCacheStorage()
+
+	// Manage cache size to prevent memory issues
+	const managedCache = PokemonCacheManager.manageCache(pokeApiCache)
+
+	// First get the Pokemon list
+	const result = await getPokemonList(params)
+	const pokeList = result.items || []
+	const total = result.total || 0
+
+	// Create unique combinations of speciesId, form, and canGigantamax
+	const speciesFormCombos = Array.from(
+		new Set(pokeList.map((p) => `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}`))
+	)
+
+	// Fetch PokeAPI data for each unique combination
+	const speciesFetches = await Promise.all(
+		speciesFormCombos.map(async (combo) => {
+			const baseCombo = combo.replace('-gmax', '')
+			const [speciesId, form] = baseCombo.split('-').map(Number)
+			const isGigantamax = combo.includes('-gmax')
+			const cacheKey = combo
+
+			if (managedCache[cacheKey]) {
+				return [cacheKey, managedCache[cacheKey]] as [string, any]
+			}
+
+			try {
+				const pokeApi = await getPokeApiPokemon(speciesId, form, isGigantamax)
+				managedCache[cacheKey] = pokeApi
+				return [cacheKey, pokeApi] as [string, any]
+			} catch {
+				managedCache[cacheKey] = null
+				return [cacheKey, null] as [string, any]
+			}
+		})
+	)
+
+	const pokeApiMap = Object.fromEntries(speciesFetches)
+
+	// Helper function to get generation
+	const getGeneration = (speciesId: number): number => {
+		if (speciesId <= 151) return 1
+		if (speciesId <= 251) return 2
+		if (speciesId <= 386) return 3
+		if (speciesId <= 493) return 4
+		if (speciesId <= 649) return 5
+		if (speciesId <= 721) return 6
+		if (speciesId <= 809) return 7
+		if (speciesId <= 898) return 8
+		return 9
+	}
+
+	// Map each Pokémon to its sprites
+	const spriteEntries = pokeList.map((p) => {
+		const cacheKey = `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}`
+		const pokeApi = pokeApiMap[cacheKey]
+
+		if (!pokeApi) {
+			return [
+				p.id,
+				{
+					default: '',
+					shiny: '',
+					back_default: '',
+					back_shiny: '',
+					front_female: '',
+					front_shiny_female: '',
+					back_female: '',
+					back_shiny_female: '',
+					official: '',
+					officialShiny: '',
+					home: '',
+					homeShiny: '',
+					dreamWorld: '',
+					showdown: '',
+					showdownShiny: '',
+					versions: {},
+					githubRegular: '',
+					githubShiny: '',
+				},
+			]
+		}
+
+		const sprites = pokeApi.sprites
+		const generation = getGeneration(p.speciesId)
+		const pokemonName = pokeApi.name
+
+		// Build GitHub sprite URLs
+		let githubBaseUrl: string
+		if (generation <= 8) {
+			githubBaseUrl = 'https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8'
+		} else {
+			githubBaseUrl = 'https://raw.githubusercontent.com/bamq/pokemon-sprites/main/pokemon'
+		}
+
+		const githubRegular = `${githubBaseUrl}/regular/${pokemonName}.png`
+		const githubShiny = `${githubBaseUrl}/shiny/${pokemonName}.png`
+
+		const pokemonSprites = {
+			default: sprites.front_default || '',
+			shiny: sprites.front_shiny || '',
+			back_default: sprites.back_default || '',
+			back_shiny: sprites.back_shiny || '',
+			front_female: sprites.front_female || '',
+			front_shiny_female: sprites.front_shiny_female || '',
+			back_female: sprites.back_female || '',
+			back_shiny_female: sprites.back_shiny_female || '',
+			official: sprites.other?.['official-artwork']?.front_default || '',
+			officialShiny: sprites.other?.['official-artwork']?.front_shiny || '',
+			home: sprites.other?.home?.front_default || '',
+			homeShiny: sprites.other?.home?.front_shiny || '',
+			dreamWorld: sprites.other?.dream_world?.front_default || '',
+			showdown: sprites.other?.showdown?.front_default || '',
+			showdownShiny: sprites.other?.showdown?.front_shiny || '',
+			versions: sprites.versions || {},
+			githubRegular,
+			githubShiny,
+		}
+
+		return [p.id, pokemonSprites]
+	})
+
+	const sprites = Object.fromEntries(spriteEntries)
+
+	return { pokemon: pokeList, sprites, total }
 }
 
 /**

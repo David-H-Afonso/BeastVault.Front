@@ -1,2 +1,5 @@
 export { customFetch } from './customFetch'
 export { getTypeIconUrl, getTeraTypeIconUrl } from './getTypeIconUrl'
+export { getBestSpriteByType } from './getBestSpriteByType'
+export { groupPokemonByTags } from './groupPokemonByTags'
+export { PokemonCacheManager } from './pokemonCacheManager'

@@ -1,0 +1,357 @@
+// Importar el sistema de temas
+@use '@/assets/styles' as *;
+
+.theme-selector {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px;
+
+	.theme-selector-label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--text-secondary);
+		white-space: nowrap;
+	}
+
+	.theme-options {
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+	}
+
+	.theme-option {
+		padding: 6px 12px;
+		border: 1px solid var(--border-primary);
+		border-radius: 8px;
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		font-size: 0.75rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		white-space: nowrap;
+
+		&:hover {
+			background: var(--bg-surface-alt);
+			border-color: var(--color-primary);
+			transform: translateY(-1px);
+		}
+
+		&.active {
+			background: var(--color-primary);
+			color: var(--text-inverse);
+			border-color: var(--color-primary);
+			box-shadow: var(--shadow-sm);
+		}
+
+		&:focus {
+			outline: 2px solid var(--color-focus-ring);
+		}
+	}
+}
+
+.theme-cycle-button {
+	padding: 8px 12px;
+	border: 1px solid var(--border-primary);
+	border-radius: 8px;
+	background: var(--bg-surface);
+	color: var(--text-primary);
+	font-size: 1rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+
+	&:hover {
+		background: var(--bg-surface-alt);
+		border-color: var(--color-primary);
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-sm);
+	}
+
+	&:focus {
+		outline: 2px solid var(--color-focus-ring);
+	}
+}
+
+// Estilos específicos para cada tema en el preview
+.theme-option {
+	&[data-theme='light'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #f59e0b;
+		}
+	}
+
+	&[data-theme='dark'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #6366f1;
+		}
+	}
+
+	&[data-theme='pokemon'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #ffcb05;
+		}
+	}
+
+	&[data-theme='water'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #6890f0;
+		}
+	}
+
+	&[data-theme='fire'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #f08030;
+		}
+	}
+
+	&[data-theme='grass'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #78c850;
+		}
+	}
+
+	&[data-theme='electric'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #f8d030;
+		}
+	}
+
+	&[data-theme='psychic'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #f85888;
+		}
+	}
+}
+
+// Estilos para el nuevo componente Redux Theme Selector
+.theme-selector {
+	position: relative;
+	display: inline-block;
+
+	&__trigger {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 12px;
+		border: 1px solid var(--border-primary);
+		border-radius: 8px;
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: 0.875rem;
+
+		&:hover {
+			background: var(--bg-surface-alt);
+			border-color: var(--color-primary);
+		}
+
+		&:focus {
+			outline: 2px solid var(--color-focus-ring);
+		}
+	}
+
+	&__label {
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	&__arrow {
+		font-size: 0.75rem;
+		transition: transform 0.2s ease;
+
+		&--open {
+			transform: rotate(180deg);
+		}
+	}
+
+	&__dropdown {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		z-index: 1000;
+		margin-top: 4px;
+		padding: 8px;
+		border: 1px solid var(--border-primary);
+		border-radius: 8px;
+		background: var(--bg-surface);
+		box-shadow: var(--shadow-lg);
+		max-height: 300px;
+		overflow-y: auto;
+	}
+
+	&__option {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		padding: 8px 12px;
+		border: 1px solid transparent;
+		border-radius: 6px;
+		background: transparent;
+		color: var(--text-primary);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		text-align: left;
+		font-size: 0.875rem;
+
+		&:hover {
+			background: var(--bg-surface-alt);
+			border-color: var(--color-primary);
+		}
+
+		&--active {
+			background: var(--color-primary);
+			color: var(--text-inverse);
+			border-color: var(--color-primary);
+		}
+
+		&:focus {
+			outline: 2px solid var(--color-focus-ring);
+		}
+	}
+
+	&__option-label {
+		font-weight: 500;
+		white-space: nowrap;
+	}
+}
+
+.theme-selector-compact {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 8px;
+	border: 1px solid var(--border-primary);
+	border-radius: 8px;
+	background: var(--bg-surface);
+	cursor: pointer;
+	transition: all 0.2s ease;
+
+	&:hover {
+		background: var(--bg-surface-alt);
+		border-color: var(--color-primary);
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-sm);
+	}
+
+	&:focus {
+		outline: 2px solid var(--color-focus-ring);
+	}
+}
+
+.theme-preview {
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	border: 1px solid var(--border-primary);
+	position: relative;
+
+	&--dark {
+		background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+	}
+
+	&--light {
+		background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+	}
+
+	&--pokemon {
+		background: linear-gradient(135deg, #3b4cca 0%, #ffcb05 100%);
+	}
+
+	&--water {
+		background: linear-gradient(135deg, #6890f0 0%, #3b82f6 100%);
+	}
+
+	&--fire {
+		background: linear-gradient(135deg, #f08030 0%, #dc2626 100%);
+	}
+
+	&--grass {
+		background: linear-gradient(135deg, #78c850 0%, #16a34a 100%);
+	}
+
+	&--electric {
+		background: linear-gradient(135deg, #f8d030 0%, #eab308 100%);
+	}
+
+	&--psychic {
+		background: linear-gradient(135deg, #f85888 0%, #ec4899 100%);
+	}
+}

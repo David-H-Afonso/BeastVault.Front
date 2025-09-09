@@ -1,0 +1,179 @@
+// Importar el sistema de temas
+@use '@/assets/styles' as *;
+
+.pokemon-list-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: var(--overlay-light);
+	border: 1px solid var(--border-overlay-light);
+	border-radius: 8px;
+	padding: 8px 12px;
+	margin-bottom: 4px;
+	transition: all 0.2s ease;
+
+	&:hover {
+		background: var(--overlay-medium);
+		border-color: var(--color-primary-alpha-30);
+		transform: translateY(-1px);
+	}
+
+	.row-left {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		flex: 1;
+		min-width: 0; // Allow truncation
+	}
+
+	.sprite-container {
+		position: relative;
+		width: 48px;
+		height: 48px;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 6px;
+
+		.pokemon-sprite {
+			max-width: 75px;
+			object-fit: contain;
+		}
+
+		.no-sprite {
+			font-size: 20px;
+			opacity: 0.5;
+		}
+
+		.shiny-indicator {
+			position: absolute;
+			top: -2px;
+			right: -2px;
+			font-size: 12px;
+			background: var(--color-yellow-alpha-20);
+			border-radius: 50%;
+			width: 18px;
+			height: 18px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+
+	.pokemon-info {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+
+		.name-section {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-weight: 500;
+
+			.species-name {
+				color: var(--text-primary);
+				font-size: 14px;
+			}
+
+			.nickname {
+				color: var(--text-secondary);
+				font-size: 13px;
+				font-style: italic;
+			}
+		}
+
+		.details-section {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			font-size: 12px;
+			color: var(--text-tertiary);
+
+			.ball-icon {
+				width: 15px;
+				object-fit: contain;
+				// Crop the white space from pokeball sprites
+				transform: scale(1.8);
+			}
+
+			.level {
+				color: var(--text-secondary);
+				font-weight: 500;
+			}
+
+			.generation {
+				&.captured {
+					color: var(--color-primary-alpha-80);
+				}
+			}
+		}
+	}
+
+	.row-actions {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+
+		.action-btn {
+			background: var(--overlay-light);
+			border: 1px solid var(--border-overlay-medium);
+			border-radius: 4px;
+			color: var(--text-secondary);
+			cursor: pointer;
+			padding: 4px 6px;
+			font-size: 12px;
+			transition: all 0.2s ease;
+			min-width: 28px;
+			height: 28px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			&:hover:not(:disabled) {
+				background: var(--overlay-medium);
+				border-color: var(--border-overlay-heavy);
+				transform: scale(1.05);
+			}
+
+			&:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+
+			&.delete-btn:hover:not(:disabled) {
+				background: var(--color-red-alpha-20);
+				border-color: var(--color-red-alpha-40);
+			}
+
+			&.tags-btn:hover:not(:disabled) {
+				background: var(--color-blue-alpha-20);
+				border-color: var(--color-blue-alpha-40);
+			}
+
+			&.download-btn:hover:not(:disabled) {
+				background: var(--color-green-alpha-20);
+				border-color: var(--color-green-alpha-40);
+			}
+		}
+	}
+}
+
+// Two-column layout for list view
+.pokemon-list-container {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	margin-top: 1.5rem;
+	max-width: 1400px;
+	margin-left: auto;
+	margin-right: auto;
+
+	@media (max-width: 768px) {
+		grid-template-columns: 1fr;
+	}
+}

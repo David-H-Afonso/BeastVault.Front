@@ -1,5 +1,5 @@
 /**
- * Cache service for storing API responses in localStorage
+ * Cache service for storing API responses in Cache Storage
  */
 
 interface CacheItem<T> {
@@ -9,22 +9,25 @@ interface CacheItem<T> {
 }
 
 class CacheService {
-	private readonly CACHE_PREFIX = 'beastvault_cache_'
+	private readonly CACHE_NAME = 'beastvault_cache'
 	private readonly DEFAULT_EXPIRY = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
 
 	/**
 	 * Store data in cache with expiry
 	 */
-	set<T>(key: string, data: T, expiryMs?: number): void {
+	async set<T>(key: string, data: T, expiryMs?: number): Promise<void> {
 		try {
+			const cache = await caches.open(this.CACHE_NAME)
 			const expiry = expiryMs || this.DEFAULT_EXPIRY
 			const cacheItem: CacheItem<T> = {
 				data,
 				timestamp: Date.now(),
 				expiry,
 			}
-
-			localStorage.setItem(`${this.CACHE_PREFIX}${key}`, JSON.stringify(cacheItem))
+			const response = new Response(JSON.stringify(cacheItem), {
+				headers: { 'Content-Type': 'application/json' },
+			})
+			await cache.put(key, response)
 		} catch (error) {
 			console.warn('Failed to store item in cache:', error)
 		}
@@ -33,24 +36,25 @@ class CacheService {
 	/**
 	 * Get data from cache if not expired
 	 */
-	get<T>(key: string): T | null {
+	async get<T>(key: string): Promise<T | null> {
 		try {
-			const cached = localStorage.getItem(`${this.CACHE_PREFIX}${key}`)
-			if (!cached) return null
+			const cache = await caches.open(this.CACHE_NAME)
+			const response = await cache.match(key)
+			if (!response) return null
 
-			const cacheItem: CacheItem<T> = JSON.parse(cached)
+			const cacheItem: CacheItem<T> = await response.json()
 			const now = Date.now()
 
 			// Check if expired
 			if (now - cacheItem.timestamp > cacheItem.expiry) {
-				this.delete(key)
+				await this.delete(key)
 				return null
 			}
 
 			return cacheItem.data
 		} catch (error) {
 			console.warn('Failed to retrieve item from cache:', error)
-			this.delete(key) // Clean up corrupted cache entry
+			await this.delete(key) // Clean up corrupted cache entry
 			return null
 		}
 	}
@@ -58,9 +62,10 @@ class CacheService {
 	/**
 	 * Delete specific cache entry
 	 */
-	delete(key: string): void {
+	async delete(key: string): Promise<void> {
 		try {
-			localStorage.removeItem(`${this.CACHE_PREFIX}${key}`)
+			const cache = await caches.open(this.CACHE_NAME)
+			await cache.delete(key)
 		} catch (error) {
 			console.warn('Failed to delete cache item:', error)
 		}
@@ -69,10 +74,9 @@ class CacheService {
 	/**
 	 * Clear all cache entries
 	 */
-	clear(): void {
+	async clear(): Promise<void> {
 		try {
-			const keys = Object.keys(localStorage).filter((key) => key.startsWith(this.CACHE_PREFIX))
-			keys.forEach((key) => localStorage.removeItem(key))
+			await caches.delete(this.CACHE_NAME)
 		} catch (error) {
 			console.warn('Failed to clear cache:', error)
 		}
@@ -81,17 +85,20 @@ class CacheService {
 	/**
 	 * Get cache statistics
 	 */
-	getStats(): { totalItems: number; totalSize: number } {
+	async getStats(): Promise<{ totalItems: number; totalSize: number }> {
 		try {
-			const keys = Object.keys(localStorage).filter((key) => key.startsWith(this.CACHE_PREFIX))
+			const cache = await caches.open(this.CACHE_NAME)
+			const keys = await cache.keys()
 
 			let totalSize = 0
-			keys.forEach((key) => {
-				const value = localStorage.getItem(key)
-				if (value) {
-					totalSize += new Blob([value]).size
+			for (const request of keys) {
+				const response = await cache.match(request)
+				if (response) {
+					const clonedResponse = response.clone()
+					const text = await clonedResponse.text()
+					totalSize += new Blob([text]).size
 				}
-			})
+			}
 
 			return {
 				totalItems: keys.length,
@@ -106,25 +113,26 @@ class CacheService {
 	/**
 	 * Clean up expired entries
 	 */
-	cleanup(): void {
+	async cleanup(): Promise<void> {
 		try {
-			const keys = Object.keys(localStorage).filter((key) => key.startsWith(this.CACHE_PREFIX))
+			const cache = await caches.open(this.CACHE_NAME)
+			const keys = await cache.keys()
 
 			const now = Date.now()
-			keys.forEach((key) => {
+			for (const request of keys) {
 				try {
-					const cached = localStorage.getItem(key)
-					if (cached) {
-						const cacheItem: CacheItem<any> = JSON.parse(cached)
+					const response = await cache.match(request)
+					if (response) {
+						const cacheItem: CacheItem<any> = await response.json()
 						if (now - cacheItem.timestamp > cacheItem.expiry) {
-							localStorage.removeItem(key)
+							await cache.delete(request)
 						}
 					}
 				} catch {
 					// Remove corrupted entries
-					localStorage.removeItem(key)
+					await cache.delete(request)
 				}
-			})
+			}
 		} catch (error) {
 			console.warn('Failed to cleanup cache:', error)
 		}

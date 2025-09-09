@@ -1,0 +1,276 @@
+// Importar el sistema de temas
+@use '@/assets/styles' as *;
+
+.pokemon-filters {
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-primary);
+	border-radius: 8px;
+	margin-bottom: 12px;
+	@include card-shadow('lg');
+	overflow: hidden;
+
+	.filters-header {
+		background: var(--gradient-primary);
+		color: var(--text-primary);
+		padding: 8px 12px;
+		cursor: pointer;
+		user-select: none;
+		transition: all 0.2s ease;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid var(--border-primary);
+
+		&:hover {
+			background: var(--gradient-secondary);
+		}
+
+		h3 {
+			margin: 0;
+			font-size: 0.9rem;
+			font-weight: 600;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+
+			.toggle-icon {
+				font-size: 0.7rem;
+				transition: transform 0.2s ease;
+				color: var(--text-secondary);
+
+				&.expanded {
+					transform: rotate(90deg);
+				}
+			}
+		}
+
+		.filters-count {
+			font-size: 0.75rem;
+			opacity: 0.7;
+		}
+	}
+
+	// Quick Search Row - Always visible outside collapsible area
+	.quick-search-row {
+		background: #243142;
+		padding: 8px;
+		border-bottom: 1px solid #404852;
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr;
+		gap: 8px;
+		align-items: end;
+
+		@media (max-width: 768px) {
+			grid-template-columns: 1fr;
+			gap: 6px;
+		}
+
+		.filter-group {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+
+			input,
+			select {
+				padding: 6px 8px;
+				border: 1px solid #404852;
+				border-radius: 4px;
+				background: #1e293b;
+				color: rgba(255, 255, 255, 0.9);
+				font-size: 0.8rem;
+				transition: all 0.2s ease;
+
+				&:focus {
+					outline: none;
+					border-color: #3b82f6;
+					box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+				}
+
+				&::placeholder {
+					color: rgba(255, 255, 255, 0.5);
+				}
+			}
+
+			.search-input {
+				font-weight: 500;
+			}
+
+			.small-input,
+			.small-select {
+				max-width: 120px;
+			}
+		}
+	}
+
+	.filters-content {
+		padding: 8px;
+		background: #2d3440;
+	}
+
+	.compact-filters-grid {
+		.filter-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 6px;
+			margin-bottom: 6px;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		.filter-group {
+			display: flex;
+			flex-direction: column;
+
+			label {
+				font-size: 0.65rem;
+				font-weight: 600;
+				color: rgba(255, 255, 255, 0.7);
+				margin-bottom: 3px;
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+
+			input,
+			select {
+				padding: 5px 6px;
+				border: 1px solid #404852;
+				border-radius: 3px;
+				font-size: 0.75rem;
+				background: #1e2329;
+				color: rgba(255, 255, 255, 0.9);
+				transition: border-color 0.2s ease;
+
+				&:focus {
+					outline: none;
+					border-color: #60a5fa;
+				}
+
+				&:hover {
+					border-color: #525864;
+				}
+
+				&::placeholder {
+					color: rgba(255, 255, 255, 0.4);
+					font-size: 0.7rem;
+				}
+			}
+
+			select {
+				cursor: pointer;
+
+				option {
+					background: #1e2329;
+					color: rgba(255, 255, 255, 0.9);
+				}
+			}
+		}
+	}
+
+	.filters-actions {
+		display: flex;
+		gap: 6px;
+		justify-content: flex-end;
+		margin-top: 8px;
+		padding-top: 6px;
+		border-top: 1px solid #404852;
+
+		button {
+			padding: 6px 12px;
+			border: none;
+			border-radius: 4px;
+			font-size: 0.75rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			display: flex;
+			align-items: center;
+			gap: 4px;
+
+			&:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+		}
+
+		.btn-clear {
+			background: #374151;
+			color: rgba(255, 255, 255, 0.8);
+			border: 1px solid #4b5563;
+
+			&:hover:not(:disabled) {
+				background: #4b5563;
+				border-color: #6b7280;
+			}
+		}
+
+		.btn-apply {
+			background: #059669;
+			color: white;
+
+			&:hover:not(:disabled) {
+				background: #047857;
+			}
+		}
+	}
+
+	.disabled-features-info {
+		margin-top: 6px;
+		padding: 4px 6px;
+		background: rgba(251, 191, 36, 0.1);
+		border: 1px solid rgba(251, 191, 36, 0.3);
+		border-radius: 3px;
+		text-align: center;
+
+		small {
+			color: #fbbf24;
+			font-size: 0.65rem;
+		}
+	}
+
+	// Responsive design - más compacto en móvil
+	@media (max-width: 768px) {
+		margin-bottom: 8px;
+
+		.filters-header {
+			padding: 6px 10px;
+		}
+
+		.filters-content {
+			padding: 6px;
+		}
+
+		.quick-search-row {
+			grid-template-columns: 1fr;
+			gap: 4px;
+
+			.small-input,
+			.small-select {
+				width: 100%;
+			}
+		}
+
+		.compact-filters-grid .filter-row {
+			grid-template-columns: 1fr;
+			gap: 4px;
+		}
+
+		.filters-actions {
+			flex-direction: column;
+			gap: 4px;
+
+			button {
+				width: 100%;
+				justify-content: center;
+				padding: 8px;
+			}
+		}
+	}
+
+	// Loading state
+	&.loading {
+		opacity: 0.6;
+		pointer-events: none;
+	}
+}

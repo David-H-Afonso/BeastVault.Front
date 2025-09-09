@@ -20,20 +20,18 @@ export function usePokemonSprite(speciesId: number, form: number = 0, isShiny: b
 				const cacheKey = CacheKeys.sprite(spriteKey)
 
 				// Try cache first
-				const cached = cacheService.get<string>(cacheKey)
+				const cached = await cacheService.get<string>(cacheKey)
 				if (cached) {
 					setSprite(cached)
 					setLoading(false)
 					return
-				}
-
-				// Fetch from API
+				} // Fetch from API
 				const pokemonData = await getPokeApiPokemon(speciesId, form)
 				const spriteUrl = getBestSpriteUrl(pokemonData.sprites, isShiny)
 
 				if (spriteUrl) {
 					// Cache the sprite URL (cache for 7 days)
-					cacheService.set(cacheKey, spriteUrl, 7 * 24 * 60 * 60 * 1000)
+					await cacheService.set(cacheKey, spriteUrl, 7 * 24 * 60 * 60 * 1000)
 					setSprite(spriteUrl)
 				} else {
 					setSprite(null)
@@ -80,14 +78,12 @@ export function usePokeBallIcon(ballName: string) {
 				const cacheKey = CacheKeys.pokeball(ballName)
 
 				// Try cache first
-				const cached = cacheService.get<string | null>(cacheKey)
+				const cached = await cacheService.get<string | null>(cacheKey)
 				if (cached !== null) {
 					setIcon(cached)
 					setLoading(false)
 					return
-				}
-
-				// If not in cache, we need to import the function dynamically
+				} // If not in cache, we need to import the function dynamically
 				// to avoid circular dependencies
 				const { getPokeBallIcon } = await import('../services/Pokeapi')
 				const iconUrl = await getPokeBallIcon(ballName)
