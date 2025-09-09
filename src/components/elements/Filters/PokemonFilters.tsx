@@ -273,41 +273,7 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 			</div>
 
 			{/* Quick Search Row - Always Visible */}
-			<div className='quick-search-row'>
-				<div className='filter-group'>
-					<input
-						type='text'
-						placeholder='🔍 Search Pokemon...'
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						className='search-input'
-					/>
-				</div>
-				<div className='filter-group'>
-					<input
-						type='number'
-						placeholder='Pokédex #'
-						value={pokedexNumber || ''}
-						onChange={(e) =>
-							setPokedexNumber(e.target.value ? parseInt(e.target.value) : undefined)
-						}
-						min='1'
-						className='small-input'
-					/>
-				</div>
-				<div className='filter-group'>
-					<select
-						value={isShiny === undefined ? '' : isShiny.toString()}
-						onChange={(e) =>
-							setIsShiny(e.target.value === '' ? undefined : e.target.value === 'true')
-						}
-						className='small-select'>
-						<option value=''>All</option>
-						<option value='true'>✨ Shiny</option>
-						<option value='false'>Regular</option>
-					</select>
-				</div>
-			</div>
+			{/* <div className='quick-search-row'></div> */}
 
 			{/* Collapsible Content */}
 			{showFilters && (
@@ -482,7 +448,7 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 										<option value='none'>No tags</option>
 									</select>
 								</div>
-								
+
 								{tagFilterMode !== 'none' && (
 									<div className='tags-selection'>
 										{tagsLoading ? (
@@ -496,9 +462,9 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 															checked={selectedTagIds.includes(tag.id)}
 															onChange={(e) => {
 																if (e.target.checked) {
-																	setSelectedTagIds(prev => [...prev, tag.id])
+																	setSelectedTagIds((prev) => [...prev, tag.id])
 																} else {
-																	setSelectedTagIds(prev => prev.filter(id => id !== tag.id))
+																	setSelectedTagIds((prev) => prev.filter((id) => id !== tag.id))
 																}
 															}}
 														/>
