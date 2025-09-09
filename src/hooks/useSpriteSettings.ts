@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { SpriteType } from '../enums/SpriteTypes'
+import { SpriteType } from '../models/enums/SpriteTypes'
 
 interface SpriteSettings {
 	selectedType: SpriteType

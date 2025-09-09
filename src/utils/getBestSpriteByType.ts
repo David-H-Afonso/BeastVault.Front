@@ -1,4 +1,4 @@
-import { SpriteType } from '@/enums/SpriteTypes'
+import { SpriteType } from '@/models/enums/SpriteTypes'
 
 export const getBestSpriteByType = (
 	sprites: any,

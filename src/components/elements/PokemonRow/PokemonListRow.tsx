@@ -3,7 +3,7 @@ import { usePokeBallIcon } from '../../../hooks/useCachedAssets'
 import { usePokemonInfo } from '../../../hooks/usePokemonInfo'
 import { useCorrectBoxSprite } from '../../../hooks/useCorrectBoxSprite'
 import { usePokemonSpeciesName } from '../../../hooks/usePokemonSpeciesName'
-import { getBallNameFromId } from '../../../enums/PokemonBalls'
+import { getBallNameFromId } from '../../../models/enums/PokemonBalls'
 import './PokemonListRow.scss'
 
 interface PokemonListRowProps {

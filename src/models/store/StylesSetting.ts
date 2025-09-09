@@ -1,5 +1,5 @@
-import type { CardBackgroundTypeName } from '@/enums/CardBackgroundTypes'
-import type { SpriteTypeName } from '@/enums/SpriteTypes'
+import type { CardBackgroundTypeName } from '@/models/enums/CardBackgroundTypes'
+import type { SpriteTypeName } from '@/models/enums/SpriteTypes'
 
 export type ViewMode = 'tags' | 'grid' | 'list'
 export type ThemeName =

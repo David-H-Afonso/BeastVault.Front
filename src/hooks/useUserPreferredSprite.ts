@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useSpriteType } from './useSpriteType'
-import { SpriteType } from '../enums/SpriteTypes'
+import { SpriteType } from '../models/enums/SpriteTypes'
 
 /**
  * Hook to get the preferred sprite URL based on user settings

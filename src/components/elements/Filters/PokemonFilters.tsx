@@ -4,9 +4,9 @@ import type {
 	SortBy,
 	SortDirection,
 	PokemonMetadata,
-} from '../models/Pokemon'
-import { getPokemonMetadata } from '../services/Pokemon'
-import { PokemonBalls, getBallIdFromName } from '../enums/PokemonBalls'
+} from '../../../models/Pokemon'
+import { getPokemonMetadata } from '../../../services/Pokemon'
+import { PokemonBalls, getBallIdFromName } from '../../../models/enums/PokemonBalls'
 import './PokemonFilters.scss'
 
 interface PokemonFiltersProps {
@@ -94,14 +94,33 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 				onFiltersChange(filters)
 			}, 2000)
 		}
-		
+
 		// Cleanup function
 		return () => {
 			if (debounceTimerRef.current) {
 				clearTimeout(debounceTimerRef.current)
 			}
 		}
-	}, [search, pokedexNumber, isShiny, speciesName, nickname, originGeneration, capturedGeneration, pokeballName, minLevel, maxLevel, sortBy, sortDirection, take, speciesId, ballId, originGame, teraType, onFiltersChange])
+	}, [
+		search,
+		pokedexNumber,
+		isShiny,
+		speciesName,
+		nickname,
+		originGeneration,
+		capturedGeneration,
+		pokeballName,
+		minLevel,
+		maxLevel,
+		sortBy,
+		sortDirection,
+		take,
+		speciesId,
+		ballId,
+		originGame,
+		teraType,
+		onFiltersChange,
+	])
 
 	// Cleanup timer on unmount
 	useEffect(() => {
@@ -249,7 +268,6 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 			{/* Collapsible Content */}
 			{showFilters && (
 				<div className='filters-content'>
-
 					{/* Compact Filters Grid */}
 					<div className='compact-filters-grid'>
 						<div className='filter-row'>
@@ -280,7 +298,9 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 									type='number'
 									placeholder='1'
 									value={minLevel || ''}
-									onChange={(e) => setMinLevel(e.target.value ? parseInt(e.target.value) : undefined)}
+									onChange={(e) =>
+										setMinLevel(e.target.value ? parseInt(e.target.value) : undefined)
+									}
 									min='1'
 									max='100'
 									className='small-input'
@@ -292,7 +312,9 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 									type='number'
 									placeholder='100'
 									value={maxLevel || ''}
-									onChange={(e) => setMaxLevel(e.target.value ? parseInt(e.target.value) : undefined)}
+									onChange={(e) =>
+										setMaxLevel(e.target.value ? parseInt(e.target.value) : undefined)
+									}
 									min='1'
 									max='100'
 									className='small-input'
@@ -416,7 +438,8 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 					{/* Info Banner for Disabled Features */}
 					<div className='disabled-features-info'>
 						<small>
-							⚠️ Some advanced filters (Gender, Form, Held Items, Favorites) are temporarily disabled
+							⚠️ Some advanced filters (Gender, Form, Held Items, Favorites) are temporarily
+							disabled
 						</small>
 					</div>
 				</div>

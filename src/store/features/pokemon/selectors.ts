@@ -2,12 +2,6 @@ import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from '@/store'
 
 // ===================================
-// BASE SELECTORS
-// ===================================
-
-const selectPokemonState = (state: RootState) => state.pokemon
-
-// ===================================
 // SIMPLE SELECTORS
 // ===================================
 
@@ -39,7 +33,7 @@ export const selectSpriteById = (pokemonId: number) => (state: RootState) =>
 
 export const selectFilteredPokemon = createSelector(
 	[selectPokemon, selectCurrentFilters],
-	(pokemon, filters) => {
+	(pokemon) => {
 		// This could include additional client-side filtering logic if needed
 		return pokemon
 	}

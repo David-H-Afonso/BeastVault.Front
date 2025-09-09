@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import { CardBackgroundType, type CardBackgroundTypeName } from '@/enums/CardBackgroundTypes'
-import { SpriteType, type SpriteTypeName } from '@/enums/SpriteTypes'
+import { CardBackgroundType, type CardBackgroundTypeName } from '@/models/enums/CardBackgroundTypes'
+import { SpriteType, type SpriteTypeName } from '@/models/enums/SpriteTypes'
 import type { StyleSettingsState, ThemeName, ViewMode } from '@/models/store/StylesSetting'
 
 // Load initial state from localStorage if available

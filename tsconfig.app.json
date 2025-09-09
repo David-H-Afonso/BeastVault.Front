@@ -25,7 +25,7 @@
 			"@/services/*": ["./src/services/*"],
 			"@/utils/*": ["./src/utils/*"],
 			"@/models/*": ["./src/models/*"],
-			"@/enums/*": ["./src/enums/*"],
+			"@/enums/*": ["src/models/enums/*"],
 			"@/store/*": ["./src/store/*"],
 			"@/environments/*": ["./src/environments/*"]
 		},
