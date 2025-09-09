@@ -15,9 +15,16 @@ interface TagManagerProps {
 	isOpen: boolean
 	onClose: () => void
 	onTagsUpdated: (pokemonId: number, newTags: TagDto[]) => void
+	onTagSystemChanged?: () => void
 }
 
-export function TagManager({ pokemon, isOpen, onClose, onTagsUpdated }: TagManagerProps) {
+export function TagManager({
+	pokemon,
+	isOpen,
+	onClose,
+	onTagsUpdated,
+	onTagSystemChanged,
+}: TagManagerProps) {
 	const [allTags, setAllTags] = useState<TagDto[]>([])
 	const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 	const [newTagName, setNewTagName] = useState('')
@@ -60,6 +67,7 @@ export function TagManager({ pokemon, isOpen, onClose, onTagsUpdated }: TagManag
 			setAllTags((prev) => [...prev, newTag])
 			setSelectedTagIds((prev) => [...prev, newTag.id])
 			setNewTagName('')
+			onTagSystemChanged?.()
 		} catch (error) {
 			console.error('Error creating tag:', error)
 			alert('Error creating tag. Make sure the name is unique.')
@@ -79,6 +87,7 @@ export function TagManager({ pokemon, isOpen, onClose, onTagsUpdated }: TagManag
 			await deleteTag(tagId)
 			setAllTags((prev) => prev.filter((tag) => tag.id !== tagId))
 			setSelectedTagIds((prev) => prev.filter((id) => id !== tagId))
+			onTagSystemChanged?.()
 		} catch (error) {
 			console.error('Error deleting tag:', error)
 			alert('Error deleting tag.')
@@ -135,10 +144,15 @@ export function TagManager({ pokemon, isOpen, onClose, onTagsUpdated }: TagManag
 		}
 	}
 
+	const handleClose = () => {
+		onTagSystemChanged?.()
+		onClose()
+	}
+
 	if (!isOpen) return null
 
 	return (
-		<div className='tag-manager-overlay' onClick={onClose}>
+		<div className='tag-manager-overlay' onClick={handleClose}>
 			<div className='tag-manager-modal' onClick={(e) => e.stopPropagation()}>
 				<div className='tag-manager-header'>
 					<h3>🏷️ Manage Tags</h3>
@@ -146,7 +160,7 @@ export function TagManager({ pokemon, isOpen, onClose, onTagsUpdated }: TagManag
 						<strong>{pokemon.nickname || `${pokemon.speciesId}`}</strong> - Level {pokemon.level}
 						{pokemon.isShiny && <span className='shiny-indicator'>✨</span>}
 					</p>
-					<button className='close-button' onClick={onClose}>
+					<button className='close-button' onClick={handleClose}>
 						×
 					</button>
 				</div>
@@ -236,7 +250,7 @@ export function TagManager({ pokemon, isOpen, onClose, onTagsUpdated }: TagManag
 						{selectedTagIds.length} tag{selectedTagIds.length !== 1 ? 's' : ''} selected
 					</div>
 					<div className='footer-buttons'>
-						<button onClick={onClose} className='cancel-button'>
+						<button onClick={handleClose} className='cancel-button'>
 							Cancel
 						</button>
 						<button onClick={handleSave} disabled={loading} className='save-button'>

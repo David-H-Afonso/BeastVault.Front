@@ -25,9 +25,11 @@ const Home = () => {
 		pokemon,
 		sprites: pokeSprites,
 		totalPokemon,
+		tagGroups,
 		loading,
 		error,
 		fetchPokemon,
+		fetchPokemonByTagsView,
 		deletePokemonById,
 		updatePokemonTagsById,
 		clearCurrentError,
@@ -49,15 +51,15 @@ const Home = () => {
 	)
 	const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
 
-	/**
-	 * Maneja el cambio de filtros desde el componente PokemonFilters
-	 */
-	const handleFiltersChange = useCallback(
-		(filters: PokemonListFilterDto) => {
-			applyFiltersAndFetch(filters)
-		},
-		[applyFiltersAndFetch]
-	)
+	const handleFiltersChange = async (filters: PokemonListFilterDto) => {
+		if (viewMode === 'tags') {
+			const { tagIds, tagNames, anyTagIds, anyTagNames, hasNoTags, ...cleanFilters } = filters
+			const currentPage = Math.floor((filters.Skip || 0) / (filters.Take || 20)) + 1
+			await fetchPokemonByTagsView(cleanFilters, currentPage, filters.Take)
+		} else {
+			await applyFiltersAndFetch(filters)
+		}
+	}
 
 	/**
 	 * Inicia el proceso de descarga de un archivo Pokémon
@@ -160,14 +162,36 @@ const Home = () => {
 	}, [])
 
 	/**
-	 * Actualiza los tags de un Pokémon en el store de Redux
+	 * Updates pokemon tags and reloads data based on current view mode
 	 */
 	const handleTagsUpdated = useCallback(
 		(pokemonId: number, newTags: TagDto[]) => {
+			// Update the tags in Redux store
 			updatePokemonTagsById(pokemonId, newTags)
+			
+			// Reload data based on current view mode to reflect tag changes
+			if (viewMode === 'tags') {
+				// For tags view, refetch to get updated groupings
+				fetchPokemonByTagsView()
+			} else {
+				// For grid/list view, refetch to get updated pokemon data
+				fetchPokemon()
+			}
 		},
-		[updatePokemonTagsById]
+		[updatePokemonTagsById, viewMode, fetchPokemonByTagsView, fetchPokemon]
 	)
+
+	/**
+	 * Handles when tags are created or deleted - reloads data for tags view
+	 */
+	const handleTagSystemChanged = useCallback(() => {
+		if (viewMode === 'tags') {
+			// For tags view, refetch to get updated tag groups
+			fetchPokemonByTagsView()
+		}
+		// For grid/list view, no need to reload since tag creation/deletion 
+		// doesn't affect the pokemon list display
+	}, [viewMode, fetchPokemonByTagsView])
 
 	/**
 	 * Cierra el gestor de tags
@@ -208,22 +232,46 @@ const Home = () => {
 	}, [pokemon, pokeSprites, spriteType])
 
 	/**
-	 * Agrupa los Pokémon por tags para la vista correspondiente
+	 * For tags view, use tagGroups from store. For other views, group locally.
 	 */
 	const groupedPokemonData = useCallback(() => {
-		return groupPokemonByTags(pokemon)
-	}, [pokemon])
+		if (viewMode === 'tags' && tagGroups.length > 0) {
+			// Use server-grouped data for tags view
+			const grouped: { [key: string]: PokemonListItemDto[] } = {}
+			let untagged: PokemonListItemDto[] = []
 
-	// Efecto para cargar la lista inicial de Pokémon
+			tagGroups.forEach((group) => {
+				if (group.tagName === 'No Tags') {
+					untagged = group.pokemon
+				} else {
+					grouped[group.tagName] = group.pokemon
+				}
+			})
+
+			return { grouped, untagged }
+		} else {
+			// Fallback to local grouping for other views
+			return groupPokemonByTags(pokemon)
+		}
+	}, [viewMode, tagGroups, pokemon])
+
+	// Load initial pokemon list - different method based on view mode
 	useEffect(() => {
-		fetchPokemon()
-	}, [fetchPokemon])
+		if (viewMode === 'tags') {
+			fetchPokemonByTagsView()
+		} else {
+			fetchPokemon()
+		}
+	}, [viewMode]) // Re-fetch when view mode changes
 
-	// Pagination
+	// Pagination - works for both view modes
 	const itemsPerPage = useAppSelector((state) => state.pokemon.currentFilters.Take) || 20
 	const onItemsPerPageChange = (itemsPerPage: number) => {
-		console.log(itemsPerPage)
 		dispatch(updateFilters({ Take: itemsPerPage, Skip: 0 }))
+		// Re-fetch with new pagination
+		if (viewMode === 'tags') {
+			fetchPokemonByTagsView(undefined, 1, itemsPerPage)
+		}
 	}
 	const totalPages = Math.ceil(totalPokemon / itemsPerPage) || 1
 
@@ -235,6 +283,11 @@ const Home = () => {
 		const take = itemsPerPage
 		const newSkip = (page - 1) * take
 		dispatch(updateFilters({ Skip: newSkip }))
+
+		// Re-fetch with new page
+		if (viewMode === 'tags') {
+			fetchPokemonByTagsView(undefined, page, take)
+		}
 	}
 
 	return (
@@ -262,6 +315,7 @@ const Home = () => {
 			handleManageTags={handleManageTags}
 			handleTagsUpdated={handleTagsUpdated}
 			handleTagManagerClose={handleTagManagerClose}
+			handleTagSystemChanged={handleTagSystemChanged}
 			toggleSectionCollapse={toggleSectionCollapse}
 			itemsPerPage={itemsPerPage}
 			onItemsPerPageChange={onItemsPerPageChange}

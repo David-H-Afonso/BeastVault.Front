@@ -27,6 +27,8 @@ export interface PokemonState {
 	sprites: Record<number, PokemonSprites>
 	totalPokemon: number
 
+	tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]
+
 	// API cache for PokeAPI data
 	pokeApiCache: Record<string, any>
 

@@ -112,7 +112,6 @@
 	.skeletonImage {
 		width: 80px;
 		height: 80px;
-		background: var(--overlay-light);
 		border-radius: 50%;
 		margin: 20px auto;
 		animation: skeleton-pulse 1.5s ease-in-out infinite;
@@ -397,7 +396,6 @@
 		display: flex;
 		gap: 6px;
 	}
-
 	.cardHeaderGenInfo {
 		display: flex;
 		min-width: fit-content;

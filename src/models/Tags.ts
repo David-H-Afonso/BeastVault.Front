@@ -3,6 +3,7 @@ export interface TagDto {
 	id: number
 	name: string
 	imagePath?: string
+	pokemonCount: number
 }
 
 export interface PokemonTagAssignmentDto {

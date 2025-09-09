@@ -8,6 +8,7 @@ import type { RootState } from '@/store'
 export const selectPokemon = (state: RootState) => state.pokemon.pokemon
 export const selectSprites = (state: RootState) => state.pokemon.sprites
 export const selectTotalPokemon = (state: RootState) => state.pokemon.totalPokemon
+export const selectTagGroups = (state: RootState) => state.pokemon.tagGroups
 export const selectCurrentFilters = (state: RootState) => state.pokemon.currentFilters
 export const selectLoading = (state: RootState) => state.pokemon.loading
 export const selectError = (state: RootState) => state.pokemon.error

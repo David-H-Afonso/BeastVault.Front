@@ -21,7 +21,13 @@ export {
 // ===================================
 // THUNKS
 // ===================================
-export { fetchPokemonList, deletePokemon, importPokemon, scanDirectory } from './thunks'
+export {
+	fetchPokemonList,
+	fetchPokemonByTagsGrouped,
+	deletePokemon,
+	importPokemon,
+	scanDirectory,
+} from './thunks'
 
 // ===================================
 // SELECTORS
@@ -30,6 +36,7 @@ export {
 	selectPokemon,
 	selectSprites,
 	selectTotalPokemon,
+	selectTagGroups,
 	selectCurrentFilters,
 	selectLoading,
 	selectError,

@@ -50,6 +50,7 @@ interface HomeComponentProps {
 	handleManageTags: (pokemon: PokemonListItemDto) => void
 	handleTagsUpdated: (pokemonId: number, newTags: TagDto[]) => void
 	handleTagManagerClose: () => void
+	handleTagSystemChanged: () => void
 	toggleSectionCollapse: (sectionKey: string) => void
 
 	// Paginación
@@ -95,6 +96,7 @@ const HomeComponent = ({
 	handleManageTags,
 	handleTagsUpdated,
 	handleTagManagerClose,
+	handleTagSystemChanged,
 	toggleSectionCollapse,
 
 	// Paginación
@@ -391,6 +393,7 @@ const HomeComponent = ({
 					isOpen={tagManagerOpen}
 					onClose={handleTagManagerClose}
 					onTagsUpdated={handleTagsUpdated}
+					onTagSystemChanged={handleTagSystemChanged}
 				/>
 			)}
 

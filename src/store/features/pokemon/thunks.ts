@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import type { PokemonListItemDto } from '@/models/api/types'
+import type { PokemonListItemDto, TagDto } from '@/models/api/types'
 import type { PokemonListFilterDto, PokemonDetailDto } from '@/models/Pokemon'
 import {
 	getPokemonListWithSprites,
@@ -7,6 +7,12 @@ import {
 	importPokemonFiles,
 	scanPokemonDirectory,
 } from '@/services/Pokemon'
+import {
+	getTagsWithPokemon,
+	fetchPokemonForTag,
+	fetchUntaggedPokemon,
+	combineTagResults,
+} from '@/services/TaggedPokemon'
 import type { PokemonSprites, PokemonState, ScanResult } from '@/models/store/Pokemon'
 
 // ===================================
@@ -23,6 +29,7 @@ export const fetchPokemonList = createAsyncThunk<
 		sprites: Record<number, PokemonSprites>
 		total: number
 		cache: Record<string, any>
+		tags?: any[]
 	},
 	PokemonListFilterDto,
 	{ state: { pokemon: PokemonState } }
@@ -37,7 +44,7 @@ export const fetchPokemonList = createAsyncThunk<
 			pokemon: result.pokemon,
 			sprites: result.sprites,
 			total: result.total,
-			cache: pokeApiCache, // Return updated cache
+			cache: pokeApiCache,
 		}
 	} catch (error: any) {
 		return rejectWithValue(error.message || 'Failed to fetch Pokémon list')
@@ -82,3 +89,59 @@ export const scanDirectory = createAsyncThunk<
 		return rejectWithValue(error.message || 'Failed to scan directory')
 	}
 })
+
+// Fetch pokemon grouped by tags with proper pagination per tag
+export const fetchPokemonByTagsGrouped = createAsyncThunk<
+	{
+		pokemon: PokemonListItemDto[]
+		sprites: Record<number, PokemonSprites>
+		total: number
+		cache: Record<string, any>
+		tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]
+	},
+	{
+		filters: Omit<
+			PokemonListFilterDto,
+			'tagIds' | 'tagNames' | 'anyTagIds' | 'anyTagNames' | 'hasNoTags'
+		>
+		currentPage: number
+		take: number
+	},
+	{ state: { pokemon: PokemonState } }
+>(
+	'pokemon/fetchPokemonByTagsGrouped',
+	async ({ filters, currentPage, take }, { getState, rejectWithValue }) => {
+		try {
+			const state = getState().pokemon
+			const pokeApiCache = { ...state.pokeApiCache }
+
+			// Get all tags
+			const allTags = await getTagsWithPokemon()
+			const skipPerTag = (currentPage - 1) * take
+
+			// Fetch pokemon for each tag
+			const tagPromises = allTags.map(tag =>
+				fetchPokemonForTag(tag.id, tag.name, filters, skipPerTag, take, pokeApiCache)
+			)
+
+			// Fetch untagged pokemon
+			const untaggedPromise = fetchUntaggedPokemon(filters, skipPerTag, take, pokeApiCache)
+
+			// Wait for all results
+			const results = await Promise.all([...tagPromises, untaggedPromise])
+
+			// Combine all results
+			const { allPokemon, allSprites, tagGroups, totalUnique } = combineTagResults(results)
+
+			return {
+				pokemon: allPokemon,
+				sprites: allSprites,
+				total: totalUnique,
+				cache: pokeApiCache,
+				tagGroups,
+			}
+		} catch (error: any) {
+			return rejectWithValue(error.message || 'Failed to fetch Pokemon by tags')
+		}
+	}
+)

@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks/hooks'
 import {
 	fetchPokemonList,
+	fetchPokemonByTagsGrouped,
 	deletePokemon,
 	importPokemon,
 	scanDirectory,
@@ -16,6 +17,7 @@ import {
 	selectPokemon,
 	selectSprites,
 	selectTotalPokemon,
+	selectTagGroups,
 	selectCurrentFilters,
 	selectLoading,
 	selectError,
@@ -42,6 +44,7 @@ export const usePokemon = () => {
 	const pokemon = useAppSelector(selectPokemon)
 	const sprites = useAppSelector(selectSprites)
 	const totalPokemon = useAppSelector(selectTotalPokemon)
+	const tagGroups = useAppSelector(selectTagGroups)
 	const currentFilters = useAppSelector(selectCurrentFilters)
 	const loading = useAppSelector(selectLoading)
 	const error = useAppSelector(selectError)
@@ -53,8 +56,8 @@ export const usePokemon = () => {
 
 	// Actions
 	const fetchPokemon = useCallback(
-		(filters?: PokemonListFilterDto) => {
-			const filterParams = filters || currentFilters
+		(filters?: Partial<PokemonListFilterDto>) => {
+			const filterParams = { ...currentFilters, ...filters }
 			return dispatch(fetchPokemonList(filterParams))
 		},
 		[dispatch, currentFilters]
@@ -117,6 +120,29 @@ export const usePokemon = () => {
 		return dispatch(scanDirectory())
 	}, [dispatch])
 
+	// Simplified function for tags view
+	const fetchPokemonByTagsView = useCallback(
+		(filters?: Partial<PokemonListFilterDto>, currentPage?: number, take?: number) => {
+			// Clean filters for tags view
+			const { tagIds, tagNames, anyTagIds, anyTagNames, hasNoTags, ...cleanFilters } = {
+				...currentFilters,
+				...filters,
+			}
+
+			const pageToUse = currentPage || Math.floor((currentFilters.Skip || 0) / (currentFilters.Take || 20)) + 1
+			const takeToUse = take || currentFilters.Take || 20
+
+			return dispatch(
+				fetchPokemonByTagsGrouped({
+					filters: cleanFilters,
+					currentPage: pageToUse,
+					take: takeToUse,
+				})
+			)
+		},
+		[dispatch, currentFilters]
+	)
+
 	const updatePokemonTagsById = useCallback(
 		(pokemonId: number, tags: TagDto[]) => {
 			dispatch(updatePokemonTags({ pokemonId, tags }))
@@ -169,6 +195,7 @@ export const usePokemon = () => {
 		pokemon,
 		sprites,
 		totalPokemon,
+		tagGroups,
 		currentFilters,
 		loading,
 		error,
@@ -180,6 +207,7 @@ export const usePokemon = () => {
 
 		// Actions
 		fetchPokemon,
+		fetchPokemonByTagsView,
 		deletePokemonById,
 		updateCurrentFilters,
 		setCurrentFilters,

@@ -263,6 +263,17 @@ export interface PokemonListFilterDto {
 	OriginGame?: number
 	TeraType?: number
 	Favorite?: boolean
+
+	/** IDs de tags que el Pokémon DEBE tener (todos los tags especificados) */
+	tagIds?: number[]
+	/** Nombres de tags que el Pokémon DEBE tener (todos los tags especificados) */
+	tagNames?: string[]
+	/** IDs de tags donde el Pokémon PUEDE tener cualquiera de ellos */
+	anyTagIds?: number[]
+	/** Nombres de tags donde el Pokémon PUEDE tener cualquiera de ellos */
+	anyTagNames?: string[]
+	/** Filtrar Pokémon que no tienen ningún tag */
+	hasNoTags?: boolean
 }
 
 // TODO: WIP
