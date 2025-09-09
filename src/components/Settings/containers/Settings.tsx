@@ -4,12 +4,10 @@ import type { CardBackgroundTypeName } from '@/models/enums/CardBackgroundTypes'
 import type { SpriteTypeName } from '@/models/enums/SpriteTypes'
 import { CardBackgroundType, CardBackgroundLabels } from '@/models/enums/CardBackgroundTypes'
 import { SPRITE_TYPE_CONFIG } from '@/models/enums/SpriteTypes'
-import { useCardBackgroundType } from '@/hooks/useCardBackgroundType'
-import { useSpriteType } from '@/hooks/useSpriteType'
+import { useUISettings } from '@/hooks/useUISettings'
 
 const Settings: React.FC = () => {
-	const { backgroundType, setBackgroundType } = useCardBackgroundType()
-	const { spriteType, setSpriteType } = useSpriteType()
+	const { backgroundType, setBackgroundType, spriteType, setSpriteType } = useUISettings()
 
 	const backgroundOptions = Object.values(CardBackgroundType) as CardBackgroundTypeName[]
 

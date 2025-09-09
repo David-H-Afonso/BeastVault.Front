@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import type { PokemonListItemDto, TagDto } from '@/models/api/types'
+import type { PokemonListItemDto } from '@/models/api/types'
 import type { PokemonListFilterDto, PokemonDetailDto } from '@/models/Pokemon'
 import {
 	getPokemonListWithSprites,
@@ -120,7 +120,7 @@ export const fetchPokemonByTagsGrouped = createAsyncThunk<
 			const skipPerTag = (currentPage - 1) * take
 
 			// Fetch pokemon for each tag
-			const tagPromises = allTags.map(tag =>
+			const tagPromises = allTags.map((tag) =>
 				fetchPokemonForTag(tag.id, tag.name, filters, skipPerTag, take, pokeApiCache)
 			)
 
@@ -131,12 +131,15 @@ export const fetchPokemonByTagsGrouped = createAsyncThunk<
 			const results = await Promise.all([...tagPromises, untaggedPromise])
 
 			// Combine all results
-			const { allPokemon, allSprites, tagGroups, totalUnique } = combineTagResults(results)
+			const { allPokemon, allSprites, tagGroups } = combineTagResults(results)
+
+			const result = await getPokemonListWithSprites(filters, pokeApiCache)
+			const totalPokemon = result.total
 
 			return {
 				pokemon: allPokemon,
 				sprites: allSprites,
-				total: totalUnique,
+				total: totalPokemon,
 				cache: pokeApiCache,
 				tagGroups,
 			}

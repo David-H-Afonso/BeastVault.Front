@@ -1,10 +1,10 @@
 import React from 'react'
-import { useLayout } from '../../../hooks/useLayout'
+import { useUISettings } from '@/hooks/useUISettings'
 import './LayoutSelector.scss'
 import type { LayoutType } from '@/models/store/Layout'
 
 export const LayoutSelector: React.FC = () => {
-	const { layoutType, setLayout } = useLayout()
+	const { layoutType, setLayout } = useUISettings()
 
 	const layoutOptions: { value: LayoutType; label: string; description: string }[] = [
 		{

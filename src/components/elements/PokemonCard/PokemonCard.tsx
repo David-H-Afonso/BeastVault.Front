@@ -1,12 +1,12 @@
-import type { PokemonListItemDto } from '../../../models/api/types'
-import { usePokeBallIcon } from '../../../hooks/useCachedAssets'
-import { usePokemonInfo } from '../../../hooks/usePokemonInfo'
-import { getTypeIconUrl } from '../../../utils'
-import { getTypeNameFromId } from '../../../models/enums/PokemonTypes'
-import { getBallNameFromId } from '../../../models/enums/PokemonBalls'
-import { useCardBackgroundType } from '../../../hooks/useCardBackgroundType'
-import { CardBackgroundType } from '../../../models/enums/CardBackgroundTypes'
-import { getComputedTypeColor } from '../../../utils/typeColors'
+import type { PokemonListItemDto } from '@/models/api/types'
+import { usePokeBallIcon } from '@/hooks/useCachedAssets'
+import { usePokemonData } from '@/hooks/usePokemonData'
+import { getTypeIconUrl } from '@/utils'
+import { getTypeNameFromId } from '@/models/enums/PokemonTypes'
+import { getBallNameFromId } from '@/models/enums/PokemonBalls'
+import { useUISettings } from '@/hooks/useUISettings'
+import { CardBackgroundType } from '@/models/enums/CardBackgroundTypes'
+import { getComputedTypeColor } from '@/utils/typeColors'
 import './PokemonCard.scss'
 import { useEffect, useState } from 'react'
 
@@ -37,15 +37,20 @@ export function PokemonCard({
 	const ballName = getBallNameFromId(pokemon.ballId)
 	const { icon: ballIcon, loading: ballIconLoading } = usePokeBallIcon(ballName)
 
-	// Get Pokemon information from PokeAPI cache (types and form)
-	const { pokemonInfo, loading: pokemonInfoLoading } = usePokemonInfo(
-		pokemon.speciesId,
-		pokemon.form,
-		pokemon.canGigantamax || false
-	)
+	// Get Pokemon information from consolidated hooks (only for types and colors)
+	const {
+		type1: finalType1,
+		type2: finalType2,
+		colors,
+		loading: pokemonInfoLoading,
+	} = usePokemonData(pokemon.speciesId, pokemon.form, pokemon.canGigantamax || false)
+
+	// Use species name and form name directly from backend
+	const speciesName = pokemon.speciesName
+	const finalFormName = pokemon.formName
 
 	// Get card background type preference
-	const { backgroundType } = useCardBackgroundType()
+	const { backgroundType } = useUISettings()
 
 	// Check if all essential data is loaded
 	const [isDataLoading, setIsDataLoading] = useState(true)
@@ -54,12 +59,9 @@ export function PokemonCard({
 		setIsDataLoading(pokemonInfoLoading || ballIconLoading || loading)
 	}, [pokemonInfoLoading, ballIconLoading, loading])
 
-	// Use PokeAPI data (types and form names come from PokeAPI, not backend)
-	const finalType1 = pokemonInfo?.type1
-	const finalType2 = pokemonInfo?.type2
-	const finalFormName = pokemonInfo?.formName
-	const type1Color = pokemonInfo?.colors?.type1 || '#68A090'
-	const type2Color = pokemonInfo?.colors?.type2 || '#68A090'
+	// Use PokeAPI data (types and form names come from consolidated hook)
+	const type1Color = colors?.type1 || '#68A090'
+	const type2Color = colors?.type2 || '#68A090'
 
 	// Generate CSS class and style for dual type borders
 	const getCardClassName = () => {
@@ -168,7 +170,7 @@ export function PokemonCard({
 						{sprite ? (
 							<img
 								src={sprite}
-								alt={pokemon.nickname || `Pokemon #${pokemon.speciesId}`}
+								alt={pokemon.nickname || speciesName}
 								className='pokemonSprite'
 								loading='lazy'
 							/>
@@ -193,7 +195,7 @@ export function PokemonCard({
 								<div className='nameAndBall'>
 									{ballIcon && <img src={ballIcon} alt='Pokeball' className='ballIconInline' />}
 									<h3 className='pokemonName'>
-										{pokemon.nickname || `Pokemon #${pokemon.speciesId}`}
+										{pokemon.nickname || speciesName}
 										{/* TODO: Gender information needs to be retrieved from PokeAPI or backend */}
 									</h3>
 								</div>

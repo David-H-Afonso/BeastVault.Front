@@ -24,8 +24,6 @@ export class PokemonCacheManager {
 		// Sort by timestamp if available, otherwise keep first N entries
 		const managedEntries = entries.slice(0, this.MAX_CACHE_SIZE)
 
-		console.log(`Cache size reduced from ${entries.length} to ${managedEntries.length} entries`)
-
 		return Object.fromEntries(managedEntries)
 	}
 

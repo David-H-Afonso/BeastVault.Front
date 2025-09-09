@@ -17,11 +17,18 @@ export async function getTagsWithPokemon(): Promise<TagDto[]> {
 export async function fetchPokemonForTag(
 	tagId: number,
 	tagName: string,
-	filters: Omit<PokemonListFilterDto, 'tagIds' | 'tagNames' | 'anyTagIds' | 'anyTagNames' | 'hasNoTags'>,
+	filters: Omit<
+		PokemonListFilterDto,
+		'tagIds' | 'tagNames' | 'anyTagIds' | 'anyTagNames' | 'hasNoTags'
+	>,
 	skip: number,
 	take: number,
 	cache: Record<string, any>
-): Promise<{ tagName: string; pokemon: PokemonListItemDto[]; sprites: Record<number, PokemonSprites> }> {
+): Promise<{
+	tagName: string
+	pokemon: PokemonListItemDto[]
+	sprites: Record<number, PokemonSprites>
+}> {
 	const result = await getPokemonListWithSprites(
 		{
 			...filters,
@@ -43,11 +50,18 @@ export async function fetchPokemonForTag(
  * Fetch untagged pokemon with pagination
  */
 export async function fetchUntaggedPokemon(
-	filters: Omit<PokemonListFilterDto, 'tagIds' | 'tagNames' | 'anyTagIds' | 'anyTagNames' | 'hasNoTags'>,
+	filters: Omit<
+		PokemonListFilterDto,
+		'tagIds' | 'tagNames' | 'anyTagIds' | 'anyTagNames' | 'hasNoTags'
+	>,
 	skip: number,
 	take: number,
 	cache: Record<string, any>
-): Promise<{ tagName: string; pokemon: PokemonListItemDto[]; sprites: Record<number, PokemonSprites> }> {
+): Promise<{
+	tagName: string
+	pokemon: PokemonListItemDto[]
+	sprites: Record<number, PokemonSprites>
+}> {
 	const result = await getPokemonListWithSprites(
 		{
 			...filters,
@@ -69,12 +83,17 @@ export async function fetchUntaggedPokemon(
  * Combine results from multiple tag fetches
  */
 export function combineTagResults(
-	results: Array<{ tagName: string; pokemon: PokemonListItemDto[]; sprites: Record<number, PokemonSprites> }>
+	results: Array<{
+		tagName: string
+		pokemon: PokemonListItemDto[]
+		sprites: Record<number, PokemonSprites>
+	}>
 ): {
 	allPokemon: PokemonListItemDto[]
 	allSprites: Record<number, PokemonSprites>
 	tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]
 	totalUnique: number
+	totalPokemon: number
 } {
 	let allPokemon: PokemonListItemDto[] = []
 	let allSprites: Record<number, PokemonSprites> = {}
@@ -101,5 +120,6 @@ export function combineTagResults(
 		allSprites,
 		tagGroups,
 		totalUnique,
+		totalPokemon: allPokemon.length,
 	}
 }

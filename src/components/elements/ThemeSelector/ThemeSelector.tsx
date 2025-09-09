@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTheme } from '@/hooks/useTheme'
+import { useUISettings } from '@/hooks/useUISettings'
 import './ThemeSelector.scss'
 import type { ThemeName } from '@/models/store/StylesSetting'
 
@@ -19,7 +19,7 @@ interface ThemeSelectorProps {
 }
 
 export const ThemeSelector = ({ compact = false }: ThemeSelectorProps) => {
-	const { currentTheme, setTheme } = useTheme()
+	const { currentTheme, setTheme } = useUISettings()
 	const [isOpen, setIsOpen] = useState(false)
 
 	const handleThemeChange = (theme: ThemeName) => {

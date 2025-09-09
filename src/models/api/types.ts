@@ -222,8 +222,12 @@ export interface PokemonListItemDto {
 	id: number
 	/** ID de especie (ej: 1 = Bulbasaur, 25 = Pikachu) */
 	speciesId: number
+
+	speciesName: string
 	/** ID de forma (ej: 0 = Meowth Normal, 1 = Meowth de Alola, 2 = Meowth de Galar) */
 	form: number
+	/** Nombre de la forma (ej: "Galar", "Alola", "Mega", "Crowned", etc.) */
+	formName?: string
 	/** Nickname del Pokémon (null si usa el nombre de la especie) */
 	nickname?: string
 	/** Nivel del Pokémon (1-100) */

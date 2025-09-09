@@ -1,8 +1,5 @@
 import type { PokemonListItemDto } from '../../../models/api/types'
 import { usePokeBallIcon } from '../../../hooks/useCachedAssets'
-import { usePokemonInfo } from '../../../hooks/usePokemonInfo'
-import { useCorrectBoxSprite } from '../../../hooks/useCorrectBoxSprite'
-import { usePokemonSpeciesName } from '../../../hooks/usePokemonSpeciesName'
 import { getBallNameFromId } from '../../../models/enums/PokemonBalls'
 import './PokemonListRow.scss'
 
@@ -26,50 +23,38 @@ export function PokemonListRow({
 	const ballName = getBallNameFromId(pokemon.ballId)
 	const { icon: ballIcon } = usePokeBallIcon(ballName)
 
-	// Use the same system as PokemonCard for form info
-	const { pokemonInfo } = usePokemonInfo(
-		pokemon.speciesId,
-		pokemon.form,
-		pokemon.canGigantamax || false
-	)
+	// Use species name and form name directly from backend - no API calls needed!
+	const speciesName = pokemon.speciesName
+	const formName = pokemon.formName
 
-	// Get the base species name (form 0 to get the base name)
-	const { speciesName } = usePokemonSpeciesName(pokemon.speciesId, 0)
+	let fullSpeciesName = speciesName
 
-	// Get the correct box sprite using the same system as the working views
-	const { spriteUrl: boxSpriteUrl } = useCorrectBoxSprite(
-		pokemon.speciesId,
-		pokemon.form,
-		pokemon.isShiny
-	)
-
-	// Create display name: construct full name like "Galarian Moltres"
-	let fullSpeciesName = speciesName || `#${pokemon.speciesId.toString().padStart(3, '0')}`
-
-	if (pokemonInfo.formName) {
-		// Extract the regional prefix from form name (e.g., "Galarian Form" -> "Galarian")
-		const formName = pokemonInfo.formName
-		if (formName.includes('Alolan')) {
-			fullSpeciesName = `Alolan ${speciesName}`
-		} else if (formName.includes('Galarian')) {
-			fullSpeciesName = `Galarian ${speciesName}`
-		} else if (formName.includes('Hisuian')) {
-			fullSpeciesName = `Hisuian ${speciesName}`
-		} else if (formName.includes('Paldean')) {
-			fullSpeciesName = `Paldean ${speciesName}`
-		} else if (formName.includes('Mega')) {
+	// Handle forms using the backend formName
+	if (formName) {
+		// Handle different form naming patterns
+		if (formName.toLowerCase().includes('gigantamax') || pokemon.canGigantamax) {
+			fullSpeciesName = `Gigantamax ${speciesName}`
+		} else if (formName.toLowerCase().includes('mega')) {
 			fullSpeciesName = `Mega ${speciesName}`
+		} else if (['galar', 'galarian'].some((term) => formName.toLowerCase().includes(term))) {
+			fullSpeciesName = `Galarian ${speciesName}`
+		} else if (['alola', 'alolan'].some((term) => formName.toLowerCase().includes(term))) {
+			fullSpeciesName = `Alolan ${speciesName}`
+		} else if (['hisui', 'hisuian'].some((term) => formName.toLowerCase().includes(term))) {
+			fullSpeciesName = `Hisuian ${speciesName}`
+		} else if (['paldea', 'paldean'].some((term) => formName.toLowerCase().includes(term))) {
+			fullSpeciesName = `Paldean ${speciesName}`
 		} else {
-			// For other forms, show the form name after the species
+			// For other forms like "Crowned", "Dada", etc., show as suffix
 			fullSpeciesName = `${speciesName} (${formName})`
 		}
 	}
 
-	// Only show nickname if it's different from the constructed species name
+	// Only show nickname if it's different from the species name
 	const shouldShowNickname =
 		pokemon.nickname &&
 		pokemon.nickname.toLowerCase() !== fullSpeciesName.toLowerCase() &&
-		pokemon.nickname.toLowerCase() !== speciesName?.toLowerCase()
+		pokemon.nickname.toLowerCase() !== speciesName.toLowerCase()
 
 	return (
 		<div className='pokemon-list-row'>

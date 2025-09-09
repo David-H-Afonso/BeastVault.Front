@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { downloadFileById, downloadPkmFileFromDisk } from '@/services/Pokemon'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { PokemonListItemDto, TagDto } from '@/models/api/types'
-import { useViewMode } from '@/hooks/useViewMode'
-import { useSpriteType } from '@/hooks/useSpriteType'
+import { useUISettings } from '@/hooks/useUISettings'
 import { usePokemon } from '@/hooks/usePokemon'
 import { getBestSpriteByType, groupPokemonByTags } from '@/utils'
 import HomeComponent from '../components/HomeComponent'
@@ -17,8 +16,7 @@ import NewHomeComponent from '../components/NewHomeComponent'
  */
 const Home = () => {
 	// Hooks para configuración de UI
-	const { spriteType } = useSpriteType()
-	const { viewMode, setViewMode } = useViewMode()
+	const { spriteType, viewMode, setViewMode } = useUISettings()
 
 	// Redux state y acciones para Pokémon
 	const {
@@ -43,6 +41,13 @@ const Home = () => {
 	const [pendingDownloadId, setPendingDownloadId] = useState<number | null>(null)
 	const [downloadLoading, setDownloadLoading] = useState(false)
 	const dispatch = useAppDispatch()
+
+	// State para controlar re-fetch automático en grid/list views
+	const [shouldRefetchForPagination, setShouldRefetchForPagination] = useState(false)
+
+	// Selectors para filtros de paginación
+	const currentFilters = useAppSelector((state) => state.pokemon.currentFilters)
+	const { Take: itemsPerPage = 20, Skip = 0 } = currentFilters
 
 	// Estado para gestión de tags
 	const [tagManagerOpen, setTagManagerOpen] = useState(false)
@@ -168,7 +173,7 @@ const Home = () => {
 		(pokemonId: number, newTags: TagDto[]) => {
 			// Update the tags in Redux store
 			updatePokemonTagsById(pokemonId, newTags)
-			
+
 			// Reload data based on current view mode to reflect tag changes
 			if (viewMode === 'tags') {
 				// For tags view, refetch to get updated groupings
@@ -189,7 +194,7 @@ const Home = () => {
 			// For tags view, refetch to get updated tag groups
 			fetchPokemonByTagsView()
 		}
-		// For grid/list view, no need to reload since tag creation/deletion 
+		// For grid/list view, no need to reload since tag creation/deletion
 		// doesn't affect the pokemon list display
 	}, [viewMode, fetchPokemonByTagsView])
 
@@ -264,29 +269,39 @@ const Home = () => {
 		}
 	}, [viewMode]) // Re-fetch when view mode changes
 
-	// Pagination - works for both view modes
-	const itemsPerPage = useAppSelector((state) => state.pokemon.currentFilters.Take) || 20
-	const onItemsPerPageChange = (itemsPerPage: number) => {
-		dispatch(updateFilters({ Take: itemsPerPage, Skip: 0 }))
-		// Re-fetch with new pagination
+	// Effect para re-fetch automático cuando cambian los filtros de paginación en grid/list views
+	useEffect(() => {
+		if (shouldRefetchForPagination && viewMode !== 'tags') {
+			fetchPokemon()
+			setShouldRefetchForPagination(false)
+		}
+	}, [currentFilters.Take, currentFilters.Skip, shouldRefetchForPagination, viewMode, fetchPokemon])
+
+	// Pagination handlers
+	const onItemsPerPageChange = (newItemsPerPage: number) => {
+		dispatch(updateFilters({ Take: newItemsPerPage, Skip: 0 }))
+		// Re-fetch with new pagination for all view modes
 		if (viewMode === 'tags') {
-			fetchPokemonByTagsView(undefined, 1, itemsPerPage)
+			fetchPokemonByTagsView(undefined, 1, newItemsPerPage)
+		} else {
+			// For grid/list views, trigger the useEffect above
+			setShouldRefetchForPagination(true)
 		}
 	}
 	const totalPages = Math.ceil(totalPokemon / itemsPerPage) || 1
-
-	const currentPage = Math.floor(
-		(useAppSelector((state) => state.pokemon.currentFilters.Skip) || 0) / itemsPerPage + 1
-	)
+	const currentPage = Math.floor(Skip / itemsPerPage) + 1
 
 	const onPageChange = (page: number) => {
 		const take = itemsPerPage
 		const newSkip = (page - 1) * take
 		dispatch(updateFilters({ Skip: newSkip }))
 
-		// Re-fetch with new page
+		// Re-fetch with new page for all view modes
 		if (viewMode === 'tags') {
 			fetchPokemonByTagsView(undefined, page, take)
+		} else {
+			// For grid/list views, trigger the useEffect above
+			setShouldRefetchForPagination(true)
 		}
 	}
 
