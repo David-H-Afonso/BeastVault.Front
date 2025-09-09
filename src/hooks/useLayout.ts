@@ -1,5 +1,5 @@
-import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setLayoutType, type LayoutType } from '../store/layoutSlice'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { setLayoutType, type LayoutType } from '@/store/features/layout'
 
 export function useLayout() {
 	const layoutType = useAppSelector((state) => state.layout.layoutType)

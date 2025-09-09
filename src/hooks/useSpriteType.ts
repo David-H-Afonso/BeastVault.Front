@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '../store'
-import { setSpriteType } from '../store/styleSettingsSlice'
+import { setSpriteType } from '@/store/features/styleSettings'
 import type { SpriteTypeName } from '../enums/SpriteTypes'
 
 export function useSpriteType() {

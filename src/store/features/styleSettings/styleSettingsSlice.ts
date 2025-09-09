@@ -1,24 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import { CardBackgroundType, type CardBackgroundTypeName } from '../enums/CardBackgroundTypes'
-import { SpriteType, type SpriteTypeName } from '../enums/SpriteTypes'
-
-export type ViewMode = 'tags' | 'grid' | 'list'
-export type ThemeName =
-	| 'dark'
-	| 'light'
-	| 'pokemon'
-	| 'water'
-	| 'fire'
-	| 'grass'
-	| 'electric'
-	| 'psychic'
-
-interface StyleSettingsState {
-	backgroundType: CardBackgroundTypeName
-	viewMode: ViewMode
-	theme: ThemeName
-	spriteType: SpriteTypeName
-}
+import { CardBackgroundType, type CardBackgroundTypeName } from '@/enums/CardBackgroundTypes'
+import { SpriteType, type SpriteTypeName } from '@/enums/SpriteTypes'
+import type { StyleSettingsState, ThemeName, ViewMode } from '@/models/store/StylesSetting'
 
 // Load initial state from localStorage if available
 const loadInitialState = (): StyleSettingsState => {
@@ -64,13 +47,18 @@ const loadInitialState = (): StyleSettingsState => {
 		}
 
 		if (savedSpriteType) {
-			const validSprites = Object.values(SpriteType)
-			if (validSprites.includes(savedSpriteType as SpriteTypeName)) {
+			const validTypes = Object.values(SpriteType)
+			if (validTypes.includes(savedSpriteType as SpriteTypeName)) {
 				spriteType = savedSpriteType as SpriteTypeName
 			}
 		}
 
-		return { backgroundType, viewMode, theme, spriteType }
+		return {
+			backgroundType,
+			viewMode,
+			theme,
+			spriteType,
+		}
 	} catch (error) {
 		console.warn('Failed to load state from localStorage:', error)
 	}
@@ -130,3 +118,6 @@ const styleSettingsSlice = createSlice({
 export const { setBackgroundType, setViewMode, setTheme, setSpriteType } =
 	styleSettingsSlice.actions
 export default styleSettingsSlice.reducer
+
+// Types
+export type { StyleSettingsState }

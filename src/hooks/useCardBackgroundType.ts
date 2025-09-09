@@ -1,5 +1,5 @@
-import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setBackgroundType as setBackgroundTypeAction } from '../store/styleSettingsSlice'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { setBackgroundType as setBackgroundTypeAction } from '@/store/features/styleSettings'
 import type { CardBackgroundTypeName } from '../enums/CardBackgroundTypes'
 
 export function useCardBackgroundType() {

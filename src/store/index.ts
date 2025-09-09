@@ -1,13 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
-import styleSettingsReducer from './styleSettingsSlice'
-import layoutReducer from './layoutSlice'
-import pokemonReducer from './pokemonSlice'
+import { pokemonReducer } from './features/pokemon'
+import { layoutReducer } from './features/layout'
+import { styleSettingsReducer } from './features/styleSettings'
 
 export const store = configureStore({
 	reducer: {
-		styleSettings: styleSettingsReducer,
-		layout: layoutReducer,
 		pokemon: pokemonReducer,
+		layout: layoutReducer,
+		styleSettings: styleSettingsReducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware({
@@ -38,3 +38,6 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
+
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type AppStore = typeof store

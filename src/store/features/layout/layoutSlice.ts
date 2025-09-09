@@ -1,10 +1,5 @@
+import type { LayoutState, LayoutType } from '@/models/store/Layout'
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-
-export type LayoutType = 'empty' | 'header'
-
-interface LayoutState {
-	layoutType: LayoutType
-}
 
 // Load initial state from localStorage if available
 const loadInitialState = (): LayoutState => {
@@ -49,3 +44,6 @@ const layoutSlice = createSlice({
 
 export const { setLayoutType } = layoutSlice.actions
 export default layoutSlice.reducer
+
+// Types
+export type { LayoutState }

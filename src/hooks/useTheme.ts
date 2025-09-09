@@ -1,5 +1,5 @@
-import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setTheme as setThemeAction, type ThemeName } from '../store/styleSettingsSlice'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { setTheme as setThemeAction, type ThemeName } from '@/store/features/styleSettings'
 
 export function useTheme() {
 	const currentTheme = useAppSelector((state) => state.styleSettings.theme)

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLayout } from '../../../hooks/useLayout'
-import type { LayoutType } from '../../../store/layoutSlice'
+import type { LayoutType } from '@/store/features/layout'
 import './LayoutSelector.scss'
 
 export const LayoutSelector: React.FC = () => {

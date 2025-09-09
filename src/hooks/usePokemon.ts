@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks/hooks'
 import {
 	fetchPokemonList,
 	deletePokemon,
@@ -26,7 +26,7 @@ import {
 	selectLastFetch,
 	selectPokemonById,
 	selectSpriteById,
-} from '@/store/pokemonSlice'
+} from '@/store/features/pokemon'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { TagDto } from '@/models/api/types'
 import { PokemonCacheManager } from '@/utils'
