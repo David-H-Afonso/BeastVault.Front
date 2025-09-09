@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTheme } from '@/hooks/useTheme'
 import './ThemeSelector.scss'
-import type { ThemeName } from '@/store/styleSettingsSlice'
+import type { ThemeName } from '@/models/store/StylesSetting'
 
 const AVAILABLE_THEMES: ThemeName[] = [
 	'dark',

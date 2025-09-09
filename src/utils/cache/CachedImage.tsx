@@ -1,5 +1,5 @@
 import React from 'react'
-import { useCachedImage } from '../hooks/useCachedResources'
+import { useCachedImage } from '@/services'
 
 interface CachedImageProps {
 	src: string | null

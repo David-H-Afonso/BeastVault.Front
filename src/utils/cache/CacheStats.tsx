@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { cacheService } from '../services/CacheService'
+import { cacheService } from '../../services/CacheService'
 
 interface CacheStatsProps {
 	show?: boolean
