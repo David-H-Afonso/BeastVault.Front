@@ -81,7 +81,7 @@ const Settings: React.FC = () => {
 				{/* Preview Section */}
 				<section className='settings-section' style={{ marginBottom: '20px' }}>
 					<h2 className='section-title'>👁️ Preview</h2>
-					<div className='section-content'>
+					<div className='section-content' style={{ gap: '20px', display: 'flex' }}>
 						{defaultPokemon.map((pokemon, index) => (
 							<PokemonCard
 								key={index}
