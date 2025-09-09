@@ -146,6 +146,11 @@ class CacheService {
 	 * Clean up expired entries
 	 */
 	async cleanup(): Promise<void> {
+		if (!this.isCacheAvailable()) {
+			console.warn('Cache API not available, skipping cache cleanup')
+			return
+		}
+
 		try {
 			const cache = await caches.open(this.CACHE_NAME)
 			const keys = await cache.keys()

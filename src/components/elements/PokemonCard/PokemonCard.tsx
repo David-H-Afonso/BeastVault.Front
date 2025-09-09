@@ -21,6 +21,7 @@ interface PokemonCardProps {
 
 // Helper to get type class name for CSS
 function getTypeClassName(type: string): string {
+	if (!type) return 'typeUnknown'
 	return `type${type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()}`
 }
 

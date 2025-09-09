@@ -54,6 +54,8 @@ export function PokemonListRow({
 	// Only show nickname if it's different from the species name
 	const shouldShowNickname =
 		pokemon.nickname &&
+		fullSpeciesName &&
+		speciesName &&
 		pokemon.nickname.toLowerCase() !== fullSpeciesName.toLowerCase() &&
 		pokemon.nickname.toLowerCase() !== speciesName.toLowerCase()
 
