@@ -18,17 +18,15 @@ export const UIOptionsSelector: React.FC = () => {
 
 	return (
 		<div className='ui-options-selector'>
-			<h3 className='selector-title'>⚙️ Display Options</h3>
-
-			<div className='options-grid'>
+			<div className='options-flex'>
 				{/* Card Background Selector */}
-				<div className='sprite-type-group'>
-					<label className='sprite-type-label' htmlFor='background-select'>
+				<div className='option-group'>
+					<label className='option-label' htmlFor='background-select'>
 						Cards style
 					</label>
 					<select
 						id='background-select'
-						className='sprite-type-select'
+						className='option-select'
 						value={backgroundType}
 						onChange={(e) => setBackgroundType(e.target.value as CardBackgroundTypeName)}>
 						{backgroundOptions.map((option) => (
@@ -40,13 +38,13 @@ export const UIOptionsSelector: React.FC = () => {
 				</div>
 
 				{/* Sprite Type Selector */}
-				<div className='sprite-type-group'>
-					<label className='sprite-type-label' htmlFor='sprite-type-select'>
+				<div className='option-group'>
+					<label className='option-label' htmlFor='option-select'>
 						Pokemon Images
 					</label>
 					<select
-						id='sprite-type-select'
-						className='sprite-type-select'
+						id='option-select'
+						className='option-select'
 						value={spriteType}
 						onChange={(e) => setSpriteType(e.target.value as SpriteTypeName)}>
 						{Object.entries(SPRITE_TYPE_CONFIG).map(([type, config]) => (

@@ -1,0 +1,148 @@
+.settings-page {
+	min-height: 100vh;
+	background: var(--bg-primary);
+	padding: 20px;
+}
+
+.settings-container {
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+.settings-header {
+	text-align: center;
+	margin-bottom: 40px;
+	padding: 24px;
+	background: var(--overlay-light);
+	border: 1px solid var(--border-overlay-light);
+	border-radius: 12px;
+}
+
+.settings-title {
+	color: var(--text-primary);
+	font-size: 2.2rem;
+	font-weight: 700;
+	margin: 0 0 12px 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+}
+
+.settings-description {
+	color: var(--text-secondary);
+	font-size: 1.1rem;
+	margin: 0;
+	opacity: 0.8;
+}
+
+.settings-content {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.settings-section {
+	background: var(--overlay-light);
+	border: 1px solid var(--border-overlay-light);
+	border-radius: 12px;
+	padding: 24px;
+	transition: all 0.2s ease;
+
+	&:hover {
+		border-color: var(--border-overlay-medium);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+}
+
+.section-title {
+	color: var(--text-primary);
+	font-size: 1.4rem;
+	font-weight: 600;
+	margin: 0 0 16px 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--border-overlay-light);
+}
+
+.section-content {
+	// Remove margin and padding from nested components
+	.ui-options-selector {
+		margin: 0;
+		background: transparent;
+		border: none;
+		padding: 0;
+		box-shadow: none;
+	}
+}
+
+.coming-soon {
+	text-align: center;
+	padding: 32px;
+	color: var(--text-secondary);
+
+	p {
+		font-size: 1.1rem;
+		margin: 0 0 8px 0;
+		opacity: 0.8;
+	}
+
+	small {
+		font-size: 0.9rem;
+		opacity: 0.6;
+	}
+}
+
+// Responsive design
+@media (max-width: 768px) {
+	.settings-page {
+		padding: 16px;
+	}
+
+	.settings-header {
+		padding: 20px;
+		margin-bottom: 24px;
+	}
+
+	.settings-title {
+		font-size: 1.8rem;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.settings-description {
+		font-size: 1rem;
+	}
+
+	.settings-content {
+		gap: 20px;
+	}
+
+	.settings-section {
+		padding: 20px;
+	}
+
+	.section-title {
+		font-size: 1.2rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.settings-page {
+		padding: 12px;
+	}
+
+	.settings-header {
+		padding: 16px;
+	}
+
+	.settings-title {
+		font-size: 1.6rem;
+	}
+
+	.settings-section {
+		padding: 16px;
+	}
+}

@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
-import backgroundReducer from './backgroundSlice'
+import styleSettingsReducer from './styleSettingsSlice'
+import layoutReducer from './layoutSlice'
 
 export const store = configureStore({
 	reducer: {
-		background: backgroundReducer,
+		styleSettings: styleSettingsReducer,
+		layout: layoutReducer,
 	},
 })
 

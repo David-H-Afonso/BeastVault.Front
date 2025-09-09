@@ -1,8 +1,8 @@
 import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setTheme as setThemeAction, type ThemeName } from '../store/backgroundSlice'
+import { setTheme as setThemeAction, type ThemeName } from '../store/styleSettingsSlice'
 
 export function useTheme() {
-	const currentTheme = useAppSelector((state) => state.background.theme)
+	const currentTheme = useAppSelector((state) => state.styleSettings.theme)
 	const dispatch = useAppDispatch()
 
 	const setTheme = (theme: ThemeName) => {

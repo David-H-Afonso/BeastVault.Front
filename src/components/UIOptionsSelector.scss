@@ -16,200 +16,50 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		padding: 12px 0 0 12px;
 	}
 
-	.options-grid {
+	.options-flex {
 		display: flex;
 		flex-direction: row;
 		gap: 16px;
-	}
 
-	.option-group {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
+		.option-group {
+			border: 1px solid var(--border-overlay-light);
+			border-radius: 8px;
+			padding: 12px;
 
-	// Card Background Section
-	.card-background-group {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 0.75rem;
-		background: var(--overlay-light);
-		border-radius: 8px;
-		border: 1px solid var(--border-overlay-light);
-	}
+			.option-label {
+				color: var(--text-primary);
+				font-size: 0.9rem;
+				font-weight: 600;
+				margin: 0 0 8px 0;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
 
-	.option-label {
-		font-size: 0.9rem;
-		color: var(--text-primary);
-		font-weight: 500;
-		white-space: nowrap;
-	}
+			.option-select {
+				width: 100%;
+				padding: 0.5rem 0.75rem;
+				border: 1px solid var(--border-overlay-medium);
+				border-radius: 6px;
+				background: var(--overlay-light);
+				color: var(--text-primary);
+				font-size: 0.9rem;
+				cursor: pointer;
+				margin-bottom: 12px;
 
-	.background-select {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid var(--border-overlay-medium);
-		border-radius: 6px;
-		background: var(--overlay-light);
-		color: var(--text-primary);
-		font-size: 0.9rem;
-		min-width: 180px;
-		cursor: pointer;
+				&:focus {
+					outline: 2px solid var(--color-focus-ring);
+					outline-offset: 2px;
+				}
 
-		&:focus {
-			outline: 2px solid var(--color-focus-ring);
-			outline-offset: 2px;
-		}
-
-		option {
-			background: var(--bg-secondary);
-			color: var(--text-primary);
-		}
-	}
-
-	// Sprite Type Section
-	.sprite-type-group {
-		background: var(--overlay-light);
-		border: 1px solid var(--border-overlay-light);
-		border-radius: 8px;
-		padding: 12px;
-	}
-
-	.sprite-type-label {
-		color: var(--text-primary);
-		font-size: 0.9rem;
-		font-weight: 600;
-		margin: 0 0 8px 0;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.sprite-type-select {
-		width: 100%;
-		padding: 0.5rem 0.75rem;
-		border: 1px solid var(--border-overlay-medium);
-		border-radius: 6px;
-		background: var(--overlay-light);
-		color: var(--text-primary);
-		font-size: 0.9rem;
-		cursor: pointer;
-		margin-bottom: 12px;
-
-		&:focus {
-			outline: 2px solid var(--color-focus-ring);
-			outline-offset: 2px;
-		}
-
-		option {
-			background: var(--bg-secondary);
-			color: var(--text-primary);
-		}
-	}
-
-	// Información del sprite seleccionado
-	.sprite-info {
-		border-top: 1px solid var(--border-overlay-light);
-		padding-top: 8px;
-	}
-
-	.sprite-details {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		align-items: center;
-		margin-bottom: 8px;
-
-		span {
-			background: var(--overlay-medium);
-			border: 1.5px solid var(--border-overlay-medium);
-			border-radius: 6px;
-			padding: 4px 8px;
-			font-size: 0.8rem;
-			font-weight: 500;
-			color: var(--text-secondary);
-			display: flex;
-			align-items: center;
-			gap: 4px;
-		}
-	}
-
-	.memory-indicator {
-		&.low {
-			background: var(--color-success-alpha-20);
-			border-color: var(--color-success-alpha-50);
-			color: var(--color-success);
-		}
-
-		&.medium {
-			background: var(--color-warning-alpha-20);
-			border-color: var(--color-warning-alpha-50);
-			color: var(--color-warning);
-		}
-
-		&.high {
-			background: var(--color-danger-alpha-20);
-			border-color: var(--color-danger-alpha-50);
-			color: var(--color-danger);
-		}
-	}
-
-	.quality-indicator {
-		background: var(--color-info-alpha-20);
-		border-color: var(--color-info-alpha-50);
-		color: var(--color-info);
-	}
-
-	.animated-indicator {
-		background: var(--color-primary-alpha-20);
-		border-color: var(--color-primary-alpha-50);
-		color: var(--color-primary);
-	}
-
-	.recommended-indicator {
-		background: var(--color-warning-alpha-20);
-		border-color: var(--color-warning-alpha-50);
-		color: var(--color-warning);
-
-		&::before {
-			content: '✨';
-			margin-right: 2px;
-		}
-	}
-
-	// Advertencia de memoria
-	.sprite-warning {
-		padding: 8px 12px;
-		background: var(--color-danger-alpha-10);
-		border: 1px solid var(--color-danger-alpha-30);
-		border-radius: 6px;
-		color: var(--color-danger);
-		font-size: 0.8rem;
-		font-weight: 500;
-		text-align: center;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-
-		&::before {
-			content: '⚠️';
-		}
-	}
-
-	// Responsive design
-	@media (max-width: 768px) {
-		.card-background-group {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 8px;
-		}
-
-		.background-select {
-			width: 100%;
-			min-width: auto;
+				option {
+					background: var(--bg-secondary);
+					color: var(--text-primary);
+				}
+			}
 		}
 	}
 }

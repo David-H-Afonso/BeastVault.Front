@@ -1,9 +1,9 @@
-import type { PokemonListItemDto } from '../models/api/types'
-import { usePokeBallIcon } from '../hooks/useCachedAssets'
-import { usePokemonInfo } from '../hooks/usePokemonInfo'
-import { useCorrectBoxSprite } from '../hooks/useCorrectBoxSprite'
-import { usePokemonSpeciesName } from '../hooks/usePokemonSpeciesName'
-import { getBallNameFromId } from '../enums/PokemonBalls'
+import type { PokemonListItemDto } from '../../../models/api/types'
+import { usePokeBallIcon } from '../../../hooks/useCachedAssets'
+import { usePokemonInfo } from '../../../hooks/usePokemonInfo'
+import { useCorrectBoxSprite } from '../../../hooks/useCorrectBoxSprite'
+import { usePokemonSpeciesName } from '../../../hooks/usePokemonSpeciesName'
+import { getBallNameFromId } from '../../../enums/PokemonBalls'
 import './PokemonListRow.scss'
 
 interface PokemonListRowProps {

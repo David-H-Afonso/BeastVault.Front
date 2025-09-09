@@ -13,7 +13,7 @@ export type ThemeName =
 	| 'electric'
 	| 'psychic'
 
-interface BackgroundState {
+interface StyleSettingsState {
 	backgroundType: CardBackgroundTypeName
 	viewMode: ViewMode
 	theme: ThemeName
@@ -21,7 +21,7 @@ interface BackgroundState {
 }
 
 // Load initial state from localStorage if available
-const loadInitialState = (): BackgroundState => {
+const loadInitialState = (): StyleSettingsState => {
 	try {
 		const savedBackground = localStorage.getItem('cardBackgroundType')
 		const savedViewMode = localStorage.getItem('viewMode')
@@ -82,10 +82,10 @@ const loadInitialState = (): BackgroundState => {
 	}
 }
 
-const initialState: BackgroundState = loadInitialState()
+const initialState: StyleSettingsState = loadInitialState()
 
-const backgroundSlice = createSlice({
-	name: 'background',
+const styleSettingsSlice = createSlice({
+	name: 'styleSettings',
 	initialState,
 	reducers: {
 		setBackgroundType: (state, action: PayloadAction<CardBackgroundTypeName>) => {
@@ -127,5 +127,6 @@ const backgroundSlice = createSlice({
 	},
 })
 
-export const { setBackgroundType, setViewMode, setTheme, setSpriteType } = backgroundSlice.actions
-export default backgroundSlice.reducer
+export const { setBackgroundType, setViewMode, setTheme, setSpriteType } =
+	styleSettingsSlice.actions
+export default styleSettingsSlice.reducer

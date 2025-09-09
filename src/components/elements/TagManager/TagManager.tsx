@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { TagDto, PokemonListItemDto } from '../models/api/types'
+import type { TagDto, PokemonListItemDto } from '../../../models/api/types'
 import {
 	getAllTags,
 	createTag,
@@ -7,22 +7,17 @@ import {
 	assignTagsToPokemon,
 	uploadTagImage,
 	deleteTagImage,
-} from '../services/Tags'
-import './PokemonTagManager.scss'
+} from '../../../services/Tags'
+import './TagManager.scss'
 
-interface PokemonTagManagerProps {
+interface TagManagerProps {
 	pokemon: PokemonListItemDto
 	isOpen: boolean
 	onClose: () => void
 	onTagsUpdated: (pokemonId: number, newTags: TagDto[]) => void
 }
 
-export function PokemonTagManager({
-	pokemon,
-	isOpen,
-	onClose,
-	onTagsUpdated,
-}: PokemonTagManagerProps) {
+export function TagManager({ pokemon, isOpen, onClose, onTagsUpdated }: TagManagerProps) {
 	const [allTags, setAllTags] = useState<TagDto[]>([])
 	const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 	const [newTagName, setNewTagName] = useState('')

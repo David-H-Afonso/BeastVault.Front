@@ -251,6 +251,9 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--bg-surface-alt: #{$surface-alt};
 	--bg-accent: #{$accent-dark};
 
+	// ============ CARD BACKGROUND COLORS ============
+	--card-background-color: var(--bg-primary);
+
 	// ============ TEXT COLORS ============
 	--text-primary: #{rgba($color-white, $alpha-87)};
 	--text-secondary: #{rgba($color-white, $alpha-75)};

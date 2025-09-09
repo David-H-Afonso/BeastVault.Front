@@ -1,11 +1,11 @@
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '../store'
-import { setSpriteType } from '../store/backgroundSlice'
+import { setSpriteType } from '../store/styleSettingsSlice'
 import type { SpriteTypeName } from '../enums/SpriteTypes'
 
 export function useSpriteType() {
 	const dispatch = useDispatch()
-	const spriteType = useSelector((state: RootState) => state.background.spriteType)
+	const spriteType = useSelector((state: RootState) => state.styleSettings.spriteType)
 
 	const setSpriteTypeAction = (newType: SpriteTypeName) => {
 		dispatch(setSpriteType(newType))

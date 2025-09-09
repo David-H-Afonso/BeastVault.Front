@@ -1,8 +1,8 @@
 import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setViewMode as setViewModeAction, type ViewMode } from '../store/backgroundSlice'
+import { setViewMode as setViewModeAction, type ViewMode } from '../store/styleSettingsSlice'
 
 export function useViewMode() {
-	const viewMode = useAppSelector((state) => state.background.viewMode)
+	const viewMode = useAppSelector((state) => state.styleSettings.viewMode)
 	const dispatch = useAppDispatch()
 
 	const setViewMode = (newMode: ViewMode) => {

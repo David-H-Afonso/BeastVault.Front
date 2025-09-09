@@ -1,0 +1,78 @@
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	&-backdrop {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(4px);
+		animation: fadeIn 0.2s ease;
+	}
+
+	.modal-content {
+		position: relative;
+		z-index: 1;
+
+		overflow: auto;
+		background: var(--card-background-color);
+		border: 1px solid var(--border-color);
+		border-radius: 12px;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+		.modal-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 10px 20px;
+
+			h3 {
+				font-size: 1.5rem;
+				color: var(--text-primary);
+			}
+
+			.modal-header-actions {
+				button {
+					background: none;
+					border: none;
+					color: var(--text-primary);
+					font-size: 1.2rem;
+					cursor: pointer;
+					transition: color 0.2s ease;
+
+					&:hover {
+						color: var(--primary-color);
+					}
+
+					&:focus {
+						outline: none;
+						box-shadow: 0 0 0 2px var(--primary-color);
+					}
+				}
+			}
+		}
+
+		.modal-body {
+			padding: 0 20px 20px;
+			color: var(--text-primary);
+			font-size: 1rem;
+			line-height: 1.5;
+		}
+
+		@media (max-width: 768px) {
+			max-width: 95vw;
+			max-height: 95vh;
+			border-radius: 8px;
+		}
+	}
+}

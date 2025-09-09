@@ -1,6 +1,5 @@
-import { AppPortal } from './AppPortal'
-
 import type { ReactNode } from 'react'
+import { Modal } from '@/components/elements/Modal/Modal'
 interface ConfirmDialogProps {
 	open: boolean
 	title?: string
@@ -20,7 +19,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
 	if (!open) return null
 	return (
-		<AppPortal>
+		<Modal isOpen={open} onClose={onCancel} closeOnBackdropClick={false} closeOnEscape={false}>
 			<div
 				style={{
 					position: 'fixed',
@@ -65,6 +64,6 @@ export function ConfirmDialog({
 					</div>
 				</div>
 			</div>
-		</AppPortal>
+		</Modal>
 	)
 }

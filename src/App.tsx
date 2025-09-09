@@ -12,15 +12,14 @@ import type { PokemonListItemDto, TagDto } from './models/api/types'
 import { getPokeApiPokemon } from './services/Pokeapi'
 import { ConfirmDialog } from './ConfirmDialog'
 import { PokemonFilters, PokemonCard, PokemonListRow } from './components'
-import { PokemonTagManager } from './components/PokemonTagManager'
+import { TagManager } from './components/elements/TagManager/TagManager'
 import { useViewMode } from './hooks/useViewMode'
 import './App.scss'
-import './components/PokemonListRow.scss'
-import { UIOptionsSelector } from './components/UIOptionsSelector'
-import { ReduxThemeSelector } from './components/ReduxThemeSelector'
+import './components/elements/PokemonRow/PokemonListRow.scss'
+import { ThemeSelector } from '@/components/elements'
 import { useSpriteType } from './hooks/useSpriteType'
 import { SpriteType } from './enums/SpriteTypes'
-import banner from './assets/BeastVault-banner.svg'
+import { BeastVaultBanner as banner } from '@/assets/images'
 
 // Helper to get the best available sprite based on user preference
 function getBestSpriteByType(
@@ -135,9 +134,6 @@ function App() {
 	const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
 	const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false)
 	const [pendingDownloadId, setPendingDownloadId] = useState<number | null>(null)
-	const [scanning, setScanning] = useState(false)
-	const [scanResult, setScanResult] = useState<string | null>(null)
-	const fileInputRef = useRef<HTMLInputElement | null>(null)
 
 	// View mode state from Redux
 	const { viewMode, setViewMode } = useViewMode()
@@ -271,25 +267,6 @@ function App() {
 		[fetchPokemonList]
 	)
 
-	// Scan directory function
-	const handleScanDirectory = useCallback(async () => {
-		setScanning(true)
-		setError(null)
-		setScanResult(null)
-		try {
-			const result = await scanPokemonDirectory()
-			setScanResult(
-				`Scan completed: ${result.summary.newlyImported} new, ${result.summary.alreadyImported} existing, ${result.summary.errors} errors`
-			)
-			// Refresh the list after scanning
-			await fetchPokemonList()
-		} catch (e: any) {
-			setError(e.message || 'Failed to scan directory')
-		} finally {
-			setScanning(false)
-		}
-	}, [fetchPokemonList])
-
 	// Download logic
 	const handleDownload = (id: number) => {
 		setPendingDownloadId(id)
@@ -333,30 +310,10 @@ function App() {
 		setPendingDownloadId(null)
 	}
 
-	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (!e.target.files || e.target.files.length === 0) return
-		setLoading(true)
-		setError(null)
-		try {
-			await importPokemonFiles([e.target.files[0]])
-			await fetchPokemonList()
-		} catch (e: any) {
-			setError(e.message || 'Failed to upload file')
-		} finally {
-			setLoading(false)
-			if (fileInputRef.current) fileInputRef.current.value = ''
-		}
-	}
-
 	// Fetch list on mount
 	useEffect(() => {
 		fetchPokemonList()
 	}, [fetchPokemonList])
-
-	// Auto-scan directory on render
-	useEffect(() => {
-		handleScanDirectory()
-	}, [handleScanDirectory])
 
 	const handleDelete = async (id: number) => {
 		setConfirmOpen(true)
@@ -440,70 +397,13 @@ function App() {
 					}}>
 					Beast Vault
 				</h1>
-				{/* Banner Image (rendered white via CSS filter) */}
-				<img
-					src={banner}
-					alt='Beast Vault banner'
-					className='banner-image'
-					style={{
-						width: '100%',
-						maxWidth: '500px',
-						height: 'auto',
-						borderRadius: 8,
-						marginTop: 8,
-						/* Make the SVG render white */
-						filter: 'brightness(0) invert(1)',
-					}}
-				/>
-				{/* File upload and scan controls */}
-				<div
-					style={{
-						display: 'flex',
-						gap: '1rem',
-						alignItems: 'center',
-						marginBottom: '1rem',
-						alignSelf: 'flex-start',
-						width: '100%',
-						justifyContent: 'space-between',
-						flexWrap: 'wrap',
-					}}>
-					<div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-						<input
-							type='file'
-							accept='.pk9'
-							onChange={handleFileChange}
-							ref={fileInputRef}
-							className='file-input'
-						/>
-						<button
-							onClick={handleScanDirectory}
-							disabled={loading || scanning}
-							style={{
-								padding: '0.5rem 1rem',
-								background: '#059669',
-								color: 'white',
-								border: 'none',
-								borderRadius: '4px',
-								cursor: scanning ? 'not-allowed' : 'pointer',
-								opacity: scanning ? 0.6 : 1,
-							}}>
-							{scanning ? 'Scanning...' : 'Scan Directory'}
-						</button>
-					</div>
-					<ReduxThemeSelector />
-				</div>
 			</header>
 
 			{/* Filters Component */}
 			<PokemonFilters onFiltersChange={handleFiltersChange} loading={loading} />
 
-			{/* UI Options Selector (unified card background and sprite type) */}
-			<UIOptionsSelector />
-
 			{loading && <p>Loading...</p>}
-			{scanning && <p>Scanning directory for new Pokémon files...</p>}
 			{error && <p className='error'>{error}</p>}
-			{scanResult && <p style={{ color: '#059669', fontWeight: 'bold' }}>{scanResult}</p>}
 
 			<div
 				style={{
@@ -750,7 +650,7 @@ function App() {
 
 			{/* Tag Manager Modal */}
 			{tagManagerOpen && selectedPokemonForTags && (
-				<PokemonTagManager
+				<TagManager
 					pokemon={selectedPokemonForTags}
 					isOpen={tagManagerOpen}
 					onClose={handleTagManagerClose}
