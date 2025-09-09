@@ -330,6 +330,59 @@ export async function downloadFileById(id: number): Promise<{ blob: Blob; filena
 }
 
 /**
+ * Downloads a Pokemon PKM file automatically and triggers browser download
+ * @param pokemonId Pokemon ID to download
+ */
+export async function downloadPokemonFile(pokemonId: number): Promise<void> {
+	try {
+		const response = await fetch(`${environment.baseUrl}/export/${pokemonId}`, {
+			method: 'GET',
+			headers: {
+				Accept: 'application/octet-stream',
+			},
+		})
+
+		if (!response.ok) {
+			throw new Error(`Failed to download Pokemon file: ${response.statusText}`)
+		}
+
+		// Get the blob
+		const blob = await response.blob()
+
+		// Extract filename from Content-Disposition header or use default
+		const contentDisposition = response.headers.get('Content-Disposition')
+		let filename = `pokemon_${pokemonId}.pk9`
+
+		if (contentDisposition) {
+			const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+			if (filenameMatch && filenameMatch[1]) {
+				filename = filenameMatch[1].replace(/['"]/g, '')
+			}
+			// Also try filename* format (RFC 5987)
+			const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
+			if (filenameStarMatch && filenameStarMatch[1]) {
+				filename = decodeURIComponent(filenameStarMatch[1])
+			}
+		}
+
+		// Create download link and trigger download
+		const url = window.URL.createObjectURL(blob)
+		const link = document.createElement('a')
+		link.href = url
+		link.download = filename
+		document.body.appendChild(link)
+		link.click()
+		
+		// Cleanup
+		document.body.removeChild(link)
+		window.URL.revokeObjectURL(url)
+	} catch (error) {
+		console.error('Download failed:', error)
+		throw error
+	}
+}
+
+/**
  * Downloads the PKM file stored on disk for the specified Pokémon.
  * Useful for comparing the database backup vs. the file on disk.
  *

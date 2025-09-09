@@ -65,12 +65,6 @@ const pokemonSlice = createSlice({
 		clearAllCache: (state) => {
 			state.pokeApiCache = {}
 			state.lastFetch = null
-			// Clear Cache Storage as well
-			import('@/services/CacheService').then(({ cacheService }) => {
-				cacheService.clear().catch((error) => {
-					console.warn('Failed to clear Cache Storage:', error)
-				})
-			})
 		},
 
 		// Update pokemon tags locally (optimistic update)

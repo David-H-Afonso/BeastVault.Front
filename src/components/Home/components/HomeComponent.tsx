@@ -34,16 +34,12 @@ interface HomeComponentProps {
 
 	// Estados de dialogs
 	confirmOpen: boolean
-	downloadConfirmOpen: boolean
-	downloadLoading: boolean
 	tagManagerOpen: boolean
 	selectedPokemonForTags: PokemonListItemDto | null
 
 	// Handlers de eventos
 	handleFiltersChange: (filters: PokemonListFilterDto) => void
 	handleDownload: (id: number) => void
-	handleDownloadSource: (source: 'backup' | 'database') => Promise<void>
-	handleCancelDownload: () => void
 	handleDelete: (id: number) => void
 	handleConfirmDelete: () => Promise<void>
 	handleCancelDelete: () => void
@@ -80,16 +76,12 @@ const HomeComponent = ({
 
 	// Estados de dialogs
 	confirmOpen,
-	downloadConfirmOpen,
-	downloadLoading,
 	tagManagerOpen,
 	selectedPokemonForTags,
 
 	// Handlers de eventos
 	handleFiltersChange,
 	handleDownload,
-	handleDownloadSource,
-	handleCancelDownload,
 	handleDelete,
 	handleConfirmDelete,
 	handleCancelDelete,
@@ -310,56 +302,6 @@ const HomeComponent = ({
 		}
 	}
 
-	/**
-	 * Renderiza el dialog de confirmación de descarga
-	 */
-	const renderDownloadDialog = () => (
-		<ConfirmDialog
-			open={downloadConfirmOpen}
-			title='Download Pokémon file'
-			message={
-				<div>
-					<div>Choose the source to download the original file for this Pokémon:</div>
-					<div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
-						<button
-							className='download-source-btn'
-							style={{
-								background: '#2563eb',
-								color: 'white',
-								border: 'none',
-								borderRadius: 6,
-								padding: '0.5em 1em',
-								fontWeight: 600,
-								cursor: 'pointer',
-							}}
-							onClick={() => handleDownloadSource('backup')}
-							disabled={downloadLoading}>
-							Backup
-						</button>
-						<button
-							className='download-source-btn'
-							style={{
-								background: '#059669',
-								color: 'white',
-								border: 'none',
-								borderRadius: 6,
-								padding: '0.5em 1em',
-								fontWeight: 600,
-								cursor: 'pointer',
-							}}
-							onClick={() => handleDownloadSource('database')}
-							disabled={downloadLoading}>
-							Database
-						</button>
-					</div>
-				</div>
-			}
-			onConfirm={() => {}}
-			onCancel={handleCancelDownload}
-			hideConfirm
-		/>
-	)
-
 	// Render principal del componente
 	return (
 		<div className='app-container'>
@@ -383,8 +325,6 @@ const HomeComponent = ({
 				onConfirm={handleConfirmDelete}
 				onCancel={handleCancelDelete}
 			/>
-
-			{renderDownloadDialog()}
 
 			{/* Modal de gestión de tags */}
 			{tagManagerOpen && selectedPokemonForTags && (

@@ -229,6 +229,12 @@
 		white-space: nowrap;
 	}
 
+	&__label--hide-mobile {
+		@media (max-width: 500px) {
+			display: none;
+		}
+	}
+
 	&__arrow {
 		font-size: 0.75rem;
 		transition: transform 0.2s ease;

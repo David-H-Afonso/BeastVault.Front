@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { downloadFileById, downloadPkmFileFromDisk } from '@/services/Pokemon'
+import { downloadPokemonFile } from '@/services/Pokemon'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { PokemonListItemDto, TagDto } from '@/models/api/types'
 import { useUISettings } from '@/hooks/useUISettings'
@@ -36,9 +36,6 @@ const Home = () => {
 	// Estado local para dialogs de confirmación
 	const [confirmOpen, setConfirmOpen] = useState(false)
 	const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
-	const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false)
-	const [pendingDownloadId, setPendingDownloadId] = useState<number | null>(null)
-	const [downloadLoading, setDownloadLoading] = useState(false)
 	const dispatch = useAppDispatch()
 
 	// State para controlar re-fetch automático en grid/list views
@@ -68,59 +65,12 @@ const Home = () => {
 	/**
 	 * Inicia el proceso de descarga de un archivo Pokémon
 	 */
-	const handleDownload = useCallback((id: number) => {
-		setPendingDownloadId(id)
-		setDownloadConfirmOpen(true)
-	}, [])
-
-	/**
-	 * Ejecuta la descarga desde la fuente especificada (backup o database)
-	 */
-	const handleDownloadSource = useCallback(
-		async (source: 'backup' | 'database') => {
-			if (pendingDownloadId == null) return
-
-			setDownloadLoading(true)
-			clearCurrentError()
-
-			try {
-				let result: { blob: Blob; filename: string }
-				if (source === 'backup') {
-					result = await downloadFileById(pendingDownloadId)
-				} else {
-					result = await downloadPkmFileFromDisk(pendingDownloadId)
-				}
-
-				const { blob, filename } = result
-				const url = window.URL.createObjectURL(blob)
-				const a = document.createElement('a')
-				a.href = url
-				a.download = filename
-				document.body.appendChild(a)
-				a.click()
-
-				// Limpieza después de la descarga
-				setTimeout(() => {
-					window.URL.revokeObjectURL(url)
-					document.body.removeChild(a)
-				}, 100)
-			} catch (e: any) {
-				console.error('Download failed:', e.message || 'Failed to download file')
-			} finally {
-				setDownloadLoading(false)
-				setDownloadConfirmOpen(false)
-				setPendingDownloadId(null)
-			}
-		},
-		[pendingDownloadId, clearCurrentError]
-	)
-
-	/**
-	 * Cancela el dialog de descarga
-	 */
-	const handleCancelDownload = useCallback(() => {
-		setDownloadConfirmOpen(false)
-		setPendingDownloadId(null)
+	const handleDownload = useCallback(async (id: number) => {
+		try {
+			await downloadPokemonFile(id)
+		} catch (error: any) {
+			console.error('Download failed:', error.message || 'Failed to download file')
+		}
 	}, [])
 
 	/**
@@ -315,14 +265,10 @@ const Home = () => {
 			setViewMode={setViewMode}
 			collapsedSections={collapsedSections}
 			confirmOpen={confirmOpen}
-			downloadConfirmOpen={downloadConfirmOpen}
-			downloadLoading={downloadLoading}
 			tagManagerOpen={tagManagerOpen}
 			selectedPokemonForTags={selectedPokemonForTags}
 			handleFiltersChange={handleFiltersChange}
 			handleDownload={handleDownload}
-			handleDownloadSource={handleDownloadSource}
-			handleCancelDownload={handleCancelDownload}
 			handleDelete={handleDelete}
 			handleConfirmDelete={handleConfirmDelete}
 			handleCancelDelete={handleCancelDelete}

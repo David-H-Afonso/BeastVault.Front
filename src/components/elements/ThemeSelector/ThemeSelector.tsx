@@ -52,7 +52,7 @@ export const ThemeSelector = ({ compact = false }: ThemeSelectorProps) => {
 				onClick={() => setIsOpen(!isOpen)}
 				aria-label='Open theme selector'>
 				<div className={`theme-preview theme-preview--${currentTheme}`} />
-				<span className='theme-selector__label'>Theme</span>
+				<span className='theme-selector__label theme-selector__label--hide-mobile'>Theme</span>
 				<span className={`theme-selector__arrow ${isOpen ? 'theme-selector__arrow--open' : ''}`}>
 					▼
 				</span>

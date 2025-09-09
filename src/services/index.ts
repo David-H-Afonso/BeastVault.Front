@@ -20,6 +20,7 @@ export {
 	deletePokemonCompletely,
 	downloadFileById,
 	downloadPkmFileFromDisk,
+	downloadPokemonFile,
 	scanPokemonDirectory,
 } from './Pokemon'
 
