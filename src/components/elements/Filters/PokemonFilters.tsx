@@ -5,7 +5,9 @@ import type {
 	SortDirection,
 	PokemonMetadata,
 } from '../../../models/Pokemon'
+import type { TagDto } from '../../../models/api/types'
 import { getPokemonMetadata } from '../../../services/Pokemon'
+import { getAllTags } from '../../../services/Tags'
 import { PokemonBalls, getBallIdFromName } from '../../../models/enums/PokemonBalls'
 import './PokemonFilters.scss'
 
@@ -57,6 +59,12 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 	const [originGame, setOriginGame] = useState<number | undefined>()
 	const [teraType, setTeraType] = useState<number | undefined>()
 
+	// Tags filtering
+	const [availableTags, setAvailableTags] = useState<TagDto[]>([])
+	const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
+	const [tagFilterMode, setTagFilterMode] = useState<'all' | 'any' | 'none'>('any')
+	const [tagsLoading, setTagsLoading] = useState(false)
+
 	// Debounce timer for auto-apply
 	const debounceTimerRef = useRef<number | null>(null)
 
@@ -90,6 +98,13 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 					BallId: ballId,
 					OriginGame: originGame,
 					TeraType: teraType,
+
+					// Tags filtering for auto-apply
+					...(selectedTagIds.length > 0 && {
+						...(tagFilterMode === 'all' && { tagIds: selectedTagIds }),
+						...(tagFilterMode === 'any' && { anyTagIds: selectedTagIds }),
+					}),
+					...(tagFilterMode === 'none' && { hasNoTags: true }),
 				}
 				onFiltersChange(filters)
 			}, 2000)
@@ -119,6 +134,8 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 		ballId,
 		originGame,
 		teraType,
+		selectedTagIds,
+		tagFilterMode,
 		onFiltersChange,
 	])
 
@@ -138,6 +155,22 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 				setMetadata(data)
 			})
 			.catch(console.error)
+	}, [])
+
+	// Load available tags on component mount
+	useEffect(() => {
+		const loadTags = async () => {
+			try {
+				setTagsLoading(true)
+				const tags = await getAllTags()
+				setAvailableTags(tags)
+			} catch (error) {
+				console.error('Error loading tags:', error)
+			} finally {
+				setTagsLoading(false)
+			}
+		}
+		loadTags()
 	}, [])
 
 	// Update take when metadata loads
@@ -180,6 +213,13 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 			BallId: ballId,
 			OriginGame: originGame,
 			TeraType: teraType,
+
+			// Tags filtering
+			...(selectedTagIds.length > 0 && {
+				...(tagFilterMode === 'all' && { tagIds: selectedTagIds }),
+				...(tagFilterMode === 'any' && { anyTagIds: selectedTagIds }),
+			}),
+			...(tagFilterMode === 'none' && { hasNoTags: true }),
 		}
 
 		onFiltersChange(filters)
@@ -210,6 +250,10 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 		setBallId(undefined)
 		setOriginGame(undefined)
 		setTeraType(undefined)
+
+		// Clear tags filters
+		setSelectedTagIds([])
+		setTagFilterMode('any')
 
 		// Apply empty filters
 		onFiltersChange({ Skip: 0, Take: 50 })
@@ -421,6 +465,53 @@ export function PokemonFilters({ onFiltersChange, loading = false }: PokemonFilt
 									<option value='0'>A-Z ↑</option>
 									<option value='1'>Z-A ↓</option>
 								</select>
+							</div>
+						</div>
+
+						{/* Tags Filtering Section */}
+						<div className='filter-row tags-filter-section'>
+							<div className='filter-group full-width'>
+								<div className='tags-filter-header'>
+									<label>Filter by Tags</label>
+									<select
+										value={tagFilterMode}
+										onChange={(e) => setTagFilterMode(e.target.value as 'all' | 'any' | 'none')}
+										className='tag-filter-mode'>
+										<option value='any'>Any of selected</option>
+										<option value='all'>All selected</option>
+										<option value='none'>No tags</option>
+									</select>
+								</div>
+								
+								{tagFilterMode !== 'none' && (
+									<div className='tags-selection'>
+										{tagsLoading ? (
+											<div className='tags-loading'>Loading tags...</div>
+										) : (
+											<div className='tags-grid'>
+												{availableTags.map((tag) => (
+													<label key={tag.id} className='tag-checkbox'>
+														<input
+															type='checkbox'
+															checked={selectedTagIds.includes(tag.id)}
+															onChange={(e) => {
+																if (e.target.checked) {
+																	setSelectedTagIds(prev => [...prev, tag.id])
+																} else {
+																	setSelectedTagIds(prev => prev.filter(id => id !== tag.id))
+																}
+															}}
+														/>
+														<span className='tag-name'>{tag.name}</span>
+													</label>
+												))}
+												{availableTags.length === 0 && (
+													<div className='no-tags'>No tags available</div>
+												)}
+											</div>
+										)}
+									</div>
+								)}
 							</div>
 						</div>
 					</div>
