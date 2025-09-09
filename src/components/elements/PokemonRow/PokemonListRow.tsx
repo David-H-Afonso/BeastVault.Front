@@ -77,26 +77,12 @@ export function PokemonListRow({
 			<div className='row-left'>
 				{/* Pokemon sprite */}
 				<div className='sprite-container'>
-					{boxSpriteUrl ? (
-						<img
-							src={boxSpriteUrl}
-							alt={pokemon.nickname || fullSpeciesName}
-							className='pokemon-sprite'
-							onError={(e) => {
-								// Fallback to original sprite if box sprite fails
-								if (sprite && e.currentTarget.src !== sprite) {
-									e.currentTarget.src = sprite
-								}
-							}}
-						/>
-					) : sprite ? (
+					{sprite && (
 						<img
 							src={sprite}
 							alt={pokemon.nickname || fullSpeciesName}
 							className='pokemon-sprite'
 						/>
-					) : (
-						<div className='no-sprite'>⚙️</div>
 					)}
 					{pokemon.isShiny && <div className='shiny-indicator'>✨</div>}
 				</div>

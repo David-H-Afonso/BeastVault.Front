@@ -37,7 +37,7 @@
 		border-radius: 6px;
 
 		.pokemon-sprite {
-			max-width: 75px;
+			max-width: 55px;
 			object-fit: contain;
 		}
 
@@ -97,7 +97,7 @@
 				width: 15px;
 				object-fit: contain;
 				// Crop the white space from pokeball sprites
-				transform: scale(1.8);
+				transform: scale(1);
 			}
 
 			.level {

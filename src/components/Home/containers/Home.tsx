@@ -9,6 +9,7 @@ import { getBestSpriteByType, groupPokemonByTags } from '@/utils'
 import HomeComponent from '../components/HomeComponent'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateFilters } from '@/store/features/pokemon'
+import NewHomeComponent from '../components/NewHomeComponent'
 
 /**
  * Contenedor principal de la página Home
@@ -222,7 +223,7 @@ const Home = () => {
 	const itemsPerPage = useAppSelector((state) => state.pokemon.currentFilters.Take) || 20
 	const onItemsPerPageChange = (itemsPerPage: number) => {
 		console.log(itemsPerPage)
-		dispatch(updateFilters({ Take: itemsPerPage }))
+		dispatch(updateFilters({ Take: itemsPerPage, Skip: 0 }))
 	}
 	const totalPages = Math.ceil(totalPokemon / itemsPerPage) || 1
 
@@ -269,6 +270,8 @@ const Home = () => {
 			onPageChange={onPageChange}
 		/>
 	)
+
+	return <NewHomeComponent loading={loading} processedPokemon={processedPokemonData()} />
 }
 
 export default Home

@@ -61,11 +61,12 @@
 
 .pokemon-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 	gap: 0.5rem;
 	margin-top: 1.5rem;
 	margin-left: auto;
 	margin-right: auto;
+	justify-content: center;
 
 	@media (min-width: 640px) {
 		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -283,4 +284,153 @@
 	text-align: center;
 	color: var(--text-tertiary);
 	font-style: italic;
+}
+
+/* Estados de carga y error para tarjetas optimizadas */
+.pokemonCardModern.loading {
+	opacity: 1;
+	pointer-events: none;
+}
+
+.pokemonCardModern.error {
+	border-color: var(--color-error);
+	background: var(--color-error-dark);
+}
+
+/* Skeleton styles para estado de carga */
+.cardSkeleton {
+	width: 100%;
+	height: 100%;
+}
+
+.skeletonBtn {
+	width: 24px;
+	height: 24px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	border-radius: 4px;
+}
+
+.skeletonBadge {
+	width: 40px;
+	height: 20px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	border-radius: 10px;
+}
+
+.skeletonGenerationBadge {
+	width: 60px;
+	height: 24px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	border-radius: 6px;
+	margin: 4px 0;
+}
+
+.skeletonImage {
+	width: 100%;
+	height: 70px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 0.5rem;
+}
+
+.skeletonSpinner {
+	font-size: 1.5rem;
+	animation: spin 1s linear infinite;
+	opacity: 0.5;
+}
+
+.skeletonName {
+	width: 80%;
+	height: 16px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	border-radius: 4px;
+	margin-bottom: 4px;
+}
+
+.skeletonLevel {
+	width: 40px;
+	height: 14px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	border-radius: 4px;
+}
+
+.skeletonType {
+	width: 50px;
+	height: 50px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	border-radius: 50%;
+	margin: 2px;
+}
+
+@keyframes shimmer {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}
+
+.loadingContainer,
+.errorContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 180px;
+	padding: 1rem;
+	text-align: center;
+}
+
+.loadingSpinner {
+	font-size: 2rem;
+	animation: spin 1s linear infinite;
+	margin-bottom: 0.5rem;
+}
+
+.loadingText {
+	color: var(--text-secondary);
+	font-size: 0.875rem;
+}
+
+.errorIcon {
+	font-size: 2rem;
+	margin-bottom: 0.5rem;
+}
+
+.errorText {
+	color: var(--color-error-light);
+	font-size: 0.875rem;
+	margin-bottom: 0.5rem;
+}
+
+.pokemonBasicInfo {
+	color: var(--text-tertiary);
+	font-size: 0.75rem;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }

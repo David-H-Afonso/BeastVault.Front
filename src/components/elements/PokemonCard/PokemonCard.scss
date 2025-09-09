@@ -55,15 +55,115 @@
 	padding: 5px;
 	position: relative;
 	@include card-shadow('md');
-	transition: all 0.3s ease;
+	transition: transform 0.3s ease, box-shadow 0.3s ease; // Solo transiciones para hover, no para loading
 	color: white; // Mantener blanco por defecto para temas oscuros
 	font-family: 'Segoe UI', sans-serif;
 	display: flex;
 	flex-direction: column;
 	border: 3px solid transparent;
-	min-width: 0;
-	min-height: 0;
 	flex: 1 1 0;
+	max-width: 190px;
+	min-width: 140px;
+	// width: 100%;
+}
+
+/* Skeleton loading state */
+.pokemonCardSkeleton {
+	background: var(--bg-secondary);
+	opacity: 0.7;
+	transition: none;
+
+	.skeletonContent {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 8px;
+		height: 100%;
+		min-height: 280px; // Approximate height of a normal card
+		transition: none;
+	}
+
+	.skeletonHeader {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		transition: none;
+	}
+
+	.skeletonActions {
+		width: 100px;
+		height: 32px;
+		background: var(--overlay-light);
+		border-radius: 10px;
+		animation: skeleton-pulse 1.5s ease-in-out infinite;
+		transition: none;
+	}
+
+	.skeletonBadge {
+		display: none;
+		width: 60px;
+		height: 24px;
+		background: var(--overlay-light);
+		border-radius: 12px;
+		animation: skeleton-pulse 1.5s ease-in-out infinite;
+		transition: none;
+	}
+
+	.skeletonImage {
+		width: 80px;
+		height: 80px;
+		background: var(--overlay-light);
+		border-radius: 50%;
+		margin: 20px auto;
+		animation: skeleton-pulse 1.5s ease-in-out infinite;
+		transition: none;
+	}
+
+	.skeletonInfo {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin-top: auto;
+		transition: none;
+	}
+
+	.skeletonName {
+		width: 120px;
+		height: 20px;
+		background: var(--overlay-light);
+		border-radius: 8px;
+		animation: skeleton-pulse 1.5s ease-in-out infinite;
+		margin: 0 auto;
+		transition: none;
+	}
+
+	.skeletonTypes {
+		display: flex;
+		gap: 8px;
+		justify-content: center;
+		transition: none;
+
+		&::before,
+		&::after {
+			content: '';
+			width: 40px;
+			height: 16px;
+			background: var(--overlay-light);
+			border-radius: 8px;
+			animation: skeleton-pulse 1.5s ease-in-out infinite;
+			transition: none;
+		}
+	}
+}
+
+@keyframes skeleton-pulse {
+	0%,
+	100% {
+		opacity: 0.4;
+	}
+	50% {
+		opacity: 0.8;
+	}
 }
 
 .pokemonCardModern::before {
@@ -82,7 +182,7 @@
 .pokemonCardModern > * {
 	position: relative;
 	z-index: 1;
-	transition: box-shadow 0.2s, border-color 0.2s;
+	transition: none;
 	overflow: hidden;
 	box-sizing: border-box;
 }
@@ -316,7 +416,7 @@
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	transition: all 0.2s ease;
+	transition: background 0.2s ease, transform 0.2s ease; // Solo para hover
 	color: white; // Mantener blanco por defecto
 }
 
@@ -402,6 +502,7 @@
 	font-size: 11px;
 	font-weight: bold;
 	backdrop-filter: blur(10px);
+	transition: none;
 }
 
 /* Pokemon image section */
@@ -740,47 +841,19 @@
 			background: var(--overlay-heavy);
 		}
 	}
-}
 
-// ================================
-// TEMA CLARO - TEXTOS ESPECÍFICOS
-// ================================
+	// Skeleton adjustments for light theme
+	.pokemonCardSkeleton {
+		background: var(--card-bg);
+		border: 1px solid var(--card-border);
 
-:global([data-theme='light']) {
-	.pokemonCardModern {
-		.pokemonName {
-			color: var(--text-primary) !important;
+		.skeletonActions,
+		.skeletonBadge,
+		.skeletonImage,
+		.skeletonName,
+		.skeletonTypes::before,
+		.skeletonTypes::after {
+			background: var(--bg-tertiary);
 		}
-
-		.pokemonId {
-			color: var(--text-primary) !important;
-		}
-	}
-
-	.levelBadge {
-		color: var(--text-primary) !important;
-	}
-
-	.generationBadge {
-		color: var(--text-primary) !important;
-	}
-
-	.pokedexBadge {
-		background: var(--color-primary) !important;
-		color: white !important;
-	}
-
-	.originBadge {
-		background: var(--color-info) !important;
-		color: white !important;
-	}
-
-	.captureBadge {
-		background: var(--color-success) !important;
-		color: white !important;
-	}
-
-	.actionBtn {
-		color: var(--text-primary) !important;
 	}
 }
