@@ -1,269 +1,276 @@
-# Beast Vault Frontend
+# Beast Vault
 
-Una aplicación React + TypeScript para gestionar una colección de Pokémon con funcionalidades avanzadas de filtrado, búsqueda y paginación.
+A modern, React-based Pokémon collection management application with advanced filtering, search, and organization capabilities. Beast Vault provides a comprehensive interface for managing your Pokémon collection with support for PKM files (.pk1 to .pk9) and seamless integration with PokéAPI for rich visual data.
 
-## Características
+## Tech Stack
 
-### 🔍 Sistema de Filtros Avanzado
+- **Frontend Framework**: React 19 with TypeScript
+- **State Management**: Redux Toolkit with RTK Query
+- **Routing**: React Router DOM 7
+- **Styling**: SCSS with custom themes
+- **Build Tool**: Vite 7
+- **Package Manager**: npm
 
-- **Búsqueda por texto**: Busca por nombre, apodo o especie
-- **Filtros específicos**: Número de Pokédex, shiny, nivel, género, generación
-- **Filtros de tipo**: Tipo primario, secundario con modos de filtrado avanzados
-- **Equipamiento**: Filtra por Pokéball, objeto equipado, tipo Tera
-- **Ordenamiento múltiple**: Ordena por campo principal y secundario
+## Legal Disclaimer
 
-### 📄 Paginación
+**Beast Vault** is an independent, non-commercial, open-source project for personal use. It is **NOT** affiliated, associated, endorsed, sponsored, or approved by Nintendo, The Pokémon Company, Game Freak, Creatures Inc., or any of their subsidiaries, affiliates, or partners. All trademarks, service marks, trade names, product names, and trade dress mentioned or referenced within this project are the property of their respective owners.
 
-- Control de elementos por página (25, 50, 100, 200)
-- Navegación por páginas con información de total de elementos
-- Salto a páginas específicas
+This software is **not an official Pokémon product** and does not attempt to simulate, emulate, reproduce, replace, or provide any product, service, or functionality of official Pokémon games, services, or hardware. Any similarity to proprietary formats, terminology, or concepts is purely for descriptive purposes and does not imply endorsement or association.
 
-### 🎨 Interfaz Mejorada
+**Beast Vault** is intended solely for lawful, personal-use management and storage of legitimately obtained Pokémon data files (e.g., `.pk*` formats) that belong to the user. The project does **NOT**:
 
-- **Tarjetas de Pokémon** con información detallada
-- **Sprites dinámicos** desde PokeAPI con fallbacks
-- **Indicadores visuales** para shiny, género, huevos
-- **Información adicional** como número de Pokédex, forma, tipo Tera
+- Provide or facilitate the creation, modification, or acquisition of Pokémon.
+- Distribute or include copyrighted game assets, code, or data belonging to Nintendo or The Pokémon Company.
+- Encourage, promote, or support any activity that violates applicable laws, the Pokémon games' End User License Agreements (EULAs), or the terms of service of official products or platforms.
 
-### 📁 Gestión de Archivos
+Use of this software is entirely at the user's own risk. The authors and contributors disclaim any and all responsibility and liability for misuse, infringement, or violation of third-party rights. By using this software, the user agrees to comply with all applicable laws, regulations, and contractual obligations.
 
-- **Importación** de archivos PKM (.pk1 - .pk9)
-- **Descarga** de archivos originales (backup y base de datos)
-- **Escaneo automático** de directorios
-- **Eliminación** con confirmación
+## TL;DR
 
-## Estructura del Proyecto
+Beast Vault is a powerful web application, ready for .exe and docker compilation, for Pokémon collectors to:
 
-```
-src/
-├── components/           # Componentes React reutilizables
-│   ├── PokemonFilters.tsx   # Sistema de filtros completo
-│   ├── PokemonCard.tsx      # Tarjeta individual de Pokémon
-│   └── index.ts             # Barrel export
-├── models/              # Tipos TypeScript
-│   ├── Pokemon.ts          # Modelos de Pokémon y filtros
-│   └── Pokeapi.ts          # Modelos de PokeAPI
-├── services/            # Servicios API
-│   ├── Pokemon.ts          # API de Pokémon con filtros
-│   └── Pokeapi.ts          # Integración con PokeAPI
-├── utils/               # Utilidades
-│   ├── customFetch.ts      # Cliente HTTP personalizado
-│   └── index.ts            # Exports
-├── environments/        # Configuración de entornos
-└── App.tsx             # Componente principal
-```
+- **Import & Manage** PKM files from generations 1-9
+- **Filter & Search** with 20+ advanced criteria (shiny, types, levels, etc.)
+- **Organize** with custom tags and grouping
+- **Visualize** with high-quality range of sprites.
 
-## Modelos de Datos
+## Local Installation
 
-### PokemonListFilterDto
+### Prerequisites
 
-```typescript
-interface PokemonListFilterDto {
-	// Búsqueda básica
-	Search?: string
-	PokedexNumber?: number
-	SpeciesName?: string
-	Nickname?: string
-	IsShiny?: boolean
+- **Node.js** 18.x or higher
+- **npm** 9.x or higher
+- A compatible backend API ([Beast Vault Backend](https://github.com/David-H-Afonso/BeastVault.Api))
 
-	// Características
-	Form?: number
-	Gender?: number
-	OriginGeneration?: number
-	CapturedGeneration?: number
-	PokeballId?: number
-	HeldItemId?: number
-	PrimaryType?: number
-	SecondaryType?: number
+### Setup
 
-	// Filtros de tipo
-	TypeFilterMode?: TypeFilterMode
-	EnforceTypeOrder?: boolean
+1. **Clone the repository**
 
-	// Nivel
-	MinLevel?: number
-	MaxLevel?: number
+   ```bash
+   git clone https://github.com/David-H-Afonso/PokemonBank.Front.git
+   cd PokemonBank.Front
+   ```
 
-	// Ordenamiento
-	SortBy?: SortBy
-	SortDirection?: SortDirection
-	ThenSortBy?: SortBy
-	ThenSortDirection?: SortDirection
+2. **Install dependencies**
 
-	// Paginación
-	Skip: number
-	Take: number
+   ```bash
+   npm install
+   ```
 
-	// Adicionales
-	SpeciesId?: number
-	BallId?: number
-	OriginGame?: number
-	TeraType?: number
-}
-```
+3. **Configure environment**
 
-### Enumeraciones
+   Create environment files in `src/environments/`:
 
-#### TypeFilterMode
+   **For development (`environment.dev.ts`):**
 
-- `None (0)`: Sin filtro de tipo
-- `ExactMatch (1)`: Coincidencia exacta
-- `ContainsType (2)`: Contiene el tipo
-- `PrimaryOnly (3)`: Solo tipo primario
-- `SecondaryOnly (4)`: Solo tipo secundario
-- `BothTypes (5)`: Ambos tipos
+   ```typescript
+   export const environment = {
+   	production: false,
+   	baseUrl: 'http://localhost:5000/api', // Your backend URL
+   }
+   ```
 
-#### SortBy
+   **For production (`environment.prod.ts`):**
 
-- `PokedexNumber (0)`: Número de Pokédex
-- `SpeciesName (1)`: Nombre de especie
-- `Nickname (2)`: Apodo
-- `Level (3)`: Nivel
-- `CaptureDate (4)`: Fecha de captura
-- `Nature (5)`: Naturaleza
-- `Gender (6)`: Género
-- `IsShiny (7)`: Shiny
-- `OriginGeneration (8)`: Generación origen
-- `CapturedGeneration (9)`: Generación captura
-- `PrimaryType (10)`: Tipo primario
-- `SecondaryType (11)`: Tipo secundario
-- `TeraType (12)`: Tipo Tera
+   ```typescript
+   export const environment = {
+   	production: true,
+   	baseUrl: 'https://your-production-api.com/api',
+   }
+   ```
 
-## Uso de los Componentes
+## Local Development
 
-### PokemonFilters
-
-```tsx
-<PokemonFilters onFiltersChange={handleFiltersChange} loading={loading} />
-```
-
-### PokemonCard
-
-```tsx
-<PokemonCard
-	pokemon={pokemonData}
-	sprite={spriteUrl}
-	onDelete={handleDelete}
-	onDownload={handleDownload}
-	loading={loading}
-/>
-```
-
-## API Service
-
-### getPokemonList
-
-```typescript
-const result = await getPokemonList({
-	Search: 'pikachu',
-	IsShiny: true,
-	MinLevel: 50,
-	SortBy: SortBy.Level,
-	SortDirection: SortDirection.Descending,
-	Skip: 0,
-	Take: 50,
-})
-
-// Resultado
-// result.items: PokemonListItemDto[]
-// result.total: number
-```
-
-## Ejemplos de Filtros
-
-### Búsqueda básica
-
-```typescript
-{
-  Search: "dragon",
-  Skip: 0,
-  Take: 50
-}
-```
-
-### Filtros avanzados
-
-```typescript
-{
-  IsShiny: true,
-  MinLevel: 70,
-  MaxLevel: 100,
-  PrimaryType: 15, // Tipo Dragón
-  SortBy: SortBy.Level,
-  SortDirection: SortDirection.Descending,
-  Skip: 0,
-  Take: 25
-}
-```
-
-### Paginación
-
-```typescript
-{
-  Skip: 100,    // Saltar primeros 100
-  Take: 50      // Tomar siguientes 50
-}
-```
-
-## Scripts
+### Start Development Server
 
 ```bash
-# Desarrollo
 npm run dev
+```
 
-# Build
+The application will be available at `http://localhost:5173`
+
+### Other Development Commands
+
+```bash
+# Type checking
 npm run build
 
-# Lint
+# Linting
 npm run lint
 
-# Preview
+# Preview production build
 npm run preview
 ```
 
-## Configuración
+## Build for Production
 
-### Entornos
+### Create Production Build
 
-- **Desarrollo**: `src/environments/environment.dev.ts`
-- **Producción**: `src/environments/environment.prod.ts`
-
-### Tecnologías
-
-- **React 19** con hooks
-- **TypeScript** para tipado fuerte
-- **Vite** para build y desarrollo
-- **SCSS** para estilos
-- **ESLint** para linting
-
-## Integración con Backend
-
-La aplicación está diseñada para trabajar con una API backend que soporte:
-
-1. **Endpoint de listado**: `GET /pokemon` con query parameters
-2. **Filtros múltiples**: Todos los filtros definidos en `PokemonListFilterDto`
-3. **Paginación**: Parámetros `Skip` y `Take`
-4. **Respuesta estructurada**: `{ items: Pokemon[], total: number }`
-
-### Ejemplo de URL generada
-
-```
-/pokemon?Search=pika&IsShiny=true&MinLevel=50&SortBy=3&SortDirection=1&Skip=0&Take=25
+```bash
+npm run build
 ```
 
-## Contribución
+The build output will be generated in the `dist/` directory, ready for deployment to any static hosting service.
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/amazing-feature`)
-3. Commit tus cambios (`git commit -m 'Add amazing feature'`)
-4. Push a la rama (`git push origin feature/amazing-feature`)
-5. Abre un Pull Request
+### Preview Production Build Locally
 
-## Documentación Adicional
+```bash
+npm run preview
+```
 
-- [Guía de uso de filtros](./FILTERS_USAGE.md)
-- [API Reference](./API_REFERENCE.md)
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── elements/           # Core reusable UI elements
+│   │   ├── Filters/        # Advanced filtering system
+│   │   ├── LayoutSelector/ # View layout controls
+│   │   ├── Modal/          # Modal dialogs
+│   │   ├── Pagination/     # Pagination controls
+│   │   ├── PokemonCard/    # Individual Pokémon cards
+│   │   ├── PokemonRow/     # Individual Pokémon rows
+│   │   ├── TagManager/     # Tag management interface
+│   │   ├── ThemeSelector/  # Theme switching
+│   │   └── UploadAndScanFiles/ # File operations
+│   ├── Home/              # Main application container
+│   ├── PageNotFound/      # 404 error handling
+│   └── Settings/          # Application settings
+├── hooks/                  # Custom React hooks
+│   ├── useAssets.ts       # Asset management
+│   ├── usePokemon.ts      # Main Pokémon data hook
+│   ├── usePokemonData.ts  # Individual Pokémon details
+│   ├── useSprites.ts      # Sprite management
+│   └── useUISettings.ts   # UI preferences
+├── layouts/               # Layout components
+│   ├── AppLayout.tsx      # Main app layout
+│   ├── HeaderLayout.tsx   # Header-based layout
+│   ├── EmptyLayout.tsx    # Minimal layout
+│   └── elements/          # Layout-specific elements
+├── models/                # TypeScript type definitions
+│   ├── api/              # API response types
+│   ├── enums/            # Enumeration definitions
+│   ├── store/            # Redux state types
+│   ├── Pokemon.ts        # Core Pokémon models
+│   ├── Pokeapi.ts        # PokéAPI integration types
+│   └── Tags.ts           # Tag system models
+├── services/              # API and business logic
+│   ├── Pokemon.ts        # Core Pokémon operations
+│   ├── Pokeapi.ts        # PokéAPI integration
+│   ├── PokemonNameService.ts # Name resolution
+│   ├── TaggedPokemon.ts  # Tag-based operations
+│   ├── Tags.ts           # Tag management
+│   └── ThemeService.ts   # Theme management
+├── store/                 # Redux state management
+│   ├── features/         # Feature-based slices
+│   │   ├── assets/       # Asset caching
+│   │   ├── cache/        # Data caching
+│   │   ├── layout/       # UI layout state
+│   │   ├── pokemon/      # Pokémon data state
+│   │   └── styleSettings/ # Theme and styling
+│   └── hooks/            # Redux hooks
+├── styles/               # Global SCSS styles
+│   ├── _themes.scss      # Theme definitions
+│   ├── _variables.scss   # SCSS variables
+│   └── index.scss        # Main stylesheet
+├── utils/                # Utility functions
+│   ├── customFetch.ts    # HTTP client
+│   ├── getBestSpriteByType.ts # Sprite optimization
+│   ├── getTypeIconUrl.ts # Type icon helpers
+│   ├── groupPokemonByTags.ts # Grouping utilities
+│   ├── simpleFetcher.ts  # Simple HTTP fetcher
+│   └── typeColors.ts     # Type color schemes
+└── environments/         # Environment configuration
+    ├── environment.dev.ts
+    ├── environment.prod.ts
+    └── index.ts
+```
+
+## Key Features
+
+### Advanced Filtering System
+
+- **Text Search**: Search by name, nickname, or species
+- **Specific Filters**: Pokédex number, shiny status, level range, gender, generation
+- **Type Filtering**: Primary/secondary types with advanced matching modes
+- **Equipment Filters**: Pokéball type, held items, Tera type
+- **Multi-level Sorting**: Primary and secondary sort criteria
+
+### Smart Pagination
+
+- Configurable items per page (25, 50, 100, 200)
+- Page navigation with total count display
+- Direct page jumping
+
+### Rich Visual Interface
+
+- **Detailed Pokémon Cards** with comprehensive information display
+- **Dynamic Sprites** from PokéAPI with intelligent fallbacks
+- **Visual Indicators** for shiny status, gender, egg status
+- **Extended Metadata** including Pokédex numbers, forms, Tera types
+
+### File Management
+
+- **Import Support** for PKM files (.pk1 through .pk9)
+- **File Downloads** with original backup preservation
+- **Directory Scanning** for bulk operations
+- **Safe Deletion** with confirmation dialogs
+
+### Organization System
+
+- **Custom Tags** for categorizing collections
+- **Tag-based Grouping** for efficient browsing
+- **Bulk Tag Operations** for managing large collections
+
+### Performance Optimizations
+
+- **Redux-based Caching** for fast data access
+- **Sprite Optimization** with multiple fallback sources
+- **Lazy Loading** for improved performance
+- **Memory Management** with automatic cache cleanup
+
+## Acknowledgments
+
+Beast Vault wouldn't be possible without the incredible work of these amazing open-source projects and communities:
+
+### Core Dependencies & Data Sources
+
+- **[PokéAPI](https://pokeapi.co/)** - The comprehensive Pokémon data API that powers our species information, types, and official sprite sources
+- **[PKHeX](https://github.com/kwsch/PKHeX)** - Kurt's essential Pokémon save file editor that inspired PKM file format handling and provided crucial insights into Pokémon data structures
+
+### Sprite Collections & Visual Assets
+
+- **[bamq/pokemon-sprites](https://github.com/bamq/pokemon-sprites)** - High-quality Pokémon sprite collection that provides beautiful alternative sprite sources
+- **[msikma/pokesprite](https://github.com/msikma/pokesprite)** - Comprehensive sprite database with consistent formatting and extensive sprite variants
+
+### Special Thanks
+
+We're deeply grateful to these projects and their maintainers for making their work freely available to the community. Their dedication to open-source development and the Pokémon community has made Beast Vault possible.
+
+## API Integration
+
+Beast Vault integrates seamlessly with:
+
+- **PokéAPI** for official Pokémon data and sprites
+- **Beast Vault Backend** for PKM file processing and storage
+- **Multiple Sprite Sources** including official artwork, home sprites, and community alternatives
 
 ---
 
-Desarrollado con ❤️ para coleccionistas de Pokémon
+## 🤝 Contributing
+
+We welcome contributions to Beast Vault! Please feel free to:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+## 📄 License
+
+This project is licensed under the GPL-3.0 License - see the [LICENSE.md](LICENSE.md) file for details.
+
+---
+
+**Built with ❤️ for Pokémon collectors worldwide**
