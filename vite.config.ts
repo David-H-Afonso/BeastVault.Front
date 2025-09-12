@@ -2,19 +2,17 @@ import { defineConfig } from 'vite'
 import svgr from 'vite-plugin-svgr'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
 	plugins: [
 		react(),
 		svgr({
-			// Configuración SVGR para que funcione con ?react
 			svgrOptions: {
 				exportType: 'default',
 			},
 			include: '**/*.svg?react',
 		}),
 	],
-	base: './', // Importante para Electron - usar rutas relativas
+	base: './',
 	resolve: {
 		alias: {
 			'@': '/src',
