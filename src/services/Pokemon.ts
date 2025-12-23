@@ -90,21 +90,24 @@ export async function getPokemonListWithSprites(
 	const pokeList = result.items || []
 	const total = result.total || 0
 
-	// Create unique combinations of speciesId, form, and canGigantamax
+	// Create unique combinations of speciesId, form, canGigantamax, and hasMegaStone
 	const speciesFormCombos = Array.from(
-		new Set(pokeList.map((p) => `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}`))
+		new Set(pokeList.map((p) => 
+			`${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
+		))
 	)
 
 	// Fetch PokeAPI data for each unique combination
 	const speciesFetches = await Promise.all(
 		speciesFormCombos.map(async (combo) => {
-			const baseCombo = combo.replace('-gmax', '')
+			const baseCombo = combo.replace('-gmax', '').replace('-mega', '')
 			const [speciesId, form] = baseCombo.split('-').map(Number)
 			const isGigantamax = combo.includes('-gmax')
+			const hasMegaStone = combo.includes('-mega')
 			const cacheKey = combo
 
 			try {
-				const pokeApi = await getPokeApiPokemon(speciesId, form, isGigantamax)
+				const pokeApi = await getPokeApiPokemon(speciesId, form, isGigantamax, hasMegaStone)
 				return [cacheKey, pokeApi] as [string, any]
 			} catch {
 				return [cacheKey, null] as [string, any]
@@ -129,7 +132,7 @@ export async function getPokemonListWithSprites(
 
 	// Map each Pokémon to its sprites
 	const spriteEntries = pokeList.map((p) => {
-		const cacheKey = `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}`
+		const cacheKey = `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
 		const pokeApi = pokeApiMap[cacheKey]
 
 		if (!pokeApi) {

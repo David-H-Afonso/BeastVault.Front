@@ -14,13 +14,14 @@ import type { RootState } from '../store'
 export function usePokemonData(
 	speciesId?: number,
 	form: number = 0,
-	canGigantamax: boolean = false
+	canGigantamax: boolean = false,
+	hasMegaStone: boolean = false
 ) {
 	const dispatch = useDispatch()
-	
+
 	// Check Redux storage first
-	const storedData = useSelector((state: RootState) => 
-		speciesId ? selectPokemonData(state, speciesId, form) : null
+	const storedData = useSelector((state: RootState) =>
+		speciesId ? selectPokemonData(state, speciesId, form, canGigantamax, hasMegaStone) : null
 	)
 
 	const [pokemonData, setPokemonDataLocal] = useState<{
@@ -57,7 +58,7 @@ export function usePokemonData(
 				speciesName: undefined, // We'll still fetch this if needed
 				pokeApiData: storedData.pokeApiData,
 			})
-			
+
 			// Still fetch names if not stored (they're less critical)
 			fetchNamesOnly(speciesId, form)
 			return
@@ -65,15 +66,15 @@ export function usePokemonData(
 
 		// No stored data, fetch everything
 		fetchPokemonData()
-		
+
 		async function fetchNamesOnly(speciesId: number, form: number) {
 			try {
 				const [fullName, speciesName] = await Promise.all([
 					PokemonNameService.getFullName(speciesId, form),
 					PokemonNameService.getSpeciesName(speciesId),
 				])
-				
-				setPokemonDataLocal(prev => ({
+
+				setPokemonDataLocal((prev) => ({
 					...prev,
 					fullName,
 					speciesName,
@@ -85,14 +86,14 @@ export function usePokemonData(
 
 		async function fetchPokemonData() {
 			if (!speciesId) return // Early return if no speciesId
-			
+
 			setLoading(true)
 			setError(null)
 
 			try {
 				// Get all data in parallel
 				const [pokeApiData, fullName, speciesName] = await Promise.all([
-					getPokeApiPokemon(speciesId, form),
+					getPokeApiPokemon(speciesId, form, canGigantamax, hasMegaStone),
 					PokemonNameService.getFullName(speciesId, form),
 					PokemonNameService.getSpeciesName(speciesId),
 				])
@@ -128,11 +129,13 @@ export function usePokemonData(
 				}
 
 				// Store in Redux memory
-				dispatch(storePokemonData({
-					speciesId,
-					form,
-					data: newData,
-				}))
+				dispatch(
+					storePokemonData({
+						speciesId,
+						form,
+						data: newData,
+					})
+				)
 
 				setPokemonDataLocal({
 					...newData,
@@ -146,7 +149,7 @@ export function usePokemonData(
 				setLoading(false)
 			}
 		}
-	}, [speciesId, form, canGigantamax, storedData, dispatch])
+	}, [speciesId, form, canGigantamax, hasMegaStone, storedData, dispatch])
 
 	// Helper methods
 	const getTypes = () => {

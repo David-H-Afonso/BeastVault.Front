@@ -44,7 +44,12 @@ export function PokemonCard({
 		type2: finalType2,
 		colors,
 		loading: pokemonInfoLoading,
-	} = usePokemonData(pokemon.speciesId, pokemon.form, pokemon.canGigantamax || false)
+	} = usePokemonData(
+		pokemon.speciesId, 
+		pokemon.form, 
+		pokemon.canGigantamax || false,
+		pokemon.hasMegaStone || false
+	)
 
 	// Use species name and form name directly from backend
 	const speciesName = pokemon.speciesName
