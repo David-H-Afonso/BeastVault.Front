@@ -21,7 +21,7 @@ export function usePokemonData(
 
 	// Check Redux storage first
 	const storedData = useSelector((state: RootState) =>
-		speciesId ? selectPokemonData(state, speciesId, form) : null
+		speciesId ? selectPokemonData(state, speciesId, form, canGigantamax, hasMegaStone) : null
 	)
 
 	const [pokemonData, setPokemonDataLocal] = useState<{
