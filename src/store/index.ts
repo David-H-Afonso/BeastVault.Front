@@ -6,13 +6,14 @@ import pokemonReducer from './features/pokemon/pokemonSlice'
 import { layoutReducer } from './features/layout'
 import styleSettingsReducer from './features/styleSettings/styleSettingsSlice'
 import assetsReducer from './features/assets/assetsSlice'
+import authReducer from './features/auth/authSlice'
 
 /**
  * CENTRALIZED PERSISTENCE CONFIGURATION
- * 
+ *
  * This store uses centralized persistence managed at the root level.
  * All individual feature persistence has been removed and consolidated here.
- * 
+ *
  * Benefits:
  * - Single point of persistence configuration
  * - Consistent persistence behavior across all features
@@ -24,7 +25,7 @@ import assetsReducer from './features/assets/assetsSlice'
 const persistConfig = {
 	key: 'root',
 	storage,
-	whitelist: ['pokemon', 'styleSettings', 'layout'], // Don't persist assets (memory only)
+	whitelist: ['pokemon', 'styleSettings', 'layout', 'auth'],
 	// Note: We can add blacklist here for any specific parts we don't want to persist
 	// Transform configurations can be added here for complex data transformations
 }
@@ -34,7 +35,8 @@ const rootReducer = combineReducers({
 	pokemon: pokemonReducer,
 	layout: layoutReducer,
 	styleSettings: styleSettingsReducer,
-	assets: assetsReducer, // Memory-only assets storage (not persisted)
+	assets: assetsReducer,
+	auth: authReducer,
 })
 
 // Create persisted reducer - Single point of persistence configuration

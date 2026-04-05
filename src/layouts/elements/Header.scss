@@ -121,6 +121,7 @@
 	.quick-actions {
 		display: flex;
 		align-items: center;
+		gap: 8px;
 
 		.import-btn {
 			background: var(--color-success);
@@ -138,6 +139,18 @@
 
 			&:hover {
 				transform: scale(1.05);
+			}
+		}
+
+		.logout-btn {
+			background: none;
+			border: none;
+			cursor: pointer;
+			font-size: 0.85rem;
+			white-space: nowrap;
+
+			&:hover {
+				color: var(--color-danger, #ef4444);
 			}
 		}
 	}

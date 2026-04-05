@@ -23,6 +23,21 @@ type CustomFetchOptions = {
 	baseURL?: string
 }
 
+// Store reference for auth token injection — set via initCustomFetch()
+let getAuthToken: (() => string | null) | null = null
+let onUnauthorized: (() => void) | null = null
+
+/**
+ * Initialize customFetch with store access for automatic auth token injection
+ */
+export function initCustomFetch(
+	tokenGetter: () => string | null,
+	unauthorizedHandler: () => void
+): void {
+	getAuthToken = tokenGetter
+	onUnauthorized = unauthorizedHandler
+}
+
 /**
  * Builds URL query string from parameters object
  * @param queryParameters - Object containing query parameters
@@ -143,10 +158,19 @@ export const customFetch = async <T = any>(
 	// Construct the complete URL with base URL and query parameters
 	const completeUrl = baseUrl + endpoint + buildQueryString(queryParams)
 
+	// Inject auth token if available and not already set
+	const mergedHeaders = { ...customHeaders }
+	if (!mergedHeaders['Authorization'] && getAuthToken) {
+		const token = getAuthToken()
+		if (token) {
+			mergedHeaders['Authorization'] = `Bearer ${token}`
+		}
+	}
+
 	// Prepare fetch configuration
 	const fetchConfiguration: RequestInit = {
 		method,
-		headers: { ...customHeaders },
+		headers: mergedHeaders,
 		signal: abortSignal,
 	}
 
@@ -177,6 +201,10 @@ export const customFetch = async <T = any>(
 
 		// Handle HTTP error status codes
 		if (!httpResponse.ok) {
+			if (httpResponse.status === 401 && onUnauthorized) {
+				onUnauthorized()
+			}
+
 			const errorMessage =
 				typeof responseData === 'string' ? responseData : JSON.stringify(responseData)
 
