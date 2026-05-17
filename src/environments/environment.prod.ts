@@ -16,8 +16,8 @@ function getApiBaseUrl(): string {
 		return import.meta.env.VITE_API_URL as string
 	}
 
-	// Fallback por si acaso
-	return 'http://localhost:5000'
+	// Fallback (nginx proxy on same origin)
+	return ''
 }
 
 export const environment = {
