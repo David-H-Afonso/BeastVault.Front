@@ -9,6 +9,11 @@ export { default as styleSettingsReducer } from './styleSettingsSlice'
 export { setBackgroundType, setViewMode, setTheme, setSpriteType } from './styleSettingsSlice'
 
 // ===================================
+// THUNKS
+// ===================================
+export { fetchPreferences, syncPreferences } from './thunks'
+
+// ===================================
 // SELECTORS
 // ===================================
 export {

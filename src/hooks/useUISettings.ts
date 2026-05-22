@@ -1,9 +1,11 @@
+import { useRef, useCallback } from 'react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { 
+import {
 	setTheme as setThemeAction,
 	setViewMode as setViewModeAction,
 	setSpriteType,
-	setBackgroundType as setBackgroundTypeAction
+	setBackgroundType as setBackgroundTypeAction,
+	syncPreferences,
 } from '@/store/features/styleSettings'
 import { setLayoutType } from '@/store/features/layout'
 import type { ThemeName, ViewMode } from '@/models/store/StylesSetting'
@@ -11,44 +13,46 @@ import type { LayoutType } from '@/models/store/Layout'
 import type { SpriteTypeName } from '../models/enums/SpriteTypes'
 import type { CardBackgroundTypeName } from '../models/enums/CardBackgroundTypes'
 
-/**
- * Hook unificado para manejar todas las configuraciones de UI
- * Consolida theme, viewMode, layout, spriteType y backgroundType en un solo hook
- */
 export function useUISettings() {
 	const dispatch = useAppDispatch()
-	
-	// Selectors
+	const syncTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
 	const currentTheme = useAppSelector((state) => state.styleSettings.theme)
 	const viewMode = useAppSelector((state) => state.styleSettings.viewMode)
 	const spriteType = useAppSelector((state) => state.styleSettings.spriteType)
 	const layoutType = useAppSelector((state) => state.layout.layoutType)
 	const backgroundType = useAppSelector((state) => state.styleSettings.backgroundType)
+	const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
 
-	// Theme actions
+	const syncToBackend = useCallback(() => {
+		if (!isAuthenticated) return
+		clearTimeout(syncTimer.current)
+		syncTimer.current = setTimeout(() => dispatch(syncPreferences()), 500)
+	}, [isAuthenticated, dispatch])
+
 	const setTheme = (theme: ThemeName) => {
 		dispatch(setThemeAction(theme))
 		document.documentElement.setAttribute('data-theme', theme)
+		syncToBackend()
 	}
 
-	// ViewMode actions
 	const setViewMode = (newMode: ViewMode) => {
 		dispatch(setViewModeAction(newMode))
+		syncToBackend()
 	}
 
-	// Layout actions
 	const setLayout = (newLayout: LayoutType) => {
 		dispatch(setLayoutType(newLayout))
 	}
 
-	// Sprite type actions
 	const setSpriteTypeAction = (newType: SpriteTypeName) => {
 		dispatch(setSpriteType(newType))
+		syncToBackend()
 	}
 
-	// Background type actions
 	const setBackgroundType = (newType: CardBackgroundTypeName) => {
 		dispatch(setBackgroundTypeAction(newType))
+		syncToBackend()
 	}
 
 	// Initialize theme on DOM when hook is first used
@@ -60,15 +64,15 @@ export function useUISettings() {
 		// Theme
 		currentTheme,
 		setTheme,
-		
+
 		// View Mode
 		viewMode,
 		setViewMode,
-		
+
 		// Layout
 		layoutType,
 		setLayout,
-		
+
 		// Sprite Type
 		spriteType,
 		setSpriteType: setSpriteTypeAction,

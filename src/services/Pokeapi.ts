@@ -1,6 +1,7 @@
 import type { PokeApiPokemon, PokeApiSprites } from '../models/Pokeapi'
 import { simpleFetcher } from '../utils/simpleFetcher'
 import { environment } from '../environments'
+import { getCachedSpecies } from './PokedexCache'
 
 export const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2/'
 
@@ -144,35 +145,32 @@ export async function getPokeApiPokemon(
 		return pokemon
 	}
 
-	// For alternate forms, try direct ID calculation first (most reliable)
+	// For alternate forms, try backend cache first, then PokeAPI species varieties
 	try {
-		// Most Pokemon use a simple calculation: baseId + form
-		// For example: Pikachu (25) has forms at 10025-10032 for different cosplay forms
-		// Try standard form naming first
-		const formId = Number(speciesId) + form * 10000
-
-		try {
-			const formUrl = `${POKEAPI_BASE_URL}pokemon/${formId}`
-			const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(formUrl)
+		// Try our backend pokedex cache for the variety mapping
+		const cached = await getCachedSpecies(speciesId)
+		if (cached?.species?.varieties && cached.species.varieties.length > form) {
+			const pokemonId = cached.species.varieties[form].id
+			const pokemonUrl = `${POKEAPI_BASE_URL}pokemon/${pokemonId}`
+			const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(pokemonUrl)
 			return pokemon
-		} catch {
-			// If direct ID doesn't work, fall back to varieties lookup
-			const speciesUrl = `${POKEAPI_BASE_URL}pokemon-species/${speciesId}`
-			const speciesData = await simpleFetcher.fetchWithCache<any>(speciesUrl)
-			const varieties = speciesData.varieties || []
-
-			// Try to match by form index
-			// Note: varieties array order may not match PKHeX form numbers
-			if (varieties.length > form) {
-				const varietyUrl = varieties[form].pokemon.url
-				const pokemonId = varietyUrl.split('/').filter(Boolean).pop()
-				const pokemonUrl = `${POKEAPI_BASE_URL}pokemon/${pokemonId}`
-				const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(pokemonUrl)
-				return pokemon
-			}
 		}
 
-		// Fallback to base form if specific form not found
+		// Fallback: fetch directly from PokeAPI
+		const speciesUrl = `${POKEAPI_BASE_URL}pokemon-species/${speciesId}`
+		const speciesData = await simpleFetcher.fetchWithCache<any>(speciesUrl)
+		const varieties = speciesData.varieties || []
+
+		// varieties[0] = base form (is_default: true), varieties[1+] = alternate forms
+		if (varieties.length > form) {
+			const varietyUrl = varieties[form].pokemon.url
+			const pokemonId = varietyUrl.split('/').filter(Boolean).pop()
+			const pokemonUrl = `${POKEAPI_BASE_URL}pokemon/${pokemonId}`
+			const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(pokemonUrl)
+			return pokemon
+		}
+
+		// If form index exceeds varieties, fall back to base form
 		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
 		const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(url)
 		return pokemon
@@ -181,7 +179,6 @@ export async function getPokeApiPokemon(
 			`Failed to fetch form ${form} for species ${speciesId}, falling back to base form:`,
 			error
 		)
-		// Fallback to base form
 		const url = `${POKEAPI_BASE_URL}pokemon/${speciesId}`
 		const pokemon = await simpleFetcher.fetchWithCache<PokeApiPokemon>(url)
 		return pokemon

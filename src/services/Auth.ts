@@ -6,6 +6,10 @@ import type {
 	UpdatePasswordRequest,
 	AdminResetPasswordRequest,
 	UserDto,
+	RenameUserRequest,
+	UpdateRoleRequest,
+	UserPreferencesDto,
+	UpdatePreferencesRequest,
 } from '../models/Auth'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
@@ -51,6 +55,35 @@ export async function updatePassword(request: UpdatePasswordRequest): Promise<vo
 }
 
 /**
+ * Rename own account.
+ */
+export async function renameOwnUser(request: RenameUserRequest): Promise<void> {
+	return customFetch<void>(`${environment.baseUrl}/auth/username`, {
+		method: 'PUT',
+		body: request,
+	})
+}
+
+/**
+ * Get user display preferences.
+ */
+export async function getPreferences(): Promise<UserPreferencesDto> {
+	return customFetch<UserPreferencesDto>(`${environment.baseUrl}/auth/preferences`)
+}
+
+/**
+ * Update user display preferences.
+ */
+export async function updatePreferences(
+	request: UpdatePreferencesRequest
+): Promise<UserPreferencesDto> {
+	return customFetch<UserPreferencesDto>(`${environment.baseUrl}/auth/preferences`, {
+		method: 'PUT',
+		body: request,
+	})
+}
+
+/**
  * Get all users (admin only).
  */
 export async function getUsers(): Promise<UserDto[]> {
@@ -74,6 +107,26 @@ export async function adminResetPassword(
 	request: AdminResetPasswordRequest
 ): Promise<void> {
 	return customFetch<void>(`${environment.baseUrl}/auth/admin/users/${userId}/password`, {
+		method: 'PUT',
+		body: request,
+	})
+}
+
+/**
+ * Rename any user (admin only).
+ */
+export async function adminRenameUser(userId: number, request: RenameUserRequest): Promise<void> {
+	return customFetch<void>(`${environment.baseUrl}/auth/admin/users/${userId}/username`, {
+		method: 'PUT',
+		body: request,
+	})
+}
+
+/**
+ * Update a user's role (admin only).
+ */
+export async function adminUpdateRole(userId: number, request: UpdateRoleRequest): Promise<void> {
+	return customFetch<void>(`${environment.baseUrl}/auth/admin/users/${userId}/role`, {
 		method: 'PUT',
 		body: request,
 	})

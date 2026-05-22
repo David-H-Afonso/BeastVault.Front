@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { AuthState, LoginRequest, RegisterRequest } from '@/models/Auth'
 import { login as loginApi, register as registerApi, getMe as getMeApi } from '@/services/Auth'
 import { setAuthToken, clearAuthToken } from '@/utils/authToken'
+import { fetchPreferences } from '@/store/features/styleSettings/thunks'
 import type { RootState } from '@/store'
 
 const initialState: AuthState = {
@@ -14,10 +15,11 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
 	'auth/login',
-	async (request: LoginRequest, { rejectWithValue }) => {
+	async (request: LoginRequest, { rejectWithValue, dispatch }) => {
 		try {
 			const response = await loginApi(request)
 			setAuthToken(response.token)
+			dispatch(fetchPreferences())
 			return response
 		} catch (error) {
 			return rejectWithValue(error instanceof Error ? error.message : 'Login failed')

@@ -30,6 +30,28 @@ export interface AdminResetPasswordRequest {
 	newPassword: string
 }
 
+export interface RenameUserRequest {
+	newUsername: string
+}
+
+export interface UpdateRoleRequest {
+	role: string
+}
+
+export interface UserPreferencesDto {
+	theme: string
+	viewMode: string
+	spriteType: string
+	backgroundType: string
+}
+
+export interface UpdatePreferencesRequest {
+	theme?: string | null
+	viewMode?: string | null
+	spriteType?: string | null
+	backgroundType?: string | null
+}
+
 export interface UserDto {
 	id: number
 	username: string
