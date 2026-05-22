@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { usePokemon } from '@/hooks/usePokemon'
-import { Modal } from '../Modal/Modal'
 import './UploadAndScanFiles.scss'
 
 interface UploadAndScanFilesProps {
@@ -23,24 +23,33 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({ isOpen, 
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-	// Scan directory function
+	// Escape key + body scroll lock
+	useEffect(() => {
+		if (!isOpen) return
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') onClose()
+		}
+		document.addEventListener('keydown', onKey)
+		document.body.style.overflow = 'hidden'
+		return () => {
+			document.removeEventListener('keydown', onKey)
+			document.body.style.overflow = ''
+		}
+	}, [isOpen, onClose])
+
 	const handleScanDirectory = useCallback(async () => {
 		clearCurrentError()
 		clearCurrentImportResult()
 		try {
 			await scanPokemonDirectory()
-			// Refresh the Pokemon list after scanning
 			await refreshPokemon()
 		} catch (e: any) {
 			console.error('Scan failed:', e.message || 'Failed to scan directory')
 		}
 	}, [scanPokemonDirectory, clearCurrentError, clearCurrentImportResult, refreshPokemon])
 
-	// Auto-scan directory when modal opens
 	useEffect(() => {
-		if (isOpen) {
-			handleScanDirectory()
-		}
+		if (isOpen) handleScanDirectory()
 	}, [isOpen, handleScanDirectory])
 
 	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,8 +57,7 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({ isOpen, 
 		clearCurrentError()
 		clearCurrentImportResult()
 		try {
-			await importFiles([e.target.files[0]])
-			// Refresh the Pokemon list after import
+			await importFiles(Array.from(e.target.files))
 			await refreshPokemon()
 		} catch (e: any) {
 			console.error('Import failed:', e.message || 'Failed to upload file')
@@ -58,79 +66,78 @@ export const UploadAndScanFiles: React.FC<UploadAndScanFilesProps> = ({ isOpen, 
 		}
 	}
 
-	return (
-		<Modal
-			header='Import Pokémon Files'
-			hasActions
-			isOpen={isOpen}
-			onClose={onClose}
-			closeOnBackdropClick={true}
-			closeOnEscape={true}>
-			<div className='upload-scan-container'>
-				<div
-					className='upload-dropzone'
-					onClick={() => fileInputRef.current?.click()}
-					onDragOver={(e) => e.preventDefault()}
-					onDrop={async (e) => {
-						e.preventDefault()
-						if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return
-						clearCurrentError()
-						clearCurrentImportResult()
-						try {
-							await importFiles(Array.from(e.dataTransfer.files))
-							// Refresh the Pokemon list after import
-							await refreshPokemon()
-						} catch (e: any) {
-							console.error('Import failed:', e.message || 'Failed to upload files')
-						}
-					}}>
-					<p>Drag and drop your files here, or click to upload</p>
-					<input
-						id='file-upload'
-						type='file'
-						accept='.pk*'
-						onChange={handleFileChange}
-						ref={fileInputRef}
-						multiple
-						disabled={importing || scanning}
-						style={{ display: 'none' }}
-					/>
+	if (!isOpen) return null
+
+	return createPortal(
+		<div className='import-modal-overlay' onClick={onClose}>
+			<div className='import-modal' onClick={(e) => e.stopPropagation()}>
+				{/* Header */}
+				<div className='import-modal__header'>
+					<h2>Import Pokémon Files</h2>
+					<button className='import-modal__close' onClick={onClose} aria-label='Close'>
+						×
+					</button>
 				</div>
 
-				<div className='scan-container'>
-					<div className='scan-button'>
-						<h3>Or scan the default directory for new files:</h3>
-						<button onClick={handleScanDirectory} disabled={importing || scanning}>
-							Scan Directory
+				{/* Drag & Drop zone */}
+				<div className='import-modal__body'>
+					<div
+						className={`import-dropzone${importing ? ' import-dropzone--busy' : ''}`}
+						onClick={() => !importing && !scanning && fileInputRef.current?.click()}
+						onDragOver={(e) => e.preventDefault()}
+						onDrop={async (e) => {
+							e.preventDefault()
+							if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return
+							clearCurrentError()
+							clearCurrentImportResult()
+							try {
+								await importFiles(Array.from(e.dataTransfer.files))
+								await refreshPokemon()
+							} catch (e: any) {
+								console.error('Import failed:', e.message || 'Failed to upload files')
+							}
+						}}>
+						<div className='import-dropzone__icon'>📂</div>
+						<p className='import-dropzone__text'>
+							{importing ? 'Uploading...' : 'Drag & drop .pk* files here'}
+						</p>
+						<p className='import-dropzone__sub'>or click to browse</p>
+						<input
+							type='file'
+							accept='.pk*'
+							onChange={handleFileChange}
+							ref={fileInputRef}
+							multiple
+							disabled={importing || scanning}
+							style={{ display: 'none' }}
+						/>
+					</div>
+
+					{/* Divider */}
+					<div className='import-modal__divider'>
+						<span>or</span>
+					</div>
+
+					{/* Scan section */}
+					<div className='import-scan'>
+						<p className='import-scan__label'>Scan the default directory for new files</p>
+						<button
+							className='import-scan__btn'
+							onClick={handleScanDirectory}
+							disabled={importing || scanning}>
+							{scanning ? 'Scanning...' : 'Scan Directory'}
 						</button>
 					</div>
 
-					<div className='scan-messages'>
-						{/* Status Messages */}
-						{importing && (
-							<div className='upload-scan__status upload-scan__status--loading'>
-								⏳ Uploading file...
-							</div>
-						)}
-
-						{scanning && (
-							<div className='upload-scan__status upload-scan__status--scanning'>
-								🔍 Scanning directory for new Pokémon files...
-							</div>
-						)}
-
-						{error && (
-							<div className='upload-scan__status upload-scan__status--error'>❌ {error}</div>
-						)}
-
-						{importResult && (
-							<div className='upload-scan__status upload-scan__status--success'>
-								✅ {importResult}
-							</div>
-						)}
-					</div>
+					{/* Status messages */}
+					{(error || importResult) && (
+						<div className={`import-status import-status--${error ? 'error' : 'success'}`}>
+							{error ? `❌ ${error}` : `✅ ${importResult}`}
+						</div>
+					)}
 				</div>
 			</div>
-		</Modal>
+		</div>,
+		document.body
 	)
 }

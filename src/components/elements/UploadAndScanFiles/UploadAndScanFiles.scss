@@ -1,47 +1,196 @@
-@use '@/assets/styles' as *;
+@keyframes importModalIn {
+	from {
+		opacity: 0;
+		transform: translateY(-12px) scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
 
-.upload-scan-container {
+// Overlay — full-screen backdrop
+.import-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	backdrop-filter: blur(4px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+	padding: 24px;
+}
+
+// Modal box
+.import-modal {
+	background: var(--card-background-color, #1e1e2e);
+	border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+	border-radius: 16px;
+	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
 	width: 100%;
+	max-width: 520px;
+	max-height: 90vh;
+	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	animation: importModalIn 0.2s ease-out;
 
-	.upload-dropzone {
-		border: 2px dashed var(--text-primary);
-		border-radius: 8px;
-		padding: 20px;
-		text-align: center;
+	&__header {
+		padding: 20px 24px 16px;
+		border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-shrink: 0;
+
+		h2 {
+			margin: 0;
+			font-size: 1.2rem;
+			font-weight: 600;
+			color: var(--text-primary);
+		}
+	}
+
+	&__close {
+		background: none;
+		border: none;
+		font-size: 1.6rem;
+		line-height: 1;
+		color: var(--text-secondary, #888);
 		cursor: pointer;
-		background-color: var(--bg-tertiary);
+		padding: 2px 6px;
+		border-radius: 6px;
+		transition:
+			background 0.15s,
+			color 0.15s;
+
+		&:hover {
+			background: rgba(255, 255, 255, 0.08);
+			color: var(--text-primary);
+		}
+	}
+
+	&__body {
+		padding: 24px;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	&__divider {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		color: var(--text-secondary, #666);
+		font-size: 0.85rem;
+
+		&::before,
+		&::after {
+			content: '';
+			flex: 1;
+			height: 1px;
+			background: var(--border-color, rgba(255, 255, 255, 0.08));
+		}
+	}
+}
+
+// Drag & Drop zone
+.import-dropzone {
+	border: 2px dashed var(--border-color, rgba(255, 255, 255, 0.18));
+	border-radius: 12px;
+	padding: 36px 24px;
+	text-align: center;
+	cursor: pointer;
+	background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+	transition:
+		border-color 0.2s,
+		background 0.2s;
+
+	&:hover:not(&--busy) {
+		border-color: var(--primary-color, #6c63ff);
+		background: rgba(108, 99, 255, 0.06);
+	}
+
+	&--busy {
+		cursor: default;
+		opacity: 0.6;
+	}
+
+	&__icon {
+		font-size: 2.5rem;
+		margin-bottom: 10px;
+		line-height: 1;
+	}
+
+	&__text {
+		margin: 0 0 4px;
+		font-size: 1rem;
+		font-weight: 500;
 		color: var(--text-primary);
 	}
 
-	.scan-container {
-		.scan-button {
-			h3 {
-				margin-bottom: 0.5rem;
-			}
+	&__sub {
+		margin: 0;
+		font-size: 0.82rem;
+		color: var(--text-secondary, #888);
+	}
+}
 
-			button {
-				margin-right: 10px;
-				margin-bottom: 0.5rem;
-				padding: 8px 16px;
-				background-color: var(--bg-secondary);
-				color: white;
-				border: none;
-				border-radius: 4px;
-				cursor: pointer;
-				font-size: 1rem;
-				transition: background-color 0.3s ease;
+// Scan section
+.import-scan {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
 
-				&:hover {
-					background-color: var(--bg-tertiary);
-				}
+	&__label {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--text-secondary, #aaa);
+	}
 
-				&:disabled {
-					background-color: var(--border-secondary);
-					cursor: not-allowed;
-				}
-			}
+	&__btn {
+		flex-shrink: 0;
+		padding: 8px 18px;
+		background: var(--bg-secondary, #2a2a3e);
+		color: var(--text-primary);
+		border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+		border-radius: 8px;
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition:
+			background 0.15s,
+			border-color 0.15s;
+
+		&:hover:not(:disabled) {
+			background: var(--bg-tertiary, #33334d);
+			border-color: var(--primary-color, #6c63ff);
 		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+}
+
+// Status messages
+.import-status {
+	padding: 10px 14px;
+	border-radius: 8px;
+	font-size: 0.9rem;
+
+	&--success {
+		background: rgba(34, 197, 94, 0.12);
+		color: #4ade80;
+		border: 1px solid rgba(34, 197, 94, 0.25);
+	}
+
+	&--error {
+		background: rgba(239, 68, 68, 0.12);
+		color: #f87171;
+		border: 1px solid rgba(239, 68, 68, 0.25);
 	}
 }
