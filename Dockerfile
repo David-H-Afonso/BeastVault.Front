@@ -14,31 +14,22 @@ RUN if [ -f package-lock.json ]; then \
     fi
 
 COPY . .
-# VITE_API_URL lo recibimos en build (valor por defecto si no se proporciona)
-ARG VITE_API_URL=http://localhost:8080
+# VITE_API_URL vacío en build → el frontend usa same-origin (nginx proxy)
+ARG VITE_API_URL=""
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-# Runtime (sirve los estáticos con un servidor sencillo)
-FROM node:20-alpine
-WORKDIR /app
+# Runtime — nginx con reverse proxy al API (igual que los demás proyectos)
+FROM nginx:alpine
 
-# Instalar serve para servir los archivos estáticos
-RUN npm install -g serve
+# Copiar archivos construidos
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copiar los archivos construidos
-COPY --from=build /app/dist ./dist
+# Copiar configuración de nginx (incluye proxy al backend)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copiar script de configuración
-COPY update-config.sh /app/update-config.sh
-RUN chmod +x /app/update-config.sh
-
-# VITE_API_URL se configura en runtime via variable de entorno del contenedor.
-# Si no se proporciona, update-config.sh dejará el valor vacío y el frontend
-# intentará usar la misma URL base (útil si hay un proxy inverso).
+# Copiar entrypoint para inyección de variables de entorno en runtime
+COPY docker-entrypoint.sh /docker-entrypoint.d/40-env-config.sh
+RUN chmod +x /docker-entrypoint.d/40-env-config.sh
 
 EXPOSE 80
-
-# Script de inicio que actualiza la configuración y luego sirve los archivos
-CMD ["/bin/sh", "-c", "/app/update-config.sh && serve -s dist -l 80"]
- 
