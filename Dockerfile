@@ -33,8 +33,9 @@ COPY --from=build /app/dist ./dist
 COPY update-config.sh /app/update-config.sh
 RUN chmod +x /app/update-config.sh
 
-# Variables de entorno por defecto
-ENV VITE_API_URL=http://localhost:8080
+# VITE_API_URL se configura en runtime via variable de entorno del contenedor.
+# Si no se proporciona, update-config.sh dejará el valor vacío y el frontend
+# intentará usar la misma URL base (útil si hay un proxy inverso).
 
 EXPOSE 80
 
