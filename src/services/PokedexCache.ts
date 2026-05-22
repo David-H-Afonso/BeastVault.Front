@@ -50,6 +50,9 @@ export interface PopulationStatus {
 	totalForms: number
 	maxSpeciesId: number
 	lastUpdated: string | null
+	isPopulating: boolean
+	populatingCurrent: number
+	populatingTotal: number
 }
 
 const memoryCache = new Map<number, CachedSpeciesData>()

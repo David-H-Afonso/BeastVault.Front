@@ -53,7 +53,11 @@ export async function importPokemonFiles(files: File[]): Promise<ImportResultDto
  * @param params Query parameters for filtering and pagination
  * @returns Promise resolving to Pokemon list, sprites, and total count
  */
-export async function getPokemonListWithSprites(params: PokemonListFilterDto): Promise<{
+export async function getPokemonListWithSprites(
+	params: PokemonListFilterDto,
+	existingSprites?: Record<number, any>,
+	existingTypes?: Record<number, { type1?: string; type2?: string }>
+): Promise<{
 	pokemon: PokemonListItemDto[]
 	sprites: Record<
 		number,
@@ -89,10 +93,20 @@ export async function getPokemonListWithSprites(params: PokemonListFilterDto): P
 	const pokeList = result.items || []
 	const total = result.total || 0
 
-	// Create unique combinations of speciesId, form, canGigantamax, and hasMegaStone
+	// Check which pokemon already have sprites+types in Redux (skip PokeAPI for those)
+	const pokemonNeedingFetch = pokeList.filter(
+		(p) => !existingSprites?.[p.id]?.default || !existingTypes?.[p.id]?.type1
+	)
+
+	// If all pokemon already have data, skip PokeAPI entirely
+	if (pokemonNeedingFetch.length === 0) {
+		return { pokemon: pokeList, sprites: existingSprites || {}, types: existingTypes || {}, total }
+	}
+
+	// Create unique combinations only for pokemon that need fetching
 	const speciesFormCombos = Array.from(
 		new Set(
-			pokeList.map(
+			pokemonNeedingFetch.map(
 				(p) =>
 					`${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
 			)

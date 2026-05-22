@@ -33,9 +33,10 @@ export const fetchPokemonList = createAsyncThunk<
 	},
 	PokemonListFilterDto,
 	{ state: { pokemon: PokemonState } }
->('pokemon/fetchPokemonList', async (filters, { rejectWithValue }) => {
+>('pokemon/fetchPokemonList', async (filters, { getState, rejectWithValue }) => {
 	try {
-		const result = await getPokemonListWithSprites(filters)
+		const { sprites: existingSprites, types: existingTypes } = getState().pokemon
+		const result = await getPokemonListWithSprites(filters, existingSprites, existingTypes)
 
 		return {
 			pokemon: result.pokemon,

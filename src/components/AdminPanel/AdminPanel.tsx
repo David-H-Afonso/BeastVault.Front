@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import {
 	getUsers,
@@ -113,19 +113,41 @@ const AdminPanel: React.FC = () => {
 		fetchPopStatus()
 	}, [fetchPopStatus])
 
+	// Poll status while populating
+	const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+	useEffect(() => {
+		if (popStatus?.isPopulating && !pollRef.current) {
+			setPopLoading(true)
+			pollRef.current = setInterval(() => {
+				fetchPopStatus()
+			}, 3000)
+		} else if (!popStatus?.isPopulating && pollRef.current) {
+			clearInterval(pollRef.current)
+			pollRef.current = null
+			setPopLoading(false)
+		}
+		return () => {
+			if (pollRef.current) clearInterval(pollRef.current)
+		}
+	}, [popStatus?.isPopulating, fetchPopStatus])
+
 	const handlePopulate = async () => {
 		setPopLoading(true)
 		setPopMessage(null)
 		try {
-			const result = await populatePokedex(popStartId, popEndId)
-			setPopMessage({ type: 'success', text: `${result.message} (${result.populated} species)` })
+			await populatePokedex(popStartId, popEndId)
+			setPopMessage({
+				type: 'success',
+				text: 'Population started. Progress will update automatically.',
+			})
+			// Start polling
 			fetchPopStatus()
 		} catch (err) {
 			setPopMessage({
 				type: 'error',
 				text: err instanceof Error ? err.message : 'Failed to populate',
 			})
-		} finally {
 			setPopLoading(false)
 		}
 	}
@@ -581,6 +603,22 @@ const AdminPanel: React.FC = () => {
 											{new Date(popStatus.lastUpdated).toLocaleString()}
 										</p>
 									)}
+									{popStatus.isPopulating && (
+										<div className='populate-progress'>
+											<p>
+												<strong>Progress:</strong> {popStatus.populatingCurrent} /{' '}
+												{popStatus.populatingTotal} species
+											</p>
+											<div className='progress-bar'>
+												<div
+													className='progress-bar-fill'
+													style={{
+														width: `${(popStatus.populatingCurrent / popStatus.populatingTotal) * 100}%`,
+													}}
+												/>
+											</div>
+										</div>
+									)}
 								</div>
 							)}
 							<div className='admin-form'>
@@ -594,6 +632,7 @@ const AdminPanel: React.FC = () => {
 											max={1025}
 											value={popStartId}
 											onChange={(e) => setPopStartId(Number(e.target.value))}
+											disabled={popLoading}
 										/>
 									</div>
 									<div className='form-field'>
@@ -605,6 +644,7 @@ const AdminPanel: React.FC = () => {
 											max={1025}
 											value={popEndId}
 											onChange={(e) => setPopEndId(Number(e.target.value))}
+											disabled={popLoading}
 										/>
 									</div>
 								</div>
@@ -614,7 +654,9 @@ const AdminPanel: React.FC = () => {
 									</div>
 								)}
 								<button className='btn btn--primary' onClick={handlePopulate} disabled={popLoading}>
-									{popLoading ? 'Populating...' : 'Populate Pokédex Cache'}
+									{popLoading
+										? `Populating... ${popStatus?.isPopulating ? `(${popStatus.populatingCurrent}/${popStatus.populatingTotal})` : ''}`
+										: 'Populate Pokédex Cache'}
 								</button>
 							</div>
 						</section>
