@@ -48,10 +48,8 @@ export const Modal: React.FC<ModalProps> = ({
 
 	if (!isOpen) return null
 
-	const handleBackdropClick = (e: React.MouseEvent) => {
-		if (e.target === e.currentTarget && closeOnBackdropClick && onClose) {
-			onClose()
-		}
+	const handleOverlayClick = () => {
+		if (closeOnBackdropClick && onClose) onClose()
 	}
 
 	const getPortalContainer = () => {
@@ -65,9 +63,8 @@ export const Modal: React.FC<ModalProps> = ({
 	}
 
 	return createPortal(
-		<div className={`modal ${className}`}>
-			<div className='modal-backdrop' onClick={handleBackdropClick} />
-			<div className='modal-content'>
+		<div className={`modal ${className}`} onClick={handleOverlayClick}>
+			<div className='modal-content' onClick={(e) => e.stopPropagation()}>
 				<div className='modal-header'>
 					{header && <h3>{header}</h3>}
 					{hasActions && (

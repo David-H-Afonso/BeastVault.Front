@@ -10,7 +10,7 @@ import {
 	adminUpdateRole,
 	renameOwnUser,
 } from '@/services/Auth'
-import { getPopulationStatus, populatePokedex } from '@/services/PokedexCache'
+import { getPopulationStatus, populatePokedex, populateItems } from '@/services/PokedexCache'
 import type { UserDto } from '@/models/Auth'
 import type { PopulationStatus } from '@/services/PokedexCache'
 import './AdminPanel.scss'
@@ -80,6 +80,15 @@ const AdminPanel: React.FC = () => {
 		text: string
 	} | null>(null)
 
+	// Items populate
+	const [itemStartId, setItemStartId] = useState(1)
+	const [itemEndId, setItemEndId] = useState(2180)
+	const [itemLoading, setItemLoading] = useState(false)
+	const [itemMessage, setItemMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
 	const fetchUsers = useCallback(async () => {
 		if (!isAdmin) return
 		setLoadingUsers(true)
@@ -117,20 +126,23 @@ const AdminPanel: React.FC = () => {
 	const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
 	useEffect(() => {
-		if (popStatus?.isPopulating && !pollRef.current) {
-			setPopLoading(true)
+		const isAnyPopulating = popStatus?.isPopulating || popStatus?.isPopulatingItems
+		if (isAnyPopulating && !pollRef.current) {
+			if (popStatus?.isPopulating) setPopLoading(true)
+			if (popStatus?.isPopulatingItems) setItemLoading(true)
 			pollRef.current = setInterval(() => {
 				fetchPopStatus()
 			}, 3000)
-		} else if (!popStatus?.isPopulating && pollRef.current) {
+		} else if (!isAnyPopulating && pollRef.current) {
 			clearInterval(pollRef.current)
 			pollRef.current = null
 			setPopLoading(false)
+			setItemLoading(false)
 		}
 		return () => {
 			if (pollRef.current) clearInterval(pollRef.current)
 		}
-	}, [popStatus?.isPopulating, fetchPopStatus])
+	}, [popStatus?.isPopulating, popStatus?.isPopulatingItems, fetchPopStatus])
 
 	const handlePopulate = async () => {
 		setPopLoading(true)
@@ -149,6 +161,25 @@ const AdminPanel: React.FC = () => {
 				text: err instanceof Error ? err.message : 'Failed to populate',
 			})
 			setPopLoading(false)
+		}
+	}
+
+	const handlePopulateItems = async () => {
+		setItemLoading(true)
+		setItemMessage(null)
+		try {
+			await populateItems(itemStartId, itemEndId)
+			setItemMessage({
+				type: 'success',
+				text: 'Item population started. Progress will update automatically.',
+			})
+			fetchPopStatus()
+		} catch (err) {
+			setItemMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to populate items',
+			})
+			setItemLoading(false)
 		}
 	}
 
@@ -657,6 +688,75 @@ const AdminPanel: React.FC = () => {
 									{popLoading
 										? `Populating... ${popStatus?.isPopulating ? `(${popStatus.populatingCurrent}/${popStatus.populatingTotal})` : ''}`
 										: 'Populate Pokédex Cache'}
+								</button>
+							</div>
+						</section>
+
+						{/* Items Cache */}
+						<section className='admin-section'>
+							<h2 className='section-title'>Items Cache</h2>
+							{popStatus && (
+								<div className='pokedex-status'>
+									<p>
+										<strong>Items cached:</strong> {popStatus.totalItems}
+									</p>
+									{popStatus.isPopulatingItems && (
+										<div className='populate-progress'>
+											<p>
+												<strong>Progress:</strong> {popStatus.populatingItemsCurrent} /{' '}
+												{popStatus.populatingItemsTotal} items
+											</p>
+											<div className='progress-bar'>
+												<div
+													className='progress-bar-fill'
+													style={{
+														width: `${(popStatus.populatingItemsCurrent / popStatus.populatingItemsTotal) * 100}%`,
+													}}
+												/>
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+							<div className='admin-form'>
+								<div className='form-row'>
+									<div className='form-field'>
+										<label htmlFor='item-start'>Start ID</label>
+										<input
+											id='item-start'
+											type='number'
+											min={1}
+											max={2180}
+											value={itemStartId}
+											onChange={(e) => setItemStartId(Number(e.target.value))}
+											disabled={itemLoading}
+										/>
+									</div>
+									<div className='form-field'>
+										<label htmlFor='item-end'>End ID</label>
+										<input
+											id='item-end'
+											type='number'
+											min={1}
+											max={2180}
+											value={itemEndId}
+											onChange={(e) => setItemEndId(Number(e.target.value))}
+											disabled={itemLoading}
+										/>
+									</div>
+								</div>
+								{itemMessage && (
+									<div className={`form-message form-message--${itemMessage.type}`}>
+										{itemMessage.text}
+									</div>
+								)}
+								<button
+									className='btn btn--primary'
+									onClick={handlePopulateItems}
+									disabled={itemLoading}>
+									{itemLoading
+										? `Populating... ${popStatus?.isPopulatingItems ? `(${popStatus.populatingItemsCurrent}/${popStatus.populatingItemsTotal})` : ''}`
+										: 'Populate Items Cache'}
 								</button>
 							</div>
 						</section>
