@@ -6,13 +6,15 @@ import pokemonReducer from './features/pokemon/pokemonSlice'
 import { layoutReducer } from './features/layout'
 import styleSettingsReducer from './features/styleSettings/styleSettingsSlice'
 import assetsReducer from './features/assets/assetsSlice'
+import { authReducer } from './features/auth'
+import { setAuthToken } from '@/utils/authToken'
 
 /**
  * CENTRALIZED PERSISTENCE CONFIGURATION
- * 
+ *
  * This store uses centralized persistence managed at the root level.
  * All individual feature persistence has been removed and consolidated here.
- * 
+ *
  * Benefits:
  * - Single point of persistence configuration
  * - Consistent persistence behavior across all features
@@ -24,7 +26,7 @@ import assetsReducer from './features/assets/assetsSlice'
 const persistConfig = {
 	key: 'root',
 	storage,
-	whitelist: ['pokemon', 'styleSettings', 'layout'], // Don't persist assets (memory only)
+	whitelist: ['pokemon', 'styleSettings', 'layout', 'auth'], // Don't persist assets (memory only)
 	// Note: We can add blacklist here for any specific parts we don't want to persist
 	// Transform configurations can be added here for complex data transformations
 }
@@ -35,6 +37,7 @@ const rootReducer = combineReducers({
 	layout: layoutReducer,
 	styleSettings: styleSettingsReducer,
 	assets: assetsReducer, // Memory-only assets storage (not persisted)
+	auth: authReducer,
 })
 
 // Create persisted reducer - Single point of persistence configuration
@@ -76,7 +79,13 @@ export const store = configureStore({
 	devTools: import.meta.env.DEV,
 })
 
-export const persistor = persistStore(store)
+export const persistor = persistStore(store, null, () => {
+	// Restore auth token to localStorage when store rehydrates
+	const state = store.getState()
+	if (state.auth?.token) {
+		setAuthToken(state.auth.token)
+	}
+})
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

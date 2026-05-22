@@ -1,0 +1,132 @@
+@use '@/assets/styles' as *;
+
+.login {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: 1rem;
+	background-color: var(--bg-primary);
+
+	&__card {
+		width: 100%;
+		max-width: 420px;
+		background-color: var(--bg-secondary);
+		border-radius: 12px;
+		padding: 2.5rem;
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+	}
+
+	&__header {
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+
+	&__title {
+		font-size: 1.75rem;
+		font-weight: 700;
+		color: var(--text-primary);
+		margin: 0 0 0.5rem;
+	}
+
+	&__subtitle {
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+		margin: 0;
+	}
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	&__label {
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--text-secondary);
+	}
+
+	&__optional {
+		font-size: 0.75rem;
+		font-weight: 400;
+		color: var(--text-tertiary, var(--text-secondary));
+		margin-left: 0.4rem;
+		opacity: 0.7;
+	}
+
+	&__input {
+		padding: 0.7rem 0.9rem;
+		border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+		border-radius: 8px;
+		background-color: var(--bg-tertiary, var(--bg-primary));
+		color: var(--text-primary);
+		font-size: 0.95rem;
+		outline: none;
+		transition: border-color 0.2s;
+
+		&::placeholder {
+			color: var(--text-secondary);
+			opacity: 0.5;
+		}
+
+		&:focus {
+			border-color: var(--accent-color, #3b82f6);
+		}
+	}
+
+	&__error {
+		padding: 0.7rem 0.9rem;
+		border-radius: 8px;
+		background-color: rgba(239, 68, 68, 0.12);
+		color: #f87171;
+		font-size: 0.85rem;
+		border: 1px solid rgba(239, 68, 68, 0.25);
+	}
+
+	&__button {
+		padding: 0.75rem;
+		border: none;
+		border-radius: 8px;
+		background-color: var(--accent-color, #3b82f6);
+		color: #fff;
+		font-size: 0.95rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: opacity 0.2s;
+		margin-top: 0.5rem;
+
+		&:hover:not(:disabled) {
+			opacity: 0.9;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+
+	&__footer {
+		text-align: center;
+		margin-top: 1.5rem;
+	}
+
+	&__toggle {
+		background: none;
+		border: none;
+		color: var(--accent-color, #3b82f6);
+		font-size: 0.85rem;
+		cursor: pointer;
+		padding: 0;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}

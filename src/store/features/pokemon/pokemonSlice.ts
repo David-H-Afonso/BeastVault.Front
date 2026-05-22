@@ -138,9 +138,17 @@ const pokemonSlice = createSlice({
 				state.error = null
 				state.importResult = null
 			})
-			.addCase(importPokemon.fulfilled, (state) => {
+			.addCase(importPokemon.fulfilled, (state, action) => {
 				state.importing = false
-				state.importResult = 'File imported successfully!'
+				const results = action.payload
+				const imported = results.filter((r) => r.status === 'imported').length
+				const duplicates = results.filter((r) => r.status === 'duplicate').length
+				const errors = results.filter((r) => r.status === 'error').length
+				const parts: string[] = []
+				if (imported > 0) parts.push(`${imported} imported`)
+				if (duplicates > 0) parts.push(`${duplicates} duplicates`)
+				if (errors > 0) parts.push(`${errors} errors`)
+				state.importResult = parts.length > 0 ? parts.join(', ') : 'No files processed'
 			})
 			.addCase(importPokemon.rejected, (state, action) => {
 				state.importing = false

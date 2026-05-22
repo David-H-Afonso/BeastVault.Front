@@ -4,10 +4,12 @@ import './Header.scss'
 import { ThemeSelector } from '@/components/elements'
 import { BeastVaultBanner } from '@/assets/images'
 import { UploadAndScanFiles } from '@/components/elements/UploadAndScanFiles/UploadAndScanFiles'
+import { useAuth } from '@/hooks/useAuth'
 
 export const Header: React.FC = () => {
 	const location = useLocation()
 	const [isUploadModalOpen, setUploadModalOpen] = useState(false)
+	const { user, logout } = useAuth()
 
 	const onCloseModal = () => {
 		setUploadModalOpen(false)
@@ -36,6 +38,14 @@ export const Header: React.FC = () => {
 					<button className='import-btn' onClick={() => setUploadModalOpen(true)}>
 						+
 					</button>
+					{user && (
+						<div className='user-menu'>
+							<span className='user-name'>{user.username}</span>
+							<button className='logout-btn' onClick={logout} title='Sign out'>
+								⏻
+							</button>
+						</div>
+					)}
 					<UploadAndScanFiles isOpen={isUploadModalOpen} onClose={onCloseModal} />
 				</div>
 			</div>

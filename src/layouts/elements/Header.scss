@@ -140,5 +140,33 @@
 				transform: scale(1.05);
 			}
 		}
+
+		.user-menu {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-left: 8px;
+
+			.user-name {
+				font-size: 0.85rem;
+				color: var(--text-secondary);
+			}
+
+			.logout-btn {
+				background: none;
+				border: 1px solid var(--border-overlay-light);
+				color: var(--text-secondary);
+				cursor: pointer;
+				padding: 4px 8px;
+				border-radius: 6px;
+				font-size: 0.85rem;
+				transition: all 0.2s ease;
+
+				&:hover {
+					color: var(--text-primary);
+					border-color: var(--text-secondary);
+				}
+			}
+		}
 	}
 }

@@ -1,0 +1,47 @@
+export interface LoginRequest {
+	username: string
+	password?: string | null
+}
+
+export interface LoginResponse {
+	userId: number
+	username: string
+	role: string
+	token: string
+}
+
+export interface RegisterRequest {
+	username: string
+	password: string
+}
+
+export interface MeResponse {
+	userId: number
+	username: string
+	role: string
+}
+
+export interface UpdatePasswordRequest {
+	currentPassword?: string | null
+	newPassword: string
+}
+
+export interface UserDto {
+	id: number
+	username: string
+	role: string
+	isDefault: boolean
+	createdAt: string
+}
+
+export interface AuthState {
+	user: {
+		userId: number
+		username: string
+		role: string
+	} | null
+	token: string | null
+	isAuthenticated: boolean
+	loading: boolean
+	error: string | null
+}

@@ -1,3 +1,11 @@
+import { getAuthToken, clearAuthToken } from './authToken'
+
+/**
+ * Custom event dispatched when a 401 Unauthorized response is received.
+ * The auth system listens for this to redirect to login.
+ */
+export const AUTH_UNAUTHORIZED_EVENT = 'bv:unauthorized'
+
 /**
  * HTTP methods supported by the custom fetch utility
  */
@@ -21,6 +29,8 @@ type CustomFetchOptions = {
 	timeout?: number
 	/** Custom base URL to prepend to relative URLs */
 	baseURL?: string
+	/** Skip automatic Authorization header injection */
+	skipAuth?: boolean
 }
 
 /**
@@ -138,15 +148,25 @@ export const customFetch = async <T = any>(
 		signal: abortSignal,
 		timeout: timeoutMs,
 		baseURL: baseUrl = '',
+		skipAuth = false,
 	} = requestOptions
 
 	// Construct the complete URL with base URL and query parameters
 	const completeUrl = baseUrl + endpoint + buildQueryString(queryParams)
 
+	// Build headers with automatic auth token injection
+	const headers: Record<string, string> = { ...customHeaders }
+	if (!skipAuth && !headers['Authorization']) {
+		const token = getAuthToken()
+		if (token) {
+			headers['Authorization'] = `Bearer ${token}`
+		}
+	}
+
 	// Prepare fetch configuration
 	const fetchConfiguration: RequestInit = {
 		method,
-		headers: { ...customHeaders },
+		headers,
 		signal: abortSignal,
 	}
 
@@ -177,6 +197,12 @@ export const customFetch = async <T = any>(
 
 		// Handle HTTP error status codes
 		if (!httpResponse.ok) {
+			// Handle 401 Unauthorized - clear token and notify auth system
+			if (httpResponse.status === 401) {
+				clearAuthToken()
+				window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT))
+			}
+
 			const errorMessage =
 				typeof responseData === 'string' ? responseData : JSON.stringify(responseData)
 

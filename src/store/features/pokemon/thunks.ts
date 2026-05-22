@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import type { PokemonListItemDto } from '@/models/api/types'
-import type { PokemonListFilterDto, PokemonDetailDto } from '@/models/Pokemon'
+import type { PokemonListItemDto, ImportResultDto } from '@/models/api/types'
+import type { PokemonListFilterDto } from '@/models/Pokemon'
 import {
 	getPokemonListWithSprites,
 	deletePokemonFromDatabase,
@@ -60,7 +60,7 @@ export const deletePokemon = createAsyncThunk<
 })
 
 export const importPokemon = createAsyncThunk<
-	PokemonDetailDto, // returns the imported pokemon data
+	ImportResultDto[], // returns the import results
 	File[], // files to import
 	{ rejectValue: string }
 >('pokemon/importPokemon', async (files, { rejectWithValue }) => {

@@ -4,11 +4,12 @@ import type {
 	PokemonListItemDtoPagedResult,
 	PokemonMetadata,
 } from '../models/Pokemon'
-import type { PokemonListItemDto } from '../models/api/types'
+import type { PokemonListItemDto, ImportResultDto } from '../models/api/types'
 import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
 import { getPokeApiPokemon } from './Pokeapi'
+import { getAuthToken } from '../utils/authToken'
 
 /**
  * Fetches metadata for pokemon filters (types, pokeballs, natures, etc.)
@@ -28,15 +29,15 @@ export async function getPokemonMetadata(): Promise<PokemonMetadata> {
  * The backend processes the first file and returns its PokemonDetailDto.
  *
  * @param files Array of File objects (PKM files)
- * @returns Promise resolving to the PokemonDetailDto of the first file
+ * @returns Promise resolving to the import results for each file
  */
-export async function importPokemonFiles(files: File[]): Promise<PokemonDetailDto> {
+export async function importPokemonFiles(files: File[]): Promise<ImportResultDto[]> {
 	const formData = new FormData()
 	files.forEach((file) => {
 		formData.append('files', file)
 	})
 
-	const data = await customFetch<PokemonDetailDto>(`${environment.baseUrl}/import`, {
+	const data = await customFetch<ImportResultDto[]>(`${environment.baseUrl}/import`, {
 		method: 'POST',
 		body: formData,
 		headers: {
@@ -53,9 +54,7 @@ export async function importPokemonFiles(files: File[]): Promise<PokemonDetailDt
  * @param params Query parameters for filtering and pagination
  * @returns Promise resolving to Pokemon list, sprites, and total count
  */
-export async function getPokemonListWithSprites(
-	params: PokemonListFilterDto
-): Promise<{
+export async function getPokemonListWithSprites(params: PokemonListFilterDto): Promise<{
 	pokemon: PokemonListItemDto[]
 	sprites: Record<
 		number,
@@ -92,9 +91,12 @@ export async function getPokemonListWithSprites(
 
 	// Create unique combinations of speciesId, form, canGigantamax, and hasMegaStone
 	const speciesFormCombos = Array.from(
-		new Set(pokeList.map((p) => 
-			`${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
-		))
+		new Set(
+			pokeList.map(
+				(p) =>
+					`${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
+			)
+		)
 	)
 
 	// Fetch PokeAPI data for each unique combination
@@ -301,10 +303,12 @@ export async function deletePokemonCompletely(pokemonId: number): Promise<{
  * @returns Promise resolving to an object with the blob and filename
  */
 export async function downloadFileById(id: number): Promise<{ blob: Blob; filename: string }> {
+	const token = getAuthToken()
 	const response = await fetch(`${environment.baseUrl}/files/${id}`, {
 		method: 'GET',
 		headers: {
 			Accept: 'application/octet-stream',
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
 		},
 	})
 	if (!response.ok) {
@@ -338,10 +342,12 @@ export async function downloadFileById(id: number): Promise<{ blob: Blob; filena
  */
 export async function downloadPokemonFile(pokemonId: number): Promise<void> {
 	try {
+		const token = getAuthToken()
 		const response = await fetch(`${environment.baseUrl}/export/${pokemonId}`, {
 			method: 'GET',
 			headers: {
 				Accept: 'application/octet-stream',
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
 			},
 		})
 
@@ -375,7 +381,7 @@ export async function downloadPokemonFile(pokemonId: number): Promise<void> {
 		link.download = filename
 		document.body.appendChild(link)
 		link.click()
-		
+
 		// Cleanup
 		document.body.removeChild(link)
 		window.URL.revokeObjectURL(url)
@@ -395,10 +401,12 @@ export async function downloadPokemonFile(pokemonId: number): Promise<void> {
 export async function downloadPkmFileFromDisk(
 	pokemonId: number
 ): Promise<{ blob: Blob; filename: string }> {
+	const token = getAuthToken()
 	const response = await fetch(`${environment.baseUrl}/export/database/${pokemonId}`, {
 		method: 'GET',
 		headers: {
 			Accept: 'application/octet-stream',
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
 		},
 	})
 	if (!response.ok) {

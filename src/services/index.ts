@@ -27,8 +27,11 @@ export {
 // Export TaggedPokemon service functions
 export * from './TaggedPokemon'
 
-// Export Tags service functions  
+// Export Tags service functions
 export * from './Tags'
 
 // Export Theme service functions
 export * from './ThemeService'
+
+// Export Auth service functions
+export * from './Auth'
