@@ -4,7 +4,7 @@ import type {
 	PokemonMetadata,
 	PokemonDetailDto,
 } from '../models/Pokemon'
-import type { PokemonListItemDto, ImportResultDto } from '../models/api/types'
+import type { ImportResultDto } from '../models/api/types'
 import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'

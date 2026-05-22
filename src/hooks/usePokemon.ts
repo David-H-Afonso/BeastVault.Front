@@ -205,10 +205,3 @@ export const usePokemon = () => {
 export const usePokemonById = (pokemonId: number) => {
 	return useAppSelector(selectPokemonById(pokemonId))
 }
-
-/**
- * Hook to get sprites for a specific Pokemon by ID
- */
-export const usePokemonSprites = (pokemonId: number) => {
-	return useAppSelector(selectSpriteById(pokemonId))
-}
