@@ -7,8 +7,14 @@ function getApiBaseUrl(): string {
 	}
 
 	// Si tenemos configuración en runtime (Docker)
-	if (typeof window !== 'undefined' && (window as any).ENV && (window as any).ENV.VITE_API_URL) {
-		return (window as any).ENV.VITE_API_URL
+	// Usamos 'in' para detectar si config.js se cargó correctamente,
+	// aunque VITE_API_URL sea string vacío (= nginx proxy same-origin).
+	if (
+		typeof window !== 'undefined' &&
+		(window as any).ENV !== undefined &&
+		'VITE_API_URL' in (window as any).ENV
+	) {
+		return (window as any).ENV.VITE_API_URL || ''
 	}
 
 	// Si definimos la URL en tiempo de build (Docker/Vite)
