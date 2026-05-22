@@ -21,6 +21,7 @@ const Home = () => {
 	const {
 		pokemon,
 		sprites: pokeSprites,
+		types: pokeTypes,
 		totalPokemon,
 		tagGroups,
 		loading,
@@ -178,12 +179,15 @@ const Home = () => {
 		return pokemon.map((p) => {
 			const sprites = pokeSprites[p.id] || {}
 			const bestSprite = getBestSpriteByType(sprites, spriteType, p.isShiny) || undefined
+			const typeData = pokeTypes[p.id] || {}
 			return {
 				pokemon: p,
 				sprite: bestSprite,
+				type1: typeData.type1,
+				type2: typeData.type2,
 			}
 		})
-	}, [pokemon, pokeSprites, spriteType])
+	}, [pokemon, pokeSprites, pokeTypes, spriteType])
 
 	/**
 	 * For tags view, use tagGroups from store. For other views, group locally.

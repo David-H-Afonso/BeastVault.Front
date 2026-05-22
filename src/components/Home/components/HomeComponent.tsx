@@ -12,6 +12,8 @@ import './HomeComponent.scss'
 interface ProcessedPokemon {
 	pokemon: PokemonListItemDto
 	sprite: string | undefined
+	type1?: string
+	type2?: string
 }
 
 interface GroupedPokemon {
@@ -214,6 +216,8 @@ const HomeComponent = ({
 									key={p.id}
 									pokemon={p}
 									sprite={pokemonData?.sprite}
+									type1={pokemonData?.type1}
+									type2={pokemonData?.type2}
 									onDelete={handleDelete}
 									onDownload={handleDownload}
 									onManageTags={handleManageTags}
@@ -252,11 +256,13 @@ const HomeComponent = ({
 	const renderGridView = () => (
 		<div className='pokemon-grid'>
 			{processedPokemon.length === 0 && !loading && <p>No Pokémon found.</p>}
-			{processedPokemon.map(({ pokemon, sprite }) => (
+			{processedPokemon.map(({ pokemon, sprite, type1, type2 }) => (
 				<PokemonCard
 					key={pokemon.id}
 					pokemon={pokemon}
 					sprite={sprite}
+					type1={type1}
+					type2={type2}
 					onDelete={handleDelete}
 					onDownload={handleDownload}
 					onManageTags={handleManageTags}

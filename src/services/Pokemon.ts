@@ -78,6 +78,7 @@ export async function getPokemonListWithSprites(params: PokemonListFilterDto): P
 			githubShiny: string
 		}
 	>
+	types: Record<number, { type1?: string; type2?: string }>
 	total: number
 }> {
 	// Cache management is now handled by Redux memory store
@@ -203,7 +204,25 @@ export async function getPokemonListWithSprites(params: PokemonListFilterDto): P
 
 	const sprites = Object.fromEntries(spriteEntries)
 
-	return { pokemon: pokeList, sprites, total }
+	// Extract types from PokeAPI data
+	const typesEntries = pokeList.map((p) => {
+		const cacheKey = `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
+		const pokeApi = pokeApiMap[cacheKey]
+		if (!pokeApi?.types) return [p.id, {}]
+
+		const sorted = [...pokeApi.types].sort((a: any, b: any) => a.slot - b.slot)
+		return [
+			p.id,
+			{
+				type1: sorted[0]?.type?.name,
+				type2: sorted[1]?.type?.name,
+			},
+		]
+	})
+
+	const types = Object.fromEntries(typesEntries)
+
+	return { pokemon: pokeList, sprites, types, total }
 }
 
 /**

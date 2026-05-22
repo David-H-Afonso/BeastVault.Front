@@ -10,7 +10,9 @@ import {
 	adminUpdateRole,
 	renameOwnUser,
 } from '@/services/Auth'
+import { getPopulationStatus, populatePokedex } from '@/services/PokedexCache'
 import type { UserDto } from '@/models/Auth'
+import type { PopulationStatus } from '@/services/PokedexCache'
 import './AdminPanel.scss'
 
 const AdminPanel: React.FC = () => {
@@ -68,6 +70,16 @@ const AdminPanel: React.FC = () => {
 		text: string
 	} | null>(null)
 
+	// Pokedex populate
+	const [popStatus, setPopStatus] = useState<PopulationStatus | null>(null)
+	const [popStartId, setPopStartId] = useState(1)
+	const [popEndId, setPopEndId] = useState(1025)
+	const [popLoading, setPopLoading] = useState(false)
+	const [popMessage, setPopMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
 	const fetchUsers = useCallback(async () => {
 		if (!isAdmin) return
 		setLoadingUsers(true)
@@ -85,6 +97,38 @@ const AdminPanel: React.FC = () => {
 	useEffect(() => {
 		fetchUsers()
 	}, [fetchUsers])
+
+	// Fetch pokedex status on mount (admin only)
+	const fetchPopStatus = useCallback(async () => {
+		if (!isAdmin) return
+		try {
+			const status = await getPopulationStatus()
+			setPopStatus(status)
+		} catch {
+			/* ignore */
+		}
+	}, [isAdmin])
+
+	useEffect(() => {
+		fetchPopStatus()
+	}, [fetchPopStatus])
+
+	const handlePopulate = async () => {
+		setPopLoading(true)
+		setPopMessage(null)
+		try {
+			const result = await populatePokedex(popStartId, popEndId)
+			setPopMessage({ type: 'success', text: `${result.message} (${result.populated} species)` })
+			fetchPopStatus()
+		} catch (err) {
+			setPopMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to populate',
+			})
+		} finally {
+			setPopLoading(false)
+		}
+	}
 
 	const handleCreateUser = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -518,6 +562,63 @@ const AdminPanel: React.FC = () => {
 						)}
 
 						{/* Create User */}
+						<section className='admin-section'>
+							<h2 className='section-title'>Pokédex Cache</h2>
+							{popStatus && (
+								<div className='pokedex-status'>
+									<p>
+										<strong>Species cached:</strong> {popStatus.totalSpecies}
+									</p>
+									<p>
+										<strong>Forms cached:</strong> {popStatus.totalForms}
+									</p>
+									<p>
+										<strong>Max Species ID:</strong> {popStatus.maxSpeciesId}
+									</p>
+									{popStatus.lastUpdated && (
+										<p>
+											<strong>Last updated:</strong>{' '}
+											{new Date(popStatus.lastUpdated).toLocaleString()}
+										</p>
+									)}
+								</div>
+							)}
+							<div className='admin-form'>
+								<div className='form-row'>
+									<div className='form-field'>
+										<label htmlFor='pop-start'>Start ID</label>
+										<input
+											id='pop-start'
+											type='number'
+											min={1}
+											max={1025}
+											value={popStartId}
+											onChange={(e) => setPopStartId(Number(e.target.value))}
+										/>
+									</div>
+									<div className='form-field'>
+										<label htmlFor='pop-end'>End ID</label>
+										<input
+											id='pop-end'
+											type='number'
+											min={1}
+											max={1025}
+											value={popEndId}
+											onChange={(e) => setPopEndId(Number(e.target.value))}
+										/>
+									</div>
+								</div>
+								{popMessage && (
+									<div className={`form-message form-message--${popMessage.type}`}>
+										{popMessage.text}
+									</div>
+								)}
+								<button className='btn btn--primary' onClick={handlePopulate} disabled={popLoading}>
+									{popLoading ? 'Populating...' : 'Populate Pokédex Cache'}
+								</button>
+							</div>
+						</section>
+
 						<section className='admin-section'>
 							<h2 className='section-title'>Create User</h2>
 							<form className='admin-form' onSubmit={handleCreateUser}>

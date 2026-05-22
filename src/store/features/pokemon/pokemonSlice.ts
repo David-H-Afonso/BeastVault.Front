@@ -13,6 +13,7 @@ import type { PokemonState } from '@/models/store/Pokemon'
 const initialState: PokemonState = {
 	pokemon: [],
 	sprites: {},
+	types: {},
 	totalPokemon: 0,
 	tagGroups: [],
 	pokeApiCache: {},
@@ -110,6 +111,7 @@ const pokemonSlice = createSlice({
 				state.loading = false
 				state.pokemon = action.payload.pokemon
 				state.sprites = { ...state.sprites, ...action.payload.sprites }
+				state.types = { ...state.types, ...action.payload.types }
 				state.totalPokemon = action.payload.total
 				state.lastFetch = Date.now()
 			})

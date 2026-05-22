@@ -25,6 +25,7 @@ export interface PokemonState {
 	// Pokemon data
 	pokemon: PokemonListItemDto[]
 	sprites: Record<number, PokemonSprites>
+	types: Record<number, { type1?: string; type2?: string }>
 	totalPokemon: number
 
 	tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]

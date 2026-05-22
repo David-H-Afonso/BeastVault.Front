@@ -16,6 +16,7 @@ import {
 	clearAllData,
 	selectPokemon,
 	selectSprites,
+	selectTypes,
 	selectTotalPokemon,
 	selectTagGroups,
 	selectCurrentFilters,
@@ -42,6 +43,7 @@ export const usePokemon = () => {
 	// Selectors
 	const pokemon = useAppSelector(selectPokemon)
 	const sprites = useAppSelector(selectSprites)
+	const types = useAppSelector(selectTypes)
 	const totalPokemon = useAppSelector(selectTotalPokemon)
 	const tagGroups = useAppSelector(selectTagGroups)
 	const currentFilters = useAppSelector(selectCurrentFilters)
@@ -124,7 +126,8 @@ export const usePokemon = () => {
 				...filters,
 			}
 
-			const pageToUse = currentPage || Math.floor((currentFilters.Skip || 0) / (currentFilters.Take || 20)) + 1
+			const pageToUse =
+				currentPage || Math.floor((currentFilters.Skip || 0) / (currentFilters.Take || 20)) + 1
 			const takeToUse = take || currentFilters.Take || 20
 
 			return dispatch(
@@ -189,6 +192,7 @@ export const usePokemon = () => {
 		// State
 		pokemon,
 		sprites,
+		types,
 		totalPokemon,
 		tagGroups,
 		currentFilters,

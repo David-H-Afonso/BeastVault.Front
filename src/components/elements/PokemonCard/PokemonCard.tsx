@@ -1,6 +1,5 @@
 import type { PokemonListItemDto } from '@/models/api/types'
 import { usePokeBallIcon } from '@/hooks/useAssets'
-import { usePokemonData } from '@/hooks/usePokemonData'
 import { getTypeIconUrl } from '@/utils'
 import { getTypeNameFromId } from '@/models/enums/PokemonTypes'
 import { getBallNameFromId } from '@/models/enums/PokemonBalls'
@@ -13,6 +12,8 @@ import { useEffect, useState } from 'react'
 interface PokemonCardProps {
 	pokemon: PokemonListItemDto
 	sprite?: string
+	type1?: string
+	type2?: string
 	onDelete: (id: number) => void
 	onDownload: (id: number) => void
 	onManageTags: (pokemon: PokemonListItemDto) => void
@@ -28,28 +29,19 @@ function getTypeClassName(type: string): string {
 export function PokemonCard({
 	pokemon,
 	sprite,
+	type1: propType1,
+	type2: propType2,
 	onDelete,
 	onDownload,
 	onManageTags,
 	loading = false,
 }: PokemonCardProps) {
-	// Note: ballName and teraTypeName need to be retrieved from PokeAPI using IDs
-	// Backend provides ballId and teraType (ID), not names
 	const ballName = getBallNameFromId(pokemon.ballId)
 	const { icon: ballIcon, loading: ballIconLoading } = usePokeBallIcon(ballName)
 
-	// Get Pokemon information from consolidated hooks (only for types and colors)
-	const {
-		type1: finalType1,
-		type2: finalType2,
-		colors,
-		loading: pokemonInfoLoading,
-	} = usePokemonData(
-		pokemon.speciesId, 
-		pokemon.form, 
-		pokemon.canGigantamax || false,
-		pokemon.hasMegaStone || false
-	)
+	// Types come from props (pre-fetched at list level)
+	const finalType1 = propType1
+	const finalType2 = propType2
 
 	// Use species name and form name directly from backend
 	const speciesName = pokemon.speciesName
@@ -62,12 +54,16 @@ export function PokemonCard({
 	const [isDataLoading, setIsDataLoading] = useState(true)
 
 	useEffect(() => {
-		setIsDataLoading(pokemonInfoLoading || ballIconLoading || loading)
-	}, [pokemonInfoLoading, ballIconLoading, loading])
+		setIsDataLoading(ballIconLoading || loading)
+	}, [ballIconLoading, loading])
 
-	// Use PokeAPI data (types and form names come from consolidated hook)
-	const type1Color = colors?.type1 || '#68A090'
-	const type2Color = colors?.type2 || '#68A090'
+	// Use type colors
+	const colors = {
+		type1: finalType1 ? getComputedTypeColor(finalType1) : '#68A090',
+		type2: finalType2 ? getComputedTypeColor(finalType2) : '#68A090',
+	}
+	const type1Color = colors.type1
+	const type2Color = colors.type2
 
 	// Generate CSS class and style for dual type borders
 	const getCardClassName = () => {

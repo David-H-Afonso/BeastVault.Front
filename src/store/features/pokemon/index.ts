@@ -35,6 +35,7 @@ export {
 export {
 	selectPokemon,
 	selectSprites,
+	selectTypes,
 	selectTotalPokemon,
 	selectTagGroups,
 	selectCurrentFilters,

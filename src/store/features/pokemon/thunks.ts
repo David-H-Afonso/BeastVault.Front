@@ -27,6 +27,7 @@ export const fetchPokemonList = createAsyncThunk<
 	{
 		pokemon: PokemonListItemDto[]
 		sprites: Record<number, PokemonSprites>
+		types: Record<number, { type1?: string; type2?: string }>
 		total: number
 		tags?: any[]
 	},
@@ -39,6 +40,7 @@ export const fetchPokemonList = createAsyncThunk<
 		return {
 			pokemon: result.pokemon,
 			sprites: result.sprites,
+			types: result.types,
 			total: result.total,
 		}
 	} catch (error: any) {
