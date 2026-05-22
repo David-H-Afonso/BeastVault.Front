@@ -4,6 +4,7 @@ import type {
 	RegisterRequest,
 	MeResponse,
 	UpdatePasswordRequest,
+	AdminResetPasswordRequest,
 	UserDto,
 } from '../models/Auth'
 import { customFetch } from '../utils'
@@ -62,5 +63,18 @@ export async function getUsers(): Promise<UserDto[]> {
 export async function deleteUser(userId: number): Promise<void> {
 	return customFetch<void>(`${environment.baseUrl}/auth/admin/users/${userId}`, {
 		method: 'DELETE',
+	})
+}
+
+/**
+ * Reset a user's password (admin only).
+ */
+export async function adminResetPassword(
+	userId: number,
+	request: AdminResetPasswordRequest
+): Promise<void> {
+	return customFetch<void>(`${environment.baseUrl}/auth/admin/users/${userId}/password`, {
+		method: 'PUT',
+		body: request,
 	})
 }

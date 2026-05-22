@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import App from './App'
 import Settings from '@/components/Settings/containers/Settings'
+import AdminPanel from '@/components/AdminPanel/AdminPanel'
 import PageNotFound from '@/components/PageNotFound/containers/PageNotFound'
 import Login from '@/components/Login/Login'
 import { AppLayout } from './layouts/AppLayout'
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
 			{
 				path: 'settings',
 				element: <Settings />,
+			},
+			{
+				path: 'admin',
+				element: <AdminPanel />,
 			},
 		],
 	},

@@ -192,8 +192,21 @@ export const customFetch = async <T = any>(
 			? await Promise.race([fetchPromise, createTimeoutPromise(timeoutMs)])
 			: await fetchPromise
 
+		// Validate that API responses are JSON (guards against reverse proxy returning HTML)
+		const responseContentType = httpResponse.headers.get('content-type') || ''
+		if (
+			!responseContentType.includes('application/json') &&
+			httpResponse.ok &&
+			httpResponse.status !== 204
+		) {
+			throw new Error(
+				`Expected JSON response but got "${responseContentType}". Check that API routes are proxied correctly.`
+			)
+		}
+
 		// Parse response data based on content type
-		const responseData = await parseResponseData(httpResponse)
+		const responseData =
+			httpResponse.status === 204 ? undefined : await parseResponseData(httpResponse)
 
 		// Handle HTTP error status codes
 		if (!httpResponse.ok) {

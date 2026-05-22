@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth'
 export const Header: React.FC = () => {
 	const location = useLocation()
 	const [isUploadModalOpen, setUploadModalOpen] = useState(false)
-	const { user, logout } = useAuth()
+	const { user, isAdmin, logout } = useAuth()
 
 	const onCloseModal = () => {
 		setUploadModalOpen(false)
@@ -30,6 +30,11 @@ export const Header: React.FC = () => {
 						to='/settings'
 						className={`nav-link ${location.pathname === '/settings' ? 'active' : ''}`}>
 						Settings
+					</Link>
+					<Link
+						to='/admin'
+						className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}>
+						{isAdmin ? 'Admin' : 'Account'}
 					</Link>
 				</nav>
 

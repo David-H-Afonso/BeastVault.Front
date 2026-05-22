@@ -26,6 +26,10 @@ export interface UpdatePasswordRequest {
 	newPassword: string
 }
 
+export interface AdminResetPasswordRequest {
+	newPassword: string
+}
+
 export interface UserDto {
 	id: number
 	username: string
