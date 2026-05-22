@@ -1,20 +1,14 @@
 // Export services and utilities
 export { simpleFetcher } from '../utils/simpleFetcher'
 
-// Re-export optimized PokeAPI functions
-export {
-	getPokeApiPokemon,
-	getPokeBallIcon,
-	getTeraTypeIcon,
-	getBestSpriteUrl,
-	POKEAPI_BASE_URL,
-} from './Pokeapi'
+// Re-export PokeAPI functions still in use
+export { getPokeBallIcon } from './Pokeapi'
 
 // Export Pokemon service functions
 export {
 	getPokemonMetadata,
 	importPokemonFiles,
-	getPokemonListWithSprites,
+	getPokemonById,
 	getPokemonList,
 	deletePokemonFromDatabase,
 	deletePokemonCompletely,

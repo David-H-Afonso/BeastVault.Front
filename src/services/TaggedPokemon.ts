@@ -1,8 +1,7 @@
 import type { PokemonListItemDto, TagDto } from '@/models/api/types'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
-import { getPokemonListWithSprites } from './Pokemon'
+import { getPokemonList } from './Pokemon'
 import { getAllTags } from './Tags'
-import type { PokemonSprites } from '@/models/store/Pokemon'
 
 /**
  * Get all tags that have pokemon
@@ -26,9 +25,8 @@ export async function fetchPokemonForTag(
 ): Promise<{
 	tagName: string
 	pokemon: PokemonListItemDto[]
-	sprites: Record<number, PokemonSprites>
 }> {
-	const result = await getPokemonListWithSprites({
+	const result = await getPokemonList({
 		...filters,
 		tagIds: [tagId],
 		Skip: skip,
@@ -37,8 +35,7 @@ export async function fetchPokemonForTag(
 
 	return {
 		tagName,
-		pokemon: result.pokemon,
-		sprites: result.sprites,
+		pokemon: result.items || [],
 	}
 }
 
@@ -55,9 +52,8 @@ export async function fetchUntaggedPokemon(
 ): Promise<{
 	tagName: string
 	pokemon: PokemonListItemDto[]
-	sprites: Record<number, PokemonSprites>
 }> {
-	const result = await getPokemonListWithSprites({
+	const result = await getPokemonList({
 		...filters,
 		hasNoTags: true,
 		Skip: skip,
@@ -66,8 +62,7 @@ export async function fetchUntaggedPokemon(
 
 	return {
 		tagName: 'No Tags',
-		pokemon: result.pokemon,
-		sprites: result.sprites,
+		pokemon: result.items || [],
 	}
 }
 
@@ -78,17 +73,14 @@ export function combineTagResults(
 	results: Array<{
 		tagName: string
 		pokemon: PokemonListItemDto[]
-		sprites: Record<number, PokemonSprites>
 	}>
 ): {
 	allPokemon: PokemonListItemDto[]
-	allSprites: Record<number, PokemonSprites>
 	tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]
 	totalUnique: number
 	totalPokemon: number
 } {
 	let allPokemon: PokemonListItemDto[] = []
-	let allSprites: Record<number, PokemonSprites> = {}
 	const tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[] = []
 
 	results.forEach((result) => {
@@ -99,7 +91,6 @@ export function combineTagResults(
 				pokemon: result.pokemon,
 			})
 			allPokemon = [...allPokemon, ...result.pokemon]
-			allSprites = { ...allSprites, ...result.sprites }
 		}
 	})
 
@@ -109,7 +100,6 @@ export function combineTagResults(
 
 	return {
 		allPokemon,
-		allSprites,
 		tagGroups,
 		totalUnique,
 		totalPokemon: allPokemon.length,

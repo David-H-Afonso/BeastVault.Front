@@ -250,6 +250,31 @@ export interface PokemonListItemDto {
 	hasMegaStone: boolean
 	/** Tags asignados a este Pokémon */
 	tags?: TagDto[]
+
+	// --- Enriched fields from backend Pokédex cache ---
+	/** Primary type name (e.g., "fire", "water") */
+	type1?: string
+	/** Secondary type name, null if single-type */
+	type2?: string
+	/** Ball name (e.g., "Poké Ball", "Beast Ball") */
+	ballName?: string
+	/** Direct URL to ball sprite image */
+	ballSpriteUrl?: string
+	/** Sprite URLs for different display modes */
+	sprites?: PokemonSpritesDto
+}
+
+export interface PokemonSpritesDto {
+	default: string
+	shiny: string
+	official: string
+	officialShiny: string
+	home: string
+	homeShiny: string
+	showdown: string
+	showdownShiny: string
+	github: string
+	githubShiny: string
 }
 
 export interface AdvancedPokemonListResponse {

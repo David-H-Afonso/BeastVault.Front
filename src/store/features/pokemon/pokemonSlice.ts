@@ -12,11 +12,8 @@ import type { PokemonState } from '@/models/store/Pokemon'
 
 const initialState: PokemonState = {
 	pokemon: [],
-	sprites: {},
-	types: {},
 	totalPokemon: 0,
 	tagGroups: [],
-	pokeApiCache: {},
 	currentFilters: {
 		Skip: 0,
 		Take: 50,
@@ -56,18 +53,6 @@ const pokemonSlice = createSlice({
 			state.error = null
 		},
 
-		// Clear cache
-		clearCache: (state) => {
-			state.pokeApiCache = {}
-			state.lastFetch = null
-		},
-
-		// Clear cache and Cache Storage
-		clearAllCache: (state) => {
-			state.pokeApiCache = {}
-			state.lastFetch = null
-		},
-
 		// Update pokemon tags locally (optimistic update)
 		updatePokemonTags: (state, action: PayloadAction<{ pokemonId: number; tags: TagDto[] }>) => {
 			const { pokemonId, tags } = action.payload
@@ -85,9 +70,7 @@ const pokemonSlice = createSlice({
 		// Clear all data (useful for logout, etc.)
 		clearAllData: (state) => {
 			state.pokemon = []
-			state.sprites = {}
 			state.totalPokemon = 0
-			state.pokeApiCache = {}
 			state.currentFilters = {
 				Skip: 0,
 				Take: 50,
@@ -110,8 +93,6 @@ const pokemonSlice = createSlice({
 			.addCase(fetchPokemonList.fulfilled, (state, action) => {
 				state.loading = false
 				state.pokemon = action.payload.pokemon
-				state.sprites = { ...state.sprites, ...action.payload.sprites }
-				state.types = { ...state.types, ...action.payload.types }
 				state.totalPokemon = action.payload.total
 				state.lastFetch = Date.now()
 			})
@@ -127,7 +108,6 @@ const pokemonSlice = createSlice({
 			.addCase(deletePokemon.fulfilled, (state, action) => {
 				const pokemonId = action.payload
 				state.pokemon = state.pokemon.filter((p) => p.id !== pokemonId)
-				delete state.sprites[pokemonId]
 				state.totalPokemon = Math.max(0, state.totalPokemon - 1)
 			})
 			.addCase(deletePokemon.rejected, (state, action) => {
@@ -181,7 +161,6 @@ const pokemonSlice = createSlice({
 			.addCase(fetchPokemonByTagsGrouped.fulfilled, (state, action) => {
 				state.loading = false
 				state.pokemon = action.payload.pokemon
-				state.sprites = { ...state.sprites, ...action.payload.sprites }
 				state.totalPokemon = action.payload.total
 				state.tagGroups = action.payload.tagGroups
 				state.lastFetch = Date.now()
@@ -202,8 +181,6 @@ export const {
 	updateFilters,
 	resetFilters,
 	clearError,
-	clearCache,
-	clearAllCache,
 	updatePokemonTags,
 	clearImportResult,
 	clearAllData,

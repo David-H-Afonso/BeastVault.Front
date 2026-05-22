@@ -10,13 +10,10 @@ import {
 	updateFilters,
 	resetFilters,
 	clearError,
-	clearCache,
 	updatePokemonTags,
 	clearImportResult,
 	clearAllData,
 	selectPokemon,
-	selectSprites,
-	selectTypes,
 	selectTotalPokemon,
 	selectTagGroups,
 	selectCurrentFilters,
@@ -25,10 +22,8 @@ import {
 	selectImporting,
 	selectScanning,
 	selectImportResult,
-	selectPokeApiCache,
 	selectLastFetch,
 	selectPokemonById,
-	selectSpriteById,
 } from '@/store/features/pokemon'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { TagDto } from '@/models/api/types'
@@ -42,8 +37,6 @@ export const usePokemon = () => {
 
 	// Selectors
 	const pokemon = useAppSelector(selectPokemon)
-	const sprites = useAppSelector(selectSprites)
-	const types = useAppSelector(selectTypes)
 	const totalPokemon = useAppSelector(selectTotalPokemon)
 	const tagGroups = useAppSelector(selectTagGroups)
 	const currentFilters = useAppSelector(selectCurrentFilters)
@@ -52,7 +45,6 @@ export const usePokemon = () => {
 	const importing = useAppSelector(selectImporting)
 	const scanning = useAppSelector(selectScanning)
 	const importResult = useAppSelector(selectImportResult)
-	const pokeApiCache = useAppSelector(selectPokeApiCache)
 	const lastFetch = useAppSelector(selectLastFetch)
 
 	// Actions
@@ -91,15 +83,6 @@ export const usePokemon = () => {
 
 	const clearCurrentError = useCallback(() => {
 		dispatch(clearError())
-	}, [dispatch])
-
-	const clearPokeApiCache = useCallback(() => {
-		dispatch(clearCache())
-	}, [dispatch])
-
-	const clearAllPokeApiCache = useCallback(async () => {
-		// Clear Redux memory storage
-		dispatch(clearCache())
 	}, [dispatch])
 
 	const clearCurrentImportResult = useCallback(() => {
@@ -160,13 +143,6 @@ export const usePokemon = () => {
 		[pokemon]
 	)
 
-	const getSpriteById = useCallback(
-		(pokemonId: number) => {
-			return sprites[pokemonId]
-		},
-		[sprites]
-	)
-
 	// Refresh data (re-fetch with current filters)
 	const refreshPokemon = useCallback(() => {
 		return dispatch(fetchPokemonList(currentFilters))
@@ -191,8 +167,6 @@ export const usePokemon = () => {
 	return {
 		// State
 		pokemon,
-		sprites,
-		types,
 		totalPokemon,
 		tagGroups,
 		currentFilters,
@@ -201,7 +175,6 @@ export const usePokemon = () => {
 		importing,
 		scanning,
 		importResult,
-		pokeApiCache,
 		lastFetch,
 
 		// Actions
@@ -212,8 +185,6 @@ export const usePokemon = () => {
 		setCurrentFilters,
 		resetCurrentFilters,
 		clearCurrentError,
-		clearPokeApiCache,
-		clearAllPokeApiCache,
 		clearCurrentImportResult,
 		updatePokemonTagsById,
 		clearAll,
@@ -222,7 +193,6 @@ export const usePokemon = () => {
 
 		// Utilities
 		getPokemonById,
-		getSpriteById,
 		refreshPokemon,
 		applyFiltersAndFetch,
 		isDataStale,

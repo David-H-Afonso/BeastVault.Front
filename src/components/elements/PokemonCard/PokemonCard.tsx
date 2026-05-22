@@ -1,19 +1,17 @@
 import type { PokemonListItemDto } from '@/models/api/types'
-import { usePokeBallIcon } from '@/hooks/useAssets'
 import { getTypeIconUrl } from '@/utils'
 import { getTypeNameFromId } from '@/models/enums/PokemonTypes'
-import { getBallNameFromId } from '@/models/enums/PokemonBalls'
 import { useUISettings } from '@/hooks/useUISettings'
 import { CardBackgroundType } from '@/models/enums/CardBackgroundTypes'
 import { getComputedTypeColor } from '@/utils/typeColors'
 import './PokemonCard.scss'
-import { useEffect, useState } from 'react'
 
 interface PokemonCardProps {
 	pokemon: PokemonListItemDto
 	sprite?: string
 	type1?: string
 	type2?: string
+	onClick?: (pokemon: PokemonListItemDto) => void
 	onDelete: (id: number) => void
 	onDownload: (id: number) => void
 	onManageTags: (pokemon: PokemonListItemDto) => void
@@ -31,15 +29,16 @@ export function PokemonCard({
 	sprite,
 	type1: propType1,
 	type2: propType2,
+	onClick,
 	onDelete,
 	onDownload,
 	onManageTags,
 	loading = false,
 }: PokemonCardProps) {
-	const ballName = getBallNameFromId(pokemon.ballId)
-	const { icon: ballIcon, loading: ballIconLoading } = usePokeBallIcon(ballName)
+	// Ball icon comes from the backend enriched data
+	const ballIcon = pokemon.ballSpriteUrl || null
 
-	// Types come from props (pre-fetched at list level)
+	// Types come from props (enriched at backend level)
 	const finalType1 = propType1
 	const finalType2 = propType2
 
@@ -50,12 +49,7 @@ export function PokemonCard({
 	// Get card background type preference
 	const { backgroundType } = useUISettings()
 
-	// Check if all essential data is loaded
-	const [isDataLoading, setIsDataLoading] = useState(true)
-
-	useEffect(() => {
-		setIsDataLoading(ballIconLoading || loading)
-	}, [ballIconLoading, loading])
+	const isDataLoading = loading
 
 	// Use type colors
 	const colors = {
@@ -112,13 +106,21 @@ export function PokemonCard({
 					</div>
 				</div>
 			) : (
-				<div className={getCardClassName()} style={getCardStyle()}>
+				<div
+					className={getCardClassName()}
+					style={getCardStyle()}
+					onClick={() => onClick?.(pokemon)}
+					role='button'
+					tabIndex={0}>
 					{/* Card Header */}
 					<div className='cardHeader'>
 						<div className='cardActions'>
 							<button
 								className='actionBtn tagsBtn'
-								onClick={() => onManageTags(pokemon)}
+								onClick={(e) => {
+									e.stopPropagation()
+									onManageTags(pokemon)
+								}}
 								title='Manage tags'
 								disabled={loading}>
 								<svg width='14' height='14' viewBox='0 0 24 24' fill='currentColor'>
@@ -127,7 +129,10 @@ export function PokemonCard({
 							</button>
 							<button
 								className='actionBtn downloadBtn'
-								onClick={() => onDownload(pokemon.id)}
+								onClick={(e) => {
+									e.stopPropagation()
+									onDownload(pokemon.id)
+								}}
 								title='Download original file'
 								disabled={loading}>
 								<svg width='14' height='14' viewBox='0 0 24 24' fill='currentColor'>
@@ -136,7 +141,10 @@ export function PokemonCard({
 							</button>
 							<button
 								className='actionBtn deleteBtn'
-								onClick={() => onDelete(pokemon.id)}
+								onClick={(e) => {
+									e.stopPropagation()
+									onDelete(pokemon.id)
+								}}
 								title='Delete Pokémon'
 								disabled={loading}>
 								<svg width='14' height='14' viewBox='0 0 24 24' fill='currentColor'>

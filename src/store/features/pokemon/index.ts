@@ -11,8 +11,6 @@ export {
 	updateFilters,
 	resetFilters,
 	clearError,
-	clearCache,
-	clearAllCache,
 	updatePokemonTags,
 	clearImportResult,
 	clearAllData,
@@ -34,8 +32,6 @@ export {
 // ===================================
 export {
 	selectPokemon,
-	selectSprites,
-	selectTypes,
 	selectTotalPokemon,
 	selectTagGroups,
 	selectCurrentFilters,
@@ -44,12 +40,9 @@ export {
 	selectImporting,
 	selectScanning,
 	selectImportResult,
-	selectPokeApiCache,
 	selectLastFetch,
 	selectPokemonById,
-	selectSpriteById,
 	selectFilteredPokemon,
 	selectPokemonStats,
-	selectCacheStats,
 	selectIsOperationInProgress,
 } from './selectors'

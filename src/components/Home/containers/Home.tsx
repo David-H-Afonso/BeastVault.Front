@@ -4,7 +4,9 @@ import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { PokemonListItemDto, TagDto } from '@/models/api/types'
 import { useUISettings } from '@/hooks/useUISettings'
 import { usePokemon } from '@/hooks/usePokemon'
-import { getBestSpriteByType, groupPokemonByTags } from '@/utils'
+import { groupPokemonByTags } from '@/utils'
+import { getPreferredSpriteFromDto } from '@/utils/spriteUtils'
+import { PokemonDetailModal } from '@/components/elements/PokemonDetailModal/PokemonDetailModal'
 import HomeComponent from '../components/HomeComponent'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateFilters } from '@/store/features/pokemon'
@@ -20,8 +22,6 @@ const Home = () => {
 	// Redux state y acciones para Pokémon
 	const {
 		pokemon,
-		sprites: pokeSprites,
-		types: pokeTypes,
 		totalPokemon,
 		tagGroups,
 		loading,
@@ -52,6 +52,17 @@ const Home = () => {
 		null
 	)
 	const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+
+	// State for detail modal
+	const [detailPokemon, setDetailPokemon] = useState<PokemonListItemDto | null>(null)
+
+	const handlePokemonClick = useCallback((pokemon: PokemonListItemDto) => {
+		setDetailPokemon(pokemon)
+	}, [])
+
+	const handleDetailClose = useCallback(() => {
+		setDetailPokemon(null)
+	}, [])
 
 	const handleFiltersChange = async (filters: PokemonListFilterDto) => {
 		if (viewMode === 'tags') {
@@ -177,17 +188,15 @@ const Home = () => {
 	 */
 	const processedPokemonData = useCallback(() => {
 		return pokemon.map((p) => {
-			const sprites = pokeSprites[p.id] || {}
-			const bestSprite = getBestSpriteByType(sprites, spriteType, p.isShiny) || undefined
-			const typeData = pokeTypes[p.id] || {}
+			const bestSprite = getPreferredSpriteFromDto(p.sprites, spriteType, p.isShiny) || undefined
 			return {
 				pokemon: p,
 				sprite: bestSprite,
-				type1: typeData.type1,
-				type2: typeData.type2,
+				type1: p.type1,
+				type2: p.type2,
 			}
 		})
-	}, [pokemon, pokeSprites, pokeTypes, spriteType])
+	}, [pokemon, spriteType])
 
 	/**
 	 * For tags view, use tagGroups from store. For other views, group locally.
@@ -259,34 +268,42 @@ const Home = () => {
 	}
 
 	return (
-		<HomeComponent
-			processedPokemon={processedPokemonData()}
-			groupedPokemon={groupedPokemonData()}
-			totalPokemon={totalPokemon}
-			loading={loading}
-			error={error}
-			viewMode={viewMode}
-			setViewMode={setViewMode}
-			collapsedSections={collapsedSections}
-			confirmOpen={confirmOpen}
-			tagManagerOpen={tagManagerOpen}
-			selectedPokemonForTags={selectedPokemonForTags}
-			handleFiltersChange={handleFiltersChange}
-			handleDownload={handleDownload}
-			handleDelete={handleDelete}
-			handleConfirmDelete={handleConfirmDelete}
-			handleCancelDelete={handleCancelDelete}
-			handleManageTags={handleManageTags}
-			handleTagsUpdated={handleTagsUpdated}
-			handleTagManagerClose={handleTagManagerClose}
-			handleTagSystemChanged={handleTagSystemChanged}
-			toggleSectionCollapse={toggleSectionCollapse}
-			itemsPerPage={itemsPerPage}
-			onItemsPerPageChange={onItemsPerPageChange}
-			totalPages={totalPages}
-			currentPage={currentPage}
-			onPageChange={onPageChange}
-		/>
+		<>
+			<HomeComponent
+				processedPokemon={processedPokemonData()}
+				groupedPokemon={groupedPokemonData()}
+				totalPokemon={totalPokemon}
+				loading={loading}
+				error={error}
+				viewMode={viewMode}
+				setViewMode={setViewMode}
+				collapsedSections={collapsedSections}
+				confirmOpen={confirmOpen}
+				tagManagerOpen={tagManagerOpen}
+				selectedPokemonForTags={selectedPokemonForTags}
+				handleFiltersChange={handleFiltersChange}
+				handleDownload={handleDownload}
+				handleDelete={handleDelete}
+				handleConfirmDelete={handleConfirmDelete}
+				handleCancelDelete={handleCancelDelete}
+				handleManageTags={handleManageTags}
+				handleTagsUpdated={handleTagsUpdated}
+				handleTagManagerClose={handleTagManagerClose}
+				handleTagSystemChanged={handleTagSystemChanged}
+				toggleSectionCollapse={toggleSectionCollapse}
+				itemsPerPage={itemsPerPage}
+				onItemsPerPageChange={onItemsPerPageChange}
+				totalPages={totalPages}
+				currentPage={currentPage}
+				onPageChange={onPageChange}
+				onPokemonClick={handlePokemonClick}
+			/>
+			<PokemonDetailModal
+				pokemon={detailPokemon}
+				isOpen={detailPokemon !== null}
+				onClose={handleDetailClose}
+			/>
+		</>
 	)
 }
 

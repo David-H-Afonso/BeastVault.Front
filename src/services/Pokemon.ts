@@ -2,12 +2,12 @@ import type {
 	PokemonListFilterDto,
 	PokemonListItemDtoPagedResult,
 	PokemonMetadata,
+	PokemonDetailDto,
 } from '../models/Pokemon'
 import type { PokemonListItemDto, ImportResultDto } from '../models/api/types'
 import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
-import { getPokeApiPokemon } from './Pokeapi'
 import { getAuthToken } from '../utils/authToken'
 
 /**
@@ -47,196 +47,12 @@ export async function importPokemonFiles(files: File[]): Promise<ImportResultDto
 }
 
 /**
- * Fetches a paginated list of Pokémon with advanced filtering and their sprites from PokeAPI.
- * This combines the main Pokemon list with sprite data in a single service call.
- *
- * @param params Query parameters for filtering and pagination
- * @returns Promise resolving to Pokemon list, sprites, and total count
+ * Fetches a single Pokemon's full detail by ID.
  */
-export async function getPokemonListWithSprites(
-	params: PokemonListFilterDto,
-	existingSprites?: Record<number, any>,
-	existingTypes?: Record<number, { type1?: string; type2?: string }>
-): Promise<{
-	pokemon: PokemonListItemDto[]
-	sprites: Record<
-		number,
-		{
-			default: string
-			shiny: string
-			back_default: string
-			back_shiny: string
-			front_female: string
-			front_shiny_female: string
-			back_female: string
-			back_shiny_female: string
-			official: string
-			officialShiny: string
-			home: string
-			homeShiny: string
-			dreamWorld: string
-			showdown: string
-			showdownShiny: string
-			versions: any
-			githubRegular: string
-			githubShiny: string
-		}
-	>
-	types: Record<number, { type1?: string; type2?: string }>
-	total: number
-}> {
-	// Cache management is now handled by Redux memory store
-	// No need for legacy cache cleanup
-
-	// First get the Pokemon list
-	const result = await getPokemonList(params)
-	const pokeList = result.items || []
-	const total = result.total || 0
-
-	// Check which pokemon already have sprites+types in Redux (skip PokeAPI for those)
-	const pokemonNeedingFetch = pokeList.filter(
-		(p) => !existingSprites?.[p.id]?.default || !existingTypes?.[p.id]?.type1
-	)
-
-	// If all pokemon already have data, skip PokeAPI entirely
-	if (pokemonNeedingFetch.length === 0) {
-		return { pokemon: pokeList, sprites: existingSprites || {}, types: existingTypes || {}, total }
-	}
-
-	// Create unique combinations only for pokemon that need fetching
-	const speciesFormCombos = Array.from(
-		new Set(
-			pokemonNeedingFetch.map(
-				(p) =>
-					`${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
-			)
-		)
-	)
-
-	// Fetch PokeAPI data for each unique combination
-	const speciesFetches = await Promise.all(
-		speciesFormCombos.map(async (combo) => {
-			const baseCombo = combo.replace('-gmax', '').replace('-mega', '')
-			const [speciesId, form] = baseCombo.split('-').map(Number)
-			const isGigantamax = combo.includes('-gmax')
-			const hasMegaStone = combo.includes('-mega')
-			const cacheKey = combo
-
-			try {
-				const pokeApi = await getPokeApiPokemon(speciesId, form, isGigantamax, hasMegaStone)
-				return [cacheKey, pokeApi] as [string, any]
-			} catch {
-				return [cacheKey, null] as [string, any]
-			}
-		})
-	)
-
-	const pokeApiMap = Object.fromEntries(speciesFetches)
-
-	// Helper function to get generation
-	const getGeneration = (speciesId: number): number => {
-		if (speciesId <= 151) return 1
-		if (speciesId <= 251) return 2
-		if (speciesId <= 386) return 3
-		if (speciesId <= 493) return 4
-		if (speciesId <= 649) return 5
-		if (speciesId <= 721) return 6
-		if (speciesId <= 809) return 7
-		if (speciesId <= 898) return 8
-		return 9
-	}
-
-	// Map each Pokémon to its sprites
-	const spriteEntries = pokeList.map((p) => {
-		const cacheKey = `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
-		const pokeApi = pokeApiMap[cacheKey]
-
-		if (!pokeApi) {
-			return [
-				p.id,
-				{
-					default: '',
-					shiny: '',
-					back_default: '',
-					back_shiny: '',
-					front_female: '',
-					front_shiny_female: '',
-					back_female: '',
-					back_shiny_female: '',
-					official: '',
-					officialShiny: '',
-					home: '',
-					homeShiny: '',
-					dreamWorld: '',
-					showdown: '',
-					showdownShiny: '',
-					versions: {},
-					githubRegular: '',
-					githubShiny: '',
-				},
-			]
-		}
-
-		const sprites = pokeApi.sprites
-		const generation = getGeneration(p.speciesId)
-		const pokemonName = pokeApi.name
-
-		// Build GitHub sprite URLs
-		let githubBaseUrl: string
-		if (generation <= 8) {
-			githubBaseUrl = 'https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8'
-		} else {
-			githubBaseUrl = 'https://raw.githubusercontent.com/bamq/pokemon-sprites/main/pokemon'
-		}
-
-		const githubRegular = `${githubBaseUrl}/regular/${pokemonName}.png`
-		const githubShiny = `${githubBaseUrl}/shiny/${pokemonName}.png`
-
-		const pokemonSprites = {
-			default: sprites.front_default || '',
-			shiny: sprites.front_shiny || '',
-			back_default: sprites.back_default || '',
-			back_shiny: sprites.back_shiny || '',
-			front_female: sprites.front_female || '',
-			front_shiny_female: sprites.front_shiny_female || '',
-			back_female: sprites.back_female || '',
-			back_shiny_female: sprites.back_shiny_female || '',
-			official: sprites.other?.['official-artwork']?.front_default || '',
-			officialShiny: sprites.other?.['official-artwork']?.front_shiny || '',
-			home: sprites.other?.home?.front_default || '',
-			homeShiny: sprites.other?.home?.front_shiny || '',
-			dreamWorld: sprites.other?.dream_world?.front_default || '',
-			showdown: sprites.other?.showdown?.front_default || '',
-			showdownShiny: sprites.other?.showdown?.front_shiny || '',
-			versions: sprites.versions || {},
-			githubRegular,
-			githubShiny,
-		}
-
-		return [p.id, pokemonSprites]
+export async function getPokemonById(id: number): Promise<PokemonDetailDto> {
+	return customFetch<PokemonDetailDto>(`${environment.baseUrl}/pokemon/${id}`, {
+		headers: { Accept: 'application/json' },
 	})
-
-	const sprites = Object.fromEntries(spriteEntries)
-
-	// Extract types from PokeAPI data
-	const typesEntries = pokeList.map((p) => {
-		const cacheKey = `${p.speciesId}-${p.form || 0}${p.canGigantamax ? '-gmax' : ''}${p.hasMegaStone ? '-mega' : ''}`
-		const pokeApi = pokeApiMap[cacheKey]
-		if (!pokeApi?.types) return [p.id, {}]
-
-		const sorted = [...pokeApi.types].sort((a: any, b: any) => a.slot - b.slot)
-		return [
-			p.id,
-			{
-				type1: sorted[0]?.type?.name,
-				type2: sorted[1]?.type?.name,
-			},
-		]
-	})
-
-	const types = Object.fromEntries(typesEntries)
-
-	return { pokemon: pokeList, sprites, types, total }
 }
 
 /**

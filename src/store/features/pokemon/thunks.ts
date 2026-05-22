@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import type { PokemonListItemDto, ImportResultDto } from '@/models/api/types'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import {
-	getPokemonListWithSprites,
+	getPokemonList,
 	deletePokemonFromDatabase,
 	importPokemonFiles,
 	scanPokemonDirectory,
@@ -13,7 +13,7 @@ import {
 	fetchUntaggedPokemon,
 	combineTagResults,
 } from '@/services/TaggedPokemon'
-import type { PokemonSprites, PokemonState, ScanResult } from '@/models/store/Pokemon'
+import type { ScanResult } from '@/models/store/Pokemon'
 
 // ===================================
 // TYPES
@@ -26,23 +26,17 @@ import type { PokemonSprites, PokemonState, ScanResult } from '@/models/store/Po
 export const fetchPokemonList = createAsyncThunk<
 	{
 		pokemon: PokemonListItemDto[]
-		sprites: Record<number, PokemonSprites>
-		types: Record<number, { type1?: string; type2?: string }>
 		total: number
-		tags?: any[]
 	},
 	PokemonListFilterDto,
-	{ state: { pokemon: PokemonState } }
->('pokemon/fetchPokemonList', async (filters, { getState, rejectWithValue }) => {
+	{ rejectValue: string }
+>('pokemon/fetchPokemonList', async (filters, { rejectWithValue }) => {
 	try {
-		const { sprites: existingSprites, types: existingTypes } = getState().pokemon
-		const result = await getPokemonListWithSprites(filters, existingSprites, existingTypes)
+		const result = await getPokemonList(filters)
 
 		return {
-			pokemon: result.pokemon,
-			sprites: result.sprites,
-			types: result.types,
-			total: result.total,
+			pokemon: result.items || [],
+			total: result.total || 0,
 		}
 	} catch (error: any) {
 		return rejectWithValue(error.message || 'Failed to fetch Pokémon list')
@@ -92,7 +86,6 @@ export const scanDirectory = createAsyncThunk<
 export const fetchPokemonByTagsGrouped = createAsyncThunk<
 	{
 		pokemon: PokemonListItemDto[]
-		sprites: Record<number, PokemonSprites>
 		total: number
 		tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]
 	},
@@ -104,7 +97,7 @@ export const fetchPokemonByTagsGrouped = createAsyncThunk<
 		currentPage: number
 		take: number
 	},
-	{ state: { pokemon: PokemonState } }
+	{ rejectValue: string }
 >(
 	'pokemon/fetchPokemonByTagsGrouped',
 	async ({ filters, currentPage, take }, { rejectWithValue }) => {
@@ -125,14 +118,13 @@ export const fetchPokemonByTagsGrouped = createAsyncThunk<
 			const results = await Promise.all([...tagPromises, untaggedPromise])
 
 			// Combine all results
-			const { allPokemon, allSprites, tagGroups } = combineTagResults(results)
+			const { allPokemon, tagGroups } = combineTagResults(results)
 
-			const result = await getPokemonListWithSprites(filters)
+			const result = await getPokemonList(filters)
 			const totalPokemon = result.total
 
 			return {
 				pokemon: allPokemon,
-				sprites: allSprites,
 				total: totalPokemon,
 				tagGroups,
 			}

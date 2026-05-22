@@ -1,37 +1,11 @@
 import type { PokemonListFilterDto, PokemonListItemDto } from '../Pokemon'
 
-export interface PokemonSprites {
-	default: string
-	shiny: string
-	back_default: string
-	back_shiny: string
-	front_female: string
-	front_shiny_female: string
-	back_female: string
-	back_shiny_female: string
-	official: string
-	officialShiny: string
-	home: string
-	homeShiny: string
-	dreamWorld: string
-	showdown: string
-	showdownShiny: string
-	versions: any
-	githubRegular: string
-	githubShiny: string
-}
-
 export interface PokemonState {
-	// Pokemon data
+	// Pokemon data (enriched from backend - includes sprites, types, ball info)
 	pokemon: PokemonListItemDto[]
-	sprites: Record<number, PokemonSprites>
-	types: Record<number, { type1?: string; type2?: string }>
 	totalPokemon: number
 
 	tagGroups: { tagName: string; pokemon: PokemonListItemDto[] }[]
-
-	// API cache for PokeAPI data
-	pokeApiCache: Record<string, any>
 
 	// Filters and pagination
 	currentFilters: PokemonListFilterDto

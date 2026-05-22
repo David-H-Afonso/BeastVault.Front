@@ -54,8 +54,11 @@
 	border-radius: 18px;
 	padding: 5px;
 	position: relative;
+	cursor: pointer;
 	@include card-shadow('md');
-	transition: transform 0.3s ease, box-shadow 0.3s ease; // Solo transiciones para hover, no para loading
+	transition:
+		transform 0.3s ease,
+		box-shadow 0.3s ease; // Solo transiciones para hover, no para loading
 	color: white; // Mantener blanco por defecto para temas oscuros
 	font-family: 'Segoe UI', sans-serif;
 	display: flex;
@@ -414,7 +417,9 @@
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	transition: background 0.2s ease, transform 0.2s ease; // Solo para hover
+	transition:
+		background 0.2s ease,
+		transform 0.2s ease; // Solo para hover
 	color: white; // Mantener blanco por defecto
 }
 

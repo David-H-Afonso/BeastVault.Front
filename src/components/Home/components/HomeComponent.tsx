@@ -57,6 +57,9 @@ interface HomeComponentProps {
 	totalPages: number
 	currentPage: number
 	onPageChange: (page: number) => void
+
+	// Detail
+	onPokemonClick?: (pokemon: PokemonListItemDto) => void
 }
 
 /**
@@ -99,6 +102,7 @@ const HomeComponent = ({
 	totalPages,
 	currentPage,
 	onPageChange,
+	onPokemonClick,
 }: HomeComponentProps) => {
 	/**
 	 * Renderiza el header de la aplicación
@@ -218,6 +222,7 @@ const HomeComponent = ({
 									sprite={pokemonData?.sprite}
 									type1={pokemonData?.type1}
 									type2={pokemonData?.type2}
+									onClick={onPokemonClick}
 									onDelete={handleDelete}
 									onDownload={handleDownload}
 									onManageTags={handleManageTags}
@@ -263,6 +268,7 @@ const HomeComponent = ({
 					sprite={sprite}
 					type1={type1}
 					type2={type2}
+					onClick={onPokemonClick}
 					onDelete={handleDelete}
 					onDownload={handleDownload}
 					onManageTags={handleManageTags}
