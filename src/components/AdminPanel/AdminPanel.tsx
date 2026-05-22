@@ -10,7 +10,12 @@ import {
 	adminUpdateRole,
 	renameOwnUser,
 } from '@/services/Auth'
-import { getPopulationStatus, populatePokedex, populateItems } from '@/services/PokedexCache'
+import {
+	getPopulationStatus,
+	populatePokedex,
+	populateItems,
+	populateMoves,
+} from '@/services/PokedexCache'
 import type { UserDto } from '@/models/Auth'
 import type { PopulationStatus } from '@/services/PokedexCache'
 import './AdminPanel.scss'
@@ -89,6 +94,15 @@ const AdminPanel: React.FC = () => {
 		text: string
 	} | null>(null)
 
+	// Moves populate
+	const [moveStartId, setMoveStartId] = useState(1)
+	const [moveEndId, setMoveEndId] = useState(919)
+	const [moveLoading, setMoveLoading] = useState(false)
+	const [moveMessage, setMoveMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
 	const fetchUsers = useCallback(async () => {
 		if (!isAdmin) return
 		setLoadingUsers(true)
@@ -126,10 +140,12 @@ const AdminPanel: React.FC = () => {
 	const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
 	useEffect(() => {
-		const isAnyPopulating = popStatus?.isPopulating || popStatus?.isPopulatingItems
+		const isAnyPopulating =
+			popStatus?.isPopulating || popStatus?.isPopulatingItems || popStatus?.isPopulatingMoves
 		if (isAnyPopulating && !pollRef.current) {
 			if (popStatus?.isPopulating) setPopLoading(true)
 			if (popStatus?.isPopulatingItems) setItemLoading(true)
+			if (popStatus?.isPopulatingMoves) setMoveLoading(true)
 			pollRef.current = setInterval(() => {
 				fetchPopStatus()
 			}, 3000)
@@ -138,11 +154,17 @@ const AdminPanel: React.FC = () => {
 			pollRef.current = null
 			setPopLoading(false)
 			setItemLoading(false)
+			setMoveLoading(false)
 		}
 		return () => {
 			if (pollRef.current) clearInterval(pollRef.current)
 		}
-	}, [popStatus?.isPopulating, popStatus?.isPopulatingItems, fetchPopStatus])
+	}, [
+		popStatus?.isPopulating,
+		popStatus?.isPopulatingItems,
+		popStatus?.isPopulatingMoves,
+		fetchPopStatus,
+	])
 
 	const handlePopulate = async () => {
 		setPopLoading(true)
@@ -180,6 +202,25 @@ const AdminPanel: React.FC = () => {
 				text: err instanceof Error ? err.message : 'Failed to populate items',
 			})
 			setItemLoading(false)
+		}
+	}
+
+	const handlePopulateMoves = async () => {
+		setMoveLoading(true)
+		setMoveMessage(null)
+		try {
+			await populateMoves(moveStartId, moveEndId)
+			setMoveMessage({
+				type: 'success',
+				text: 'Move population started. Progress will update automatically.',
+			})
+			fetchPopStatus()
+		} catch (err) {
+			setMoveMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to populate moves',
+			})
+			setMoveLoading(false)
 		}
 	}
 
@@ -757,6 +798,75 @@ const AdminPanel: React.FC = () => {
 									{itemLoading
 										? `Populating... ${popStatus?.isPopulatingItems ? `(${popStatus.populatingItemsCurrent}/${popStatus.populatingItemsTotal})` : ''}`
 										: 'Populate Items Cache'}
+								</button>
+							</div>
+						</section>
+
+						{/* Moves Cache */}
+						<section className='admin-section'>
+							<h2 className='section-title'>Moves Cache</h2>
+							{popStatus && (
+								<div className='pokedex-status'>
+									<p>
+										<strong>Moves cached:</strong> {popStatus.totalMoves}
+									</p>
+									{popStatus.isPopulatingMoves && (
+										<div className='populate-progress'>
+											<p>
+												<strong>Progress:</strong> {popStatus.populatingMovesCurrent} /{' '}
+												{popStatus.populatingMovesTotal} moves
+											</p>
+											<div className='progress-bar'>
+												<div
+													className='progress-bar-fill'
+													style={{
+														width: `${(popStatus.populatingMovesCurrent / popStatus.populatingMovesTotal) * 100}%`,
+													}}
+												/>
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+							<div className='admin-form'>
+								<div className='form-row'>
+									<div className='form-field'>
+										<label htmlFor='move-start'>Start ID</label>
+										<input
+											id='move-start'
+											type='number'
+											min={1}
+											max={919}
+											value={moveStartId}
+											onChange={(e) => setMoveStartId(Number(e.target.value))}
+											disabled={moveLoading}
+										/>
+									</div>
+									<div className='form-field'>
+										<label htmlFor='move-end'>End ID</label>
+										<input
+											id='move-end'
+											type='number'
+											min={1}
+											max={919}
+											value={moveEndId}
+											onChange={(e) => setMoveEndId(Number(e.target.value))}
+											disabled={moveLoading}
+										/>
+									</div>
+								</div>
+								{moveMessage && (
+									<div className={`form-message form-message--${moveMessage.type}`}>
+										{moveMessage.text}
+									</div>
+								)}
+								<button
+									className='btn btn--primary'
+									onClick={handlePopulateMoves}
+									disabled={moveLoading}>
+									{moveLoading
+										? `Populating... ${popStatus?.isPopulatingMoves ? `(${popStatus.populatingMovesCurrent}/${popStatus.populatingMovesTotal})` : ''}`
+										: 'Populate Moves Cache'}
 								</button>
 							</div>
 						</section>

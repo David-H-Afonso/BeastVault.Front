@@ -57,6 +57,10 @@ export interface PopulationStatus {
 	isPopulatingItems: boolean
 	populatingItemsCurrent: number
 	populatingItemsTotal: number
+	totalMoves: number
+	isPopulatingMoves: boolean
+	populatingMovesCurrent: number
+	populatingMovesTotal: number
 }
 
 const memoryCache = new Map<number, CachedSpeciesData>()
@@ -98,6 +102,16 @@ export async function populateItems(
 	return customFetch(`${environment.baseUrl}/pokedex/populate-items`, {
 		method: 'POST',
 		body: { startId: startId ?? 1, endId: endId ?? 2180 },
+	})
+}
+
+export async function populateMoves(
+	startId?: number,
+	endId?: number
+): Promise<{ message: string }> {
+	return customFetch(`${environment.baseUrl}/pokedex/populate-moves`, {
+		method: 'POST',
+		body: { startId: startId ?? 1, endId: endId ?? 919 },
 	})
 }
 

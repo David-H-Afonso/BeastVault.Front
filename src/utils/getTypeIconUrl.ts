@@ -33,11 +33,11 @@ export function getTypeIconUrl(typeName: string): string {
 	const typeId = typeIdMap[typeNameLower]
 	if (!typeId) {
 		// Fallback to original name-based URL if type not found
-		return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-vi/omega-ruby-alpha-sapphire/${typeNameLower}.png`
+		return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${typeNameLower}.png`
 	}
 
-	// Use type ID instead of name for the URL
-	return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-vi/omega-ruby-alpha-sapphire/${typeId}.png`
+	// Use type ID for the URL — generation-ix scarlet-violet icons are compact circles
+	return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${typeId}.png`
 }
 
 /**
@@ -48,9 +48,5 @@ export function getTypeIconUrl(typeName: string): string {
 export function getTeraTypeIconUrl(typeName: string): string {
 	if (!typeName) return ''
 
-	const typeNameLower = typeName.toLowerCase()
-
-	// For now, use the same icons as regular types
-	// In the future, we could use special tera type icons if available
-	return getTypeIconUrl(typeNameLower)
+	return getTypeIconUrl(typeName.toLowerCase())
 }

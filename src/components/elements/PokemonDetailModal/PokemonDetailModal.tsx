@@ -158,7 +158,16 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 									{detail.teraTypeName && <Field label='Tera Type' value={detail.teraTypeName} />}
 									<Field label='Language' value={detail.languageName} />
 									{detail.metLocation && <Field label='Met' value={detail.metLocation} />}
-									{detail.metDate && <Field label='Date' value={detail.metDate} />}
+									{detail.metDate && (
+										<Field
+											label='Date'
+											value={new Date(detail.metDate).toLocaleDateString(undefined, {
+												year: 'numeric',
+												month: 'short',
+												day: 'numeric',
+											})}
+										/>
+									)}
 									<Field label='Friendship' value={String(detail.currentFriendship)} />
 								</div>
 							</section>
