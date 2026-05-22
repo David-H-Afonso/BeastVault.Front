@@ -60,7 +60,7 @@ const authSlice = createSlice({
 		clearAuthError(state) {
 			state.error = null
 		},
-		restoreAuth(state, action) {
+		restoreAuth(state, _action) {
 			// Called when rehydrating from persist - restore token to localStorage
 			if (state.token) {
 				setAuthToken(state.token)
