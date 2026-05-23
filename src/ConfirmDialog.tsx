@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { Modal } from '@/components/elements/Modal/Modal'
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import './ConfirmDialog.scss'
 
 interface ConfirmDialogProps {
@@ -19,28 +20,45 @@ export function ConfirmDialog({
 	onCancel,
 	hideConfirm,
 }: ConfirmDialogProps) {
+	useEffect(() => {
+		if (!open) return
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') onCancel()
+		}
+		document.addEventListener('keydown', onKey)
+		document.body.style.overflow = 'hidden'
+		return () => {
+			document.removeEventListener('keydown', onKey)
+			document.body.style.overflow = ''
+		}
+	}, [open, onCancel])
+
 	if (!open) return null
-	return (
-		<Modal
-			isOpen={open}
-			onClose={onCancel}
-			header={title}
-			hasActions
-			closeOnBackdropClick={false}
-			closeOnEscape={false}>
-			<div className='confirm-dialog-body'>
-				<div className='confirm-dialog-message'>{message}</div>
-				<div className='confirm-dialog-actions'>
-					<button className='confirm-dialog-btn confirm-dialog-btn--cancel' onClick={onCancel}>
-						Cancel
+
+	return createPortal(
+		<div className='confirm-overlay'>
+			<div className='confirm-modal' onClick={(e) => e.stopPropagation()}>
+				<div className='confirm-modal__header'>
+					<h2>{title}</h2>
+					<button className='confirm-modal__close' onClick={onCancel} aria-label='Close'>
+						×
 					</button>
-					{!hideConfirm && (
-						<button className='confirm-dialog-btn confirm-dialog-btn--danger' onClick={onConfirm}>
-							Delete
+				</div>
+				<div className='confirm-modal__body'>
+					<p className='confirm-modal__message'>{message}</p>
+					<div className='confirm-modal__actions'>
+						<button className='confirm-modal__btn confirm-modal__btn--cancel' onClick={onCancel}>
+							Cancel
 						</button>
-					)}
+						{!hideConfirm && (
+							<button className='confirm-modal__btn confirm-modal__btn--danger' onClick={onConfirm}>
+								Delete
+							</button>
+						)}
+					</div>
 				</div>
 			</div>
-		</Modal>
+		</div>,
+		document.body
 	)
 }

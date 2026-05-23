@@ -1,50 +1,123 @@
-.confirm-dialog-body {
+@keyframes confirmModalIn {
+	from {
+		opacity: 0;
+		transform: translateY(-12px) scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+.confirm-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	backdrop-filter: blur(4px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+	padding: 24px;
+}
+
+.confirm-modal {
+	background: var(--card-background-color, #1e1e2e);
+	border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+	border-radius: 16px;
+	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+	width: 100%;
+	max-width: 440px;
+	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	gap: 1.25rem;
-}
+	animation: confirmModalIn 0.2s ease-out;
 
-.confirm-dialog-message {
-	color: var(--text-primary);
-	font-size: 0.95rem;
-	line-height: 1.5;
-}
+	&__header {
+		padding: 20px 24px 16px;
+		border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-shrink: 0;
 
-.confirm-dialog-actions {
-	display: flex;
-	justify-content: flex-end;
-	gap: 8px;
-}
-
-.confirm-dialog-btn {
-	padding: 8px 20px;
-	border-radius: 6px;
-	font-size: 0.9rem;
-	font-weight: 500;
-	cursor: pointer;
-	border: 1px solid var(--border-color);
-	transition:
-		background 0.15s,
-		border-color 0.15s,
-		color 0.15s;
-
-	&--cancel {
-		background: transparent;
-		color: var(--text-primary);
-
-		&:hover {
-			background: rgba(255, 255, 255, 0.06);
+		h2 {
+			margin: 0;
+			font-size: 1.2rem;
+			font-weight: 600;
+			color: var(--text-primary);
 		}
 	}
 
-	&--danger {
-		background: #c62828;
-		color: #fff;
-		border-color: #c62828;
+	&__close {
+		background: none;
+		border: none;
+		font-size: 1.6rem;
+		line-height: 1;
+		color: var(--text-secondary, #888);
+		cursor: pointer;
+		padding: 2px 6px;
+		border-radius: 6px;
+		transition:
+			background 0.15s,
+			color 0.15s;
 
 		&:hover {
-			background: #b71c1c;
-			border-color: #b71c1c;
+			background: rgba(255, 255, 255, 0.08);
+			color: var(--text-primary);
+		}
+	}
+
+	&__body {
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	&__message {
+		margin: 0;
+		color: var(--text-primary);
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+	}
+
+	&__btn {
+		padding: 8px 20px;
+		border-radius: 8px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition:
+			background 0.15s,
+			border-color 0.15s,
+			color 0.15s;
+
+		&--cancel {
+			background: transparent;
+			color: var(--text-primary);
+			border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+
+			&:hover {
+				background: rgba(255, 255, 255, 0.06);
+			}
+		}
+
+		&--danger {
+			background: #c62828;
+			color: #fff;
+			border: 1px solid #c62828;
+
+			&:hover {
+				background: #b71c1c;
+				border-color: #b71c1c;
+			}
 		}
 	}
 }
