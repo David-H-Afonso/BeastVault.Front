@@ -88,6 +88,9 @@ export interface PokemonDetailDto {
 	otLanguageName: string
 	heldItemId: number
 	heldItemName: string
+	natureBoostedStat?: string | null
+	natureReducedStat?: string | null
+	originGeneration: number
 	heightScalar: number
 	weightScalar: number
 	scale: number

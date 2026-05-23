@@ -151,7 +151,19 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 								<div className='detail-fields'>
 									<Field label='OT' value={detail.otName || '—'} />
 									<Field label='TID' value={String(detail.tid)} />
-									<Field label='Nature' value={detail.natureName} />
+									<div className='detail-field'>
+										<span className='field-label'>Nature</span>
+										<span className='field-value'>
+											{detail.natureName}
+											{detail.natureBoostedStat && detail.natureReducedStat && (
+												<span className='nature-stats'>
+													{' '}
+													<span className='nature-boost'>+{detail.natureBoostedStat}</span>{' '}
+													<span className='nature-reduce'>-{detail.natureReducedStat}</span>
+												</span>
+											)}
+										</span>
+									</div>
 									<Field label='Ability' value={detail.abilityName} />
 									<Field label='Gender' value={detail.genderName} />
 									{detail.heldItemName && <Field label='Held Item' value={detail.heldItemName} />}
@@ -168,14 +180,27 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 											})}
 										/>
 									)}
-									<Field label='Friendship' value={String(detail.currentFriendship)} />
+									<div className='detail-field'>
+										<span className='field-label'>Happiness</span>
+										<span className='field-value happiness-value'>
+											{detail.currentFriendship}
+											<span className='happiness-bar-bg'>
+												<span
+													className='happiness-bar-fill'
+													style={{ width: `${(detail.currentFriendship / 255) * 100}%` }}
+												/>
+											</span>
+										</span>
+									</div>
 								</div>
 							</section>
 
 							{detail.stats && (
 								<section className='detail-section'>
 									<h4>
-										Stats <span className='stat-legend'>IV / EV</span>
+										Stats{' '}
+										{detail.originGeneration > 2 && <span className='stat-legend'>IV / EV</span>}
+										{detail.originGeneration <= 2 && <span className='stat-legend'>IV</span>}
 									</h4>
 									<div className='stats-table'>
 										<StatRow
@@ -184,6 +209,7 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 											iv={detail.stats.ivHp}
 											ev={detail.stats.evHp}
 											ht={detail.stats.hyperTrainedHp}
+											hideEv={detail.originGeneration <= 2}
 										/>
 										<StatRow
 											label='Atk'
@@ -191,6 +217,14 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 											iv={detail.stats.ivAtk}
 											ev={detail.stats.evAtk}
 											ht={detail.stats.hyperTrainedAtk}
+											hideEv={detail.originGeneration <= 2}
+											nature={
+												detail.natureBoostedStat === 'Atk'
+													? 'boost'
+													: detail.natureReducedStat === 'Atk'
+														? 'reduce'
+														: undefined
+											}
 										/>
 										<StatRow
 											label='Def'
@@ -198,6 +232,14 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 											iv={detail.stats.ivDef}
 											ev={detail.stats.evDef}
 											ht={detail.stats.hyperTrainedDef}
+											hideEv={detail.originGeneration <= 2}
+											nature={
+												detail.natureBoostedStat === 'Def'
+													? 'boost'
+													: detail.natureReducedStat === 'Def'
+														? 'reduce'
+														: undefined
+											}
 										/>
 										<StatRow
 											label='SpA'
@@ -205,6 +247,14 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 											iv={detail.stats.ivSpa}
 											ev={detail.stats.evSpa}
 											ht={detail.stats.hyperTrainedSpa}
+											hideEv={detail.originGeneration <= 2}
+											nature={
+												detail.natureBoostedStat === 'SpA'
+													? 'boost'
+													: detail.natureReducedStat === 'SpA'
+														? 'reduce'
+														: undefined
+											}
 										/>
 										<StatRow
 											label='SpD'
@@ -212,6 +262,14 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 											iv={detail.stats.ivSpd}
 											ev={detail.stats.evSpd}
 											ht={detail.stats.hyperTrainedSpd}
+											hideEv={detail.originGeneration <= 2}
+											nature={
+												detail.natureBoostedStat === 'SpD'
+													? 'boost'
+													: detail.natureReducedStat === 'SpD'
+														? 'reduce'
+														: undefined
+											}
 										/>
 										<StatRow
 											label='Spe'
@@ -219,6 +277,14 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 											iv={detail.stats.ivSpe}
 											ev={detail.stats.evSpe}
 											ht={detail.stats.hyperTrainedSpe}
+											hideEv={detail.originGeneration <= 2}
+											nature={
+												detail.natureBoostedStat === 'Spe'
+													? 'boost'
+													: detail.natureReducedStat === 'Spe'
+														? 'reduce'
+														: undefined
+											}
 										/>
 									</div>
 								</section>
@@ -262,16 +328,22 @@ function StatRow({
 	iv,
 	ev,
 	ht,
+	hideEv,
+	nature,
 }: {
 	label: string
 	stat: number
 	iv: number
 	ev: number
 	ht: boolean
+	hideEv?: boolean
+	nature?: 'boost' | 'reduce'
 }) {
 	const pct = Math.min((stat / 255) * 100, 100)
+	const natureClass =
+		nature === 'boost' ? ' nature-boost' : nature === 'reduce' ? ' nature-reduce' : ''
 	return (
-		<div className='stat-row'>
+		<div className={`stat-row${natureClass}`}>
 			<span className='stat-label'>{label}</span>
 			<span className='stat-val'>{stat}</span>
 			<div className='stat-bar-bg'>
@@ -280,7 +352,7 @@ function StatRow({
 			<span className={`stat-iv${iv === 31 ? ' perfect' : iv === 0 ? ' zero' : ''}`}>
 				{ht ? '★' : iv}
 			</span>
-			<span className='stat-ev'>{ev > 0 ? ev : '—'}</span>
+			{!hideEv && <span className='stat-ev'>{ev > 0 ? ev : '—'}</span>}
 		</div>
 	)
 }

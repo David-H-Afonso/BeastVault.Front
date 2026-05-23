@@ -191,6 +191,8 @@
 	img {
 		width: 14px;
 		height: 14px;
+		object-fit: contain;
+		flex-shrink: 0;
 	}
 }
 
@@ -279,6 +281,46 @@
 	}
 }
 
+// Nature stat indicators
+.nature-stats {
+	font-size: 0.7rem;
+	margin-left: 2px;
+}
+
+.nature-boost {
+	color: #e57373;
+	font-weight: 700;
+}
+
+.nature-reduce {
+	color: #64b5f6;
+	font-weight: 700;
+}
+
+// Happiness bar
+.happiness-value {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.happiness-bar-bg {
+	display: inline-block;
+	width: 48px;
+	height: 5px;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 3px;
+	overflow: hidden;
+	vertical-align: middle;
+}
+
+.happiness-bar-fill {
+	display: block;
+	height: 100%;
+	background: #e91e63;
+	border-radius: 3px;
+}
+
 // Stats
 .stats-table {
 	display: flex;
@@ -292,6 +334,20 @@
 	align-items: center;
 	gap: 4px;
 	font-size: 0.75rem;
+
+	// Nature-highlighted stat rows
+	&.nature-boost .stat-label {
+		color: #e57373;
+	}
+	&.nature-boost .stat-bar-fill {
+		background: #e57373;
+	}
+	&.nature-reduce .stat-label {
+		color: #64b5f6;
+	}
+	&.nature-reduce .stat-bar-fill {
+		background: #64b5f6;
+	}
 
 	.stat-label {
 		color: var(--text-secondary, #888);
