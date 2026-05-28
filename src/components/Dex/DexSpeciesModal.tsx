@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { DexSpeciesDetail } from '@/services/DexService'
+import type { DexSpeciesDetail, DexOwnedPokemon } from '@/services/DexService'
 import { resolveSpriteUrl, getPreferredSpriteFromDto, buildSpritesForId } from '@/utils/spriteUtils'
 import type { SpriteType } from '@/models/enums/SpriteTypes'
 import './DexSpeciesModal.scss'
@@ -13,6 +13,8 @@ interface DexSpeciesModalProps {
 	loading: boolean
 	onClose: () => void
 	spriteType: SpriteType
+	onNavigateToSpecies?: (speciesId: number) => void
+	onViewPokemon?: (pokemon: DexOwnedPokemon) => void
 }
 
 // ── Stat display maps ─────────────────────────────────────────────────────────
@@ -109,7 +111,11 @@ export function DexSpeciesModal({
 	loading,
 	onClose,
 	spriteType,
+	onNavigateToSpecies,
+	onViewPokemon,
 }: DexSpeciesModalProps) {
+	const [showShiny, setShowShiny] = useState(false)
+
 	useEffect(() => {
 		const handleKey = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') onClose()
@@ -127,8 +133,14 @@ export function DexSpeciesModal({
 		return buildEvoPaths(detail.evolutionChainJson)
 	}, [detail?.evolutionChainJson])
 
+	const hasShinySprite = !!(
+		detail?.sprites?.shiny ||
+		detail?.sprites?.homeShiny ||
+		detail?.sprites?.showdownShiny
+	)
+
 	const imageUrl =
-		getPreferredSpriteFromDto(detail?.sprites, spriteType, false) ||
+		getPreferredSpriteFromDto(detail?.sprites, spriteType, showShiny) ||
 		resolveSpriteUrl(detail?.sprites?.official) ||
 		resolveSpriteUrl(detail?.sprites?.home) ||
 		resolveSpriteUrl(detail?.sprites?.default) ||
@@ -155,7 +167,16 @@ export function DexSpeciesModal({
 									<img className='dex-modal__artwork' src={imageUrl} alt={detail.name} />
 								) : (
 									<div className='dex-modal__artwork-placeholder'>?</div>
-								)}
+								)}{' '}
+								{hasShinySprite && (
+									<button
+										type='button'
+										className={`dex-modal__shiny-toggle${showShiny ? ' active' : ''}`}
+										onClick={() => setShowShiny((v) => !v)}
+										title='Toggle shiny sprite'>
+										★
+									</button>
+								)}{' '}
 								{!detail.isUnlocked && <span className='dex-modal__locked-badge'>Not owned</span>}
 							</div>
 							<div className='dex-modal__title-block'>
@@ -243,7 +264,29 @@ export function DexSpeciesModal({
 														</div>
 													)}
 													<div
-														className={`dex-modal__evo-stage${stage.speciesId === speciesId ? ' dex-modal__evo-stage--current' : ''}`}>
+														className={`dex-modal__evo-stage${stage.speciesId === speciesId ? ' dex-modal__evo-stage--current' : ''}${onNavigateToSpecies && stage.speciesId != null && stage.speciesId !== speciesId ? ' dex-modal__evo-stage--clickable' : ''}`}
+														onClick={() => {
+															if (
+																onNavigateToSpecies &&
+																stage.speciesId != null &&
+																stage.speciesId !== speciesId
+															)
+																onNavigateToSpecies(stage.speciesId)
+														}}
+														role={
+															onNavigateToSpecies &&
+															stage.speciesId != null &&
+															stage.speciesId !== speciesId
+																? 'button'
+																: undefined
+														}
+														tabIndex={
+															onNavigateToSpecies &&
+															stage.speciesId != null &&
+															stage.speciesId !== speciesId
+																? 0
+																: undefined
+														}>
 														<img
 															className='dex-modal__evo-sprite'
 															src={
@@ -303,7 +346,10 @@ export function DexSpeciesModal({
 									{detail.ownedPokemon.map((p) => (
 										<div
 											key={p.id}
-											className={`dex-modal__owned-card${p.isShiny ? ' dex-modal__owned-card--shiny' : ''}`}>
+											className={`dex-modal__owned-card${p.isShiny ? ' dex-modal__owned-card--shiny' : ''}${onViewPokemon ? ' dex-modal__owned-card--clickable' : ''}`}
+											onClick={() => onViewPokemon?.(p)}
+											role={onViewPokemon ? 'button' : undefined}
+											tabIndex={onViewPokemon ? 0 : undefined}>
 											{p.spriteUrl && (
 												<img
 													className='dex-modal__owned-sprite'
@@ -320,6 +366,7 @@ export function DexSpeciesModal({
 													Lv.{p.level} · {p.originGame}
 												</span>
 											</div>
+											{onViewPokemon && <span className='dex-modal__owned-arrow'>›</span>}
 										</div>
 									))}
 								</div>

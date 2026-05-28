@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getDexGrid, getDexSpecies } from '@/services/DexService'
-import type { DexGridEntry, DexSpeciesDetail } from '@/services/DexService'
+import type { DexGridEntry, DexSpeciesDetail, DexOwnedPokemon } from '@/services/DexService'
 import { DexSpeciesModal } from './DexSpeciesModal'
+import { PokemonDetailModal } from '@/components/elements/PokemonDetailModal/PokemonDetailModal'
 import { getPreferredSpriteFromDto } from '@/utils/spriteUtils'
 import { useUISettings } from '@/hooks/useUISettings'
 import type { SpriteType } from '@/models/enums/SpriteTypes'
+import type { PokemonListItemDto } from '@/models/api/types'
 import './DexPage.scss'
 
 const GENERATIONS = [
@@ -38,6 +40,8 @@ export const DexPage: React.FC = () => {
 	const [selectedSpeciesId, setSelectedSpeciesId] = useState<number | null>(null)
 	const [speciesDetail, setSpeciesDetail] = useState<DexSpeciesDetail | null>(null)
 	const [detailLoading, setDetailLoading] = useState(false)
+
+	const [detailPokemon, setDetailPokemon] = useState<PokemonListItemDto | null>(null)
 
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -117,6 +121,33 @@ export const DexPage: React.FC = () => {
 		setSelectedSpeciesId(null)
 		setSpeciesDetail(null)
 	}
+
+	const handleViewOwnedPokemon = useCallback(
+		(p: DexOwnedPokemon) => {
+			// Build a minimal PokemonListItemDto so PokemonDetailModal can open and fetch full detail
+			const minimal: PokemonListItemDto = {
+				id: p.id,
+				speciesId: speciesDetail?.speciesId ?? 0,
+				speciesName: speciesDetail?.name ?? p.formName,
+				form: 0,
+				formName: p.formName,
+				nickname: p.nickname ?? undefined,
+				level: p.level,
+				isShiny: p.isShiny,
+				ballId: 0,
+				spriteKey: '',
+				originGeneration: 0,
+				capturedGeneration: 0,
+				canGigantamax: false,
+				hasMegaStone: false,
+				sprites: p.spriteUrl
+					? ({ default: p.spriteUrl, shiny: p.spriteUrl, official: p.spriteUrl } as any)
+					: undefined,
+			}
+			setDetailPokemon(minimal)
+		},
+		[speciesDetail]
+	)
 
 	return (
 		<div className='dex-page'>
@@ -209,8 +240,16 @@ export const DexPage: React.FC = () => {
 					loading={detailLoading}
 					onClose={handleCloseModal}
 					spriteType={spriteType}
+					onNavigateToSpecies={(id) => openSpeciesDetail(id)}
+					onViewPokemon={handleViewOwnedPokemon}
 				/>
 			)}
+
+			<PokemonDetailModal
+				pokemon={detailPokemon}
+				isOpen={detailPokemon !== null}
+				onClose={() => setDetailPokemon(null)}
+			/>
 		</div>
 	)
 }
@@ -225,7 +264,7 @@ interface DexCardProps {
 
 function DexCard({ entry, onClick, spriteType }: DexCardProps) {
 	const isLocked = !entry.isUnlocked
-	const [showShiny, setShowShiny] = useState(false)
+	const [showShiny, setShowShiny] = useState(entry.hasShiny)
 
 	const displaySprite = getPreferredSpriteFromDto(entry.sprites, spriteType, showShiny)
 

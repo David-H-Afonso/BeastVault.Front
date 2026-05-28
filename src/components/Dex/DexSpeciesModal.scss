@@ -109,6 +109,33 @@
 		white-space: nowrap;
 	}
 
+	&__shiny-toggle {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		background: none;
+		border: 1px solid transparent;
+		border-radius: 6px;
+		color: var(--text-secondary, #aaa);
+		font-size: 1rem;
+		cursor: pointer;
+		padding: 2px 5px;
+		transition:
+			color 0.15s,
+			border-color 0.15s;
+
+		&:hover {
+			color: #f5c842;
+			border-color: rgba(245, 200, 66, 0.4);
+		}
+
+		&.active {
+			color: #f5c842;
+			border-color: #f5c842;
+			background: rgba(245, 200, 66, 0.1);
+		}
+	}
+
 	&__title-block {
 		flex: 1;
 		min-width: 0;
@@ -325,6 +352,14 @@
 			background: rgba(99, 143, 252, 0.15);
 			outline: 1px solid rgba(99, 143, 252, 0.45);
 		}
+
+		&--clickable {
+			cursor: pointer;
+
+			&:hover {
+				background: rgba(255, 255, 255, 0.08);
+			}
+		}
 	}
 
 	&__evo-sprite {
@@ -363,11 +398,26 @@
 		background: var(--surface-raised, #333);
 		border: 1px solid var(--border, #3a3a3a);
 		border-radius: 10px;
+		transition: background 0.15s;
 
 		&--shiny {
 			border-color: #f5c842;
 			background: rgba(245, 200, 66, 0.08);
 		}
+
+		&--clickable {
+			cursor: pointer;
+
+			&:hover {
+				background: var(--surface-hover, #3d3d3d);
+			}
+		}
+	}
+
+	&__owned-arrow {
+		margin-left: auto;
+		color: var(--text-secondary, #aaa);
+		font-size: 1.1rem;
 	}
 
 	&__owned-sprite {
@@ -572,6 +622,32 @@
 		white-space: nowrap;
 	}
 
+	&__shiny-toggle {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		background: none;
+		border: 1px solid transparent;
+		border-radius: 6px;
+		color: var(--text-secondary, #777);
+		font-size: 1rem;
+		cursor: pointer;
+		padding: 2px 5px;
+		transition:
+			color 0.15s,
+			border-color 0.15s;
+
+		&:hover {
+			color: #f5c842;
+			border-color: rgba(245, 200, 66, 0.4);
+		}
+		&.active {
+			color: #f5c842;
+			border-color: #f5c842;
+			background: rgba(245, 200, 66, 0.1);
+		}
+	}
+
 	&__title-block {
 		flex: 1;
 		min-width: 0;
@@ -756,11 +832,25 @@
 		background: var(--card-bg, #222);
 		border: 1px solid var(--border, #2a2a2a);
 		border-radius: 8px;
+		transition: background 0.15s;
 
 		&--shiny {
 			border-color: #f5c842;
 			background: rgba(245, 200, 66, 0.06);
 		}
+
+		&--clickable {
+			cursor: pointer;
+			&:hover {
+				background: var(--surface-raised, #2a2a2a);
+			}
+		}
+	}
+
+	&__owned-arrow {
+		margin-left: auto;
+		color: var(--text-secondary, #777);
+		font-size: 1.1rem;
 	}
 
 	&__owned-sprite {
