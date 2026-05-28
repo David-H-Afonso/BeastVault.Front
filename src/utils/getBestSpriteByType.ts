@@ -1,6 +1,15 @@
 import { SpriteType } from '@/models/enums/SpriteTypes'
+import { resolveSpriteUrl } from '@/utils/spriteUtils'
 
 export const getBestSpriteByType = (
+	sprites: any,
+	spriteType: SpriteType,
+	isShiny: boolean = false
+): string | null => {
+	return resolveSpriteUrl(pickBestSpriteByType(sprites, spriteType, isShiny))
+}
+
+const pickBestSpriteByType = (
 	sprites: any,
 	spriteType: SpriteType,
 	isShiny: boolean = false
@@ -61,7 +70,7 @@ export const getBestSpriteByType = (
 			if (isShiny) {
 				return (
 					sprites.githubShiny ||
-					sprites.githubRegular ||
+					sprites.github ||
 					sprites.showdown ||
 					sprites.home ||
 					sprites.official ||
@@ -69,7 +78,7 @@ export const getBestSpriteByType = (
 				)
 			}
 			return (
-				sprites.githubRegular ||
+				sprites.github ||
 				sprites.githubShiny ||
 				sprites.showdown ||
 				sprites.home ||

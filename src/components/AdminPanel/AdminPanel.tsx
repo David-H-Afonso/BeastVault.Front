@@ -15,6 +15,9 @@ import {
 	populatePokedex,
 	populateItems,
 	populateMoves,
+	populateAbilities,
+	populateTypes,
+	populateEvolutionChains,
 } from '@/services/PokedexCache'
 import type { UserDto } from '@/models/Auth'
 import type { PopulationStatus } from '@/services/PokedexCache'
@@ -103,6 +106,31 @@ const AdminPanel: React.FC = () => {
 		text: string
 	} | null>(null)
 
+	// Abilities populate
+	const [abilityStartId, setAbilityStartId] = useState(1)
+	const [abilityEndId, setAbilityEndId] = useState(307)
+	const [abilityLoading, setAbilityLoading] = useState(false)
+	const [abilityMessage, setAbilityMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
+	// Types populate
+	const [typeLoading, setTypeLoading] = useState(false)
+	const [typeMessage, setTypeMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
+	// Evolution chains populate
+	const [chainStartId, setChainStartId] = useState(1)
+	const [chainEndId, setChainEndId] = useState(549)
+	const [chainLoading, setChainLoading] = useState(false)
+	const [chainMessage, setChainMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
 	const fetchUsers = useCallback(async () => {
 		if (!isAdmin) return
 		setLoadingUsers(true)
@@ -141,11 +169,19 @@ const AdminPanel: React.FC = () => {
 
 	useEffect(() => {
 		const isAnyPopulating =
-			popStatus?.isPopulating || popStatus?.isPopulatingItems || popStatus?.isPopulatingMoves
+			popStatus?.isPopulating ||
+			popStatus?.isPopulatingItems ||
+			popStatus?.isPopulatingMoves ||
+			popStatus?.isPopulatingAbilities ||
+			popStatus?.isPopulatingChains ||
+			popStatus?.isPopulatingTypes
 		if (isAnyPopulating && !pollRef.current) {
 			if (popStatus?.isPopulating) setPopLoading(true)
 			if (popStatus?.isPopulatingItems) setItemLoading(true)
 			if (popStatus?.isPopulatingMoves) setMoveLoading(true)
+			if (popStatus?.isPopulatingAbilities) setAbilityLoading(true)
+			if (popStatus?.isPopulatingChains) setChainLoading(true)
+			if (popStatus?.isPopulatingTypes) setTypeLoading(true)
 			pollRef.current = setInterval(() => {
 				fetchPopStatus()
 			}, 3000)
@@ -155,6 +191,9 @@ const AdminPanel: React.FC = () => {
 			setPopLoading(false)
 			setItemLoading(false)
 			setMoveLoading(false)
+			setAbilityLoading(false)
+			setChainLoading(false)
+			setTypeLoading(false)
 		}
 		return () => {
 			if (pollRef.current) clearInterval(pollRef.current)
@@ -163,6 +202,9 @@ const AdminPanel: React.FC = () => {
 		popStatus?.isPopulating,
 		popStatus?.isPopulatingItems,
 		popStatus?.isPopulatingMoves,
+		popStatus?.isPopulatingAbilities,
+		popStatus?.isPopulatingChains,
+		popStatus?.isPopulatingTypes,
 		fetchPopStatus,
 	])
 
@@ -221,6 +263,63 @@ const AdminPanel: React.FC = () => {
 				text: err instanceof Error ? err.message : 'Failed to populate moves',
 			})
 			setMoveLoading(false)
+		}
+	}
+
+	const handlePopulateAbilities = async () => {
+		setAbilityLoading(true)
+		setAbilityMessage(null)
+		try {
+			await populateAbilities(abilityStartId, abilityEndId)
+			setAbilityMessage({
+				type: 'success',
+				text: 'Ability population started. Progress will update automatically.',
+			})
+			fetchPopStatus()
+		} catch (err) {
+			setAbilityMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to populate abilities',
+			})
+			setAbilityLoading(false)
+		}
+	}
+
+	const handlePopulateTypes = async () => {
+		setTypeLoading(true)
+		setTypeMessage(null)
+		try {
+			await populateTypes()
+			setTypeMessage({
+				type: 'success',
+				text: 'Type population started (18 types). Will finish quickly.',
+			})
+			fetchPopStatus()
+		} catch (err) {
+			setTypeMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to populate types',
+			})
+			setTypeLoading(false)
+		}
+	}
+
+	const handlePopulateEvolutionChains = async () => {
+		setChainLoading(true)
+		setChainMessage(null)
+		try {
+			await populateEvolutionChains(chainStartId, chainEndId)
+			setChainMessage({
+				type: 'success',
+				text: 'Evolution chain population started. Progress will update automatically.',
+			})
+			fetchPopStatus()
+		} catch (err) {
+			setChainMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to populate evolution chains',
+			})
+			setChainLoading(false)
 		}
 	}
 
@@ -867,6 +966,178 @@ const AdminPanel: React.FC = () => {
 									{moveLoading
 										? `Populating... ${popStatus?.isPopulatingMoves ? `(${popStatus.populatingMovesCurrent}/${popStatus.populatingMovesTotal})` : ''}`
 										: 'Populate Moves Cache'}
+								</button>
+							</div>
+						</section>
+
+						{/* Abilities Cache */}
+						<section className='admin-section'>
+							<h2 className='section-title'>Abilities Cache</h2>
+							{popStatus && (
+								<div className='pokedex-status'>
+									<p>
+										<strong>Abilities cached:</strong> {popStatus.totalAbilities}
+									</p>
+									{popStatus.isPopulatingAbilities && (
+										<div className='populate-progress'>
+											<p>
+												<strong>Progress:</strong> {popStatus.populatingAbilitiesCurrent} /{' '}
+												{popStatus.populatingAbilitiesTotal} abilities
+											</p>
+											<div className='progress-bar'>
+												<div
+													className='progress-bar-fill'
+													style={{
+														width: `${(popStatus.populatingAbilitiesCurrent / popStatus.populatingAbilitiesTotal) * 100}%`,
+													}}
+												/>
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+							<div className='admin-form'>
+								<div className='form-row'>
+									<div className='form-field'>
+										<label htmlFor='ability-start'>Start ID</label>
+										<input
+											id='ability-start'
+											type='number'
+											min={1}
+											max={307}
+											value={abilityStartId}
+											onChange={(e) => setAbilityStartId(Number(e.target.value))}
+											disabled={abilityLoading}
+										/>
+									</div>
+									<div className='form-field'>
+										<label htmlFor='ability-end'>End ID</label>
+										<input
+											id='ability-end'
+											type='number'
+											min={1}
+											max={307}
+											value={abilityEndId}
+											onChange={(e) => setAbilityEndId(Number(e.target.value))}
+											disabled={abilityLoading}
+										/>
+									</div>
+								</div>
+								{abilityMessage && (
+									<div className={`form-message form-message--${abilityMessage.type}`}>
+										{abilityMessage.text}
+									</div>
+								)}
+								<button
+									className='btn btn--primary'
+									onClick={handlePopulateAbilities}
+									disabled={abilityLoading}>
+									{abilityLoading
+										? `Populating... ${popStatus?.isPopulatingAbilities ? `(${popStatus.populatingAbilitiesCurrent}/${popStatus.populatingAbilitiesTotal})` : ''}`
+										: 'Populate Abilities Cache'}
+								</button>
+							</div>
+						</section>
+
+						{/* Types Cache */}
+						<section className='admin-section'>
+							<h2 className='section-title'>Types Cache</h2>
+							{popStatus && (
+								<div className='pokedex-status'>
+									<p>
+										<strong>Types cached:</strong> {popStatus.totalTypes} / 18
+									</p>
+									{popStatus.isPopulatingTypes && (
+										<p className='populate-progress'>
+											<strong>Populating types...</strong>
+										</p>
+									)}
+								</div>
+							)}
+							<div className='admin-form'>
+								{typeMessage && (
+									<div className={`form-message form-message--${typeMessage.type}`}>
+										{typeMessage.text}
+									</div>
+								)}
+								<button
+									className='btn btn--primary'
+									onClick={handlePopulateTypes}
+									disabled={typeLoading || (popStatus?.totalTypes ?? 0) >= 18}>
+									{typeLoading
+										? 'Populating...'
+										: popStatus?.totalTypes === 18
+											? '✅ All Types Cached'
+											: 'Populate Types Cache'}
+								</button>
+							</div>
+						</section>
+
+						{/* Evolution Chains Cache */}
+						<section className='admin-section'>
+							<h2 className='section-title'>Evolution Chains Cache</h2>
+							{popStatus && (
+								<div className='pokedex-status'>
+									<p>
+										<strong>Chains cached:</strong> {popStatus.totalEvolutionChains}
+									</p>
+									{popStatus.isPopulatingChains && (
+										<div className='populate-progress'>
+											<p>
+												<strong>Progress:</strong> {popStatus.populatingChainsCurrent} /{' '}
+												{popStatus.populatingChainsTotal} chains
+											</p>
+											<div className='progress-bar'>
+												<div
+													className='progress-bar-fill'
+													style={{
+														width: `${(popStatus.populatingChainsCurrent / popStatus.populatingChainsTotal) * 100}%`,
+													}}
+												/>
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+							<div className='admin-form'>
+								<div className='form-row'>
+									<div className='form-field'>
+										<label htmlFor='chain-start'>Start ID</label>
+										<input
+											id='chain-start'
+											type='number'
+											min={1}
+											max={549}
+											value={chainStartId}
+											onChange={(e) => setChainStartId(Number(e.target.value))}
+											disabled={chainLoading}
+										/>
+									</div>
+									<div className='form-field'>
+										<label htmlFor='chain-end'>End ID</label>
+										<input
+											id='chain-end'
+											type='number'
+											min={1}
+											max={549}
+											value={chainEndId}
+											onChange={(e) => setChainEndId(Number(e.target.value))}
+											disabled={chainLoading}
+										/>
+									</div>
+								</div>
+								{chainMessage && (
+									<div className={`form-message form-message--${chainMessage.type}`}>
+										{chainMessage.text}
+									</div>
+								)}
+								<button
+									className='btn btn--primary'
+									onClick={handlePopulateEvolutionChains}
+									disabled={chainLoading}>
+									{chainLoading
+										? `Populating... ${popStatus?.isPopulatingChains ? `(${popStatus.populatingChainsCurrent}/${popStatus.populatingChainsTotal})` : ''}`
+										: 'Populate Evolution Chains'}
 								</button>
 							</div>
 						</section>

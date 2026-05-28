@@ -6,6 +6,7 @@ import PageNotFound from '@/components/PageNotFound/containers/PageNotFound'
 import Login from '@/components/Login/Login'
 import { AppLayout } from './layouts/AppLayout'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { DexPage } from '@/components/Dex/DexPage'
 
 export const router = createBrowserRouter([
 	{
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
 			{
 				path: 'admin',
 				element: <AdminPanel />,
+			},
+			{
+				path: 'dex',
+				element: <DexPage />,
 			},
 		],
 	},

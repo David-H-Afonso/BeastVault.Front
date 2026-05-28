@@ -1,0 +1,358 @@
+.dex-page {
+	max-width: 1400px;
+	margin: 0 auto;
+	padding: 1.5rem 1.25rem 3rem;
+
+	&__header {
+		margin-bottom: 1.5rem;
+	}
+
+	&__title {
+		font-size: 1.75rem;
+		font-weight: 700;
+		margin: 0 0 0.25rem;
+	}
+
+	&__subtitle {
+		color: var(--text-secondary, #888);
+		font-size: 0.875rem;
+		margin: 0;
+	}
+
+	&__filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		align-items: center;
+		margin-bottom: 1.5rem;
+	}
+
+	&__search {
+		flex: 1 1 220px;
+		max-width: 320px;
+		padding: 0.5rem 0.875rem;
+		border: 1px solid var(--border, #333);
+		border-radius: 8px;
+		background: var(--input-bg, #1e1e1e);
+		color: var(--text, #eee);
+		font-size: 0.9rem;
+
+		&:focus {
+			outline: none;
+			border-color: var(--accent, #6c8fff);
+		}
+	}
+
+	&__gen-filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	&__gen-btn {
+		padding: 0.3rem 0.6rem;
+		border-radius: 6px;
+		border: 1px solid var(--border, #333);
+		background: var(--card-bg, #1e1e1e);
+		color: var(--text-secondary, #aaa);
+		font-size: 0.78rem;
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			background: var(--hover-bg, #282828);
+			color: var(--text, #eee);
+		}
+
+		&.active {
+			background: var(--accent, #6c8fff);
+			color: #fff;
+			border-color: var(--accent, #6c8fff);
+		}
+	}
+
+	&__toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.875rem;
+		cursor: pointer;
+		color: var(--text-secondary, #aaa);
+		user-select: none;
+
+		input {
+			cursor: pointer;
+		}
+	}
+
+	&__loading,
+	&__empty {
+		text-align: center;
+		padding: 4rem 1rem;
+		color: var(--text-secondary, #888);
+		font-size: 0.95rem;
+	}
+
+	&__error {
+		background: rgba(220, 53, 69, 0.12);
+		border: 1px solid rgba(220, 53, 69, 0.4);
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+		margin-bottom: 1rem;
+		color: #ff6b6b;
+		font-size: 0.875rem;
+	}
+
+	&__pagination {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: 2rem;
+	}
+
+	&__page-btn {
+		padding: 0.4rem 1rem;
+		border-radius: 6px;
+		border: 1px solid var(--border, #333);
+		background: var(--card-bg, #1e1e1e);
+		color: var(--text, #eee);
+		cursor: pointer;
+		font-size: 0.875rem;
+		transition: background 0.15s;
+
+		&:hover:not(:disabled) {
+			background: var(--hover-bg, #282828);
+		}
+		&:disabled {
+			opacity: 0.4;
+			cursor: default;
+		}
+	}
+
+	&__page-info {
+		font-size: 0.875rem;
+		color: var(--text-secondary, #888);
+	}
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+
+.dex-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+	gap: 0.75rem;
+
+	@media (max-width: 600px) {
+		grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+	}
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+
+.dex-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background: var(--card-bg, #1c1c1c);
+	border: 1px solid var(--border, #2a2a2a);
+	border-radius: 10px;
+	padding: 0.75rem 0.5rem 0.5rem;
+	cursor: pointer;
+	transition:
+		transform 0.15s,
+		border-color 0.15s,
+		box-shadow 0.15s;
+	text-align: center;
+	text-decoration: none;
+
+	&:hover {
+		transform: translateY(-2px);
+		border-color: var(--accent, #6c8fff);
+		box-shadow: 0 4px 16px rgba(108, 143, 255, 0.15);
+	}
+
+	&--locked {
+		opacity: 0.55;
+		border-color: var(--border, #2a2a2a);
+
+		&:hover {
+			opacity: 0.75;
+			border-color: var(--border, #333);
+			box-shadow: none;
+		}
+	}
+
+	&__sprite-wrap {
+		position: relative;
+		width: 64px;
+		height: 64px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__sprite {
+		width: 64px;
+		height: 64px;
+		object-fit: contain;
+		image-rendering: pixelated;
+
+		&--silhouette {
+			filter: brightness(0);
+		}
+
+		&--placeholder {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 64px;
+			height: 64px;
+			font-size: 1.5rem;
+			color: var(--text-secondary, #666);
+		}
+	}
+
+	&__shiny-btn {
+		position: absolute;
+		top: 2px;
+		right: 2px;
+		background: rgba(0, 0, 0, 0.55);
+		border: none;
+		border-radius: 4px;
+		color: #888;
+		font-size: 0.8rem;
+		padding: 1px 4px;
+		cursor: pointer;
+		line-height: 1;
+
+		&.active {
+			color: #f5c842;
+		}
+		&:hover {
+			color: #f0e040;
+		}
+	}
+
+	&__count {
+		position: absolute;
+		top: -4px;
+		right: -4px;
+		background: var(--accent, #6c8fff);
+		color: #fff;
+		border-radius: 50%;
+		width: 18px;
+		height: 18px;
+		font-size: 0.65rem;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__info {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		margin-top: 0.4rem;
+		width: 100%;
+	}
+
+	&__id {
+		font-size: 0.65rem;
+		color: var(--text-secondary, #777);
+		font-family: monospace;
+	}
+
+	&__name {
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--text, #eee);
+		text-transform: capitalize;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 100%;
+	}
+
+	&__types {
+		display: flex;
+		gap: 2px;
+		flex-wrap: wrap;
+		justify-content: center;
+		margin-top: 2px;
+	}
+
+	&__type {
+		font-size: 0.6rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		padding: 1px 5px;
+		border-radius: 4px;
+		color: #fff;
+		background: var(--type-normal-color, #9aa);
+	}
+}
+
+// Type badge colors (matches PokeAPI type names)
+.type-normal {
+	background: #9ea09e;
+}
+.type-fire {
+	background: #e62829;
+}
+.type-water {
+	background: #2980ef;
+}
+.type-electric {
+	background: #fac000;
+	color: #333 !important;
+}
+.type-grass {
+	background: #3fa129;
+}
+.type-ice {
+	background: #3dcef3;
+	color: #333 !important;
+}
+.type-fighting {
+	background: #ff8000;
+}
+.type-poison {
+	background: #9141cb;
+}
+.type-ground {
+	background: #915121;
+}
+.type-flying {
+	background: #81b9ef;
+	color: #333 !important;
+}
+.type-psychic {
+	background: #ef4179;
+}
+.type-bug {
+	background: #91a119;
+}
+.type-rock {
+	background: #afa981;
+	color: #333 !important;
+}
+.type-ghost {
+	background: #704170;
+}
+.type-dragon {
+	background: #5060e1;
+}
+.type-dark {
+	background: #624d4e;
+}
+.type-steel {
+	background: #60a1b8;
+}
+.type-fairy {
+	background: #ef70ef;
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 import type { PokemonDetailDto } from '@/models/Pokemon'
 import type { PokemonListItemDto } from '@/models/api/types'
 import { getPokemonById } from '@/services'
@@ -21,6 +22,7 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 	const [isClosing, setIsClosing] = useState(false)
 	const { spriteType } = useUISettings()
 	const panelRef = useRef<HTMLDivElement>(null)
+	const navigate = useNavigate()
 
 	// Load detail data when opened
 	useEffect(() => {
@@ -87,10 +89,23 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 
 			{/* Panel */}
 			<div ref={panelRef} className='detail-drawer-panel'>
-				{/* Close button */}
-				<button className='detail-drawer-close' onClick={handleClose} aria-label='Close'>
-					✕
-				</button>
+				{/* Header buttons */}
+				<div className='detail-drawer-header-btns'>
+					{pokemon?.speciesId && (
+						<button
+							className='detail-drawer-dex-btn'
+							onClick={() => {
+								handleClose()
+								navigate(`/dex?species=${pokemon.speciesId}`)
+							}}
+							aria-label='View in Pokédex'>
+							📖 Pokédex
+						</button>
+					)}
+					<button className='detail-drawer-close' onClick={handleClose} aria-label='Close'>
+						✕
+					</button>
+				</div>
 
 				{/* Hero section: sprite + basic info */}
 				<div className='detail-hero'>

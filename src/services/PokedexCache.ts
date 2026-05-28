@@ -61,6 +61,16 @@ export interface PopulationStatus {
 	isPopulatingMoves: boolean
 	populatingMovesCurrent: number
 	populatingMovesTotal: number
+	totalAbilities: number
+	isPopulatingAbilities: boolean
+	populatingAbilitiesCurrent: number
+	populatingAbilitiesTotal: number
+	totalEvolutionChains: number
+	isPopulatingChains: boolean
+	populatingChainsCurrent: number
+	populatingChainsTotal: number
+	totalTypes: number
+	isPopulatingTypes: boolean
 }
 
 const memoryCache = new Map<number, CachedSpeciesData>()
@@ -112,6 +122,32 @@ export async function populateMoves(
 	return customFetch(`${environment.baseUrl}/pokedex/populate-moves`, {
 		method: 'POST',
 		body: { startId: startId ?? 1, endId: endId ?? 919 },
+	})
+}
+
+export async function populateAbilities(
+	startId?: number,
+	endId?: number
+): Promise<{ message: string }> {
+	return customFetch(`${environment.baseUrl}/pokedex/populate-abilities`, {
+		method: 'POST',
+		body: { startId: startId ?? 1, endId: endId ?? 307 },
+	})
+}
+
+export async function populateTypes(): Promise<{ message: string }> {
+	return customFetch(`${environment.baseUrl}/pokedex/populate-types`, {
+		method: 'POST',
+	})
+}
+
+export async function populateEvolutionChains(
+	startId?: number,
+	endId?: number
+): Promise<{ message: string }> {
+	return customFetch(`${environment.baseUrl}/pokedex/populate-evolution-chains`, {
+		method: 'POST',
+		body: { startId: startId ?? 1, endId: endId ?? 549 },
 	})
 }
 

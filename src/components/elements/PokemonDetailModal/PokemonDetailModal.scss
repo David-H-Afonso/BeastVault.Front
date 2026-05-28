@@ -76,11 +76,39 @@
 	flex-direction: column;
 }
 
+// Header buttons row (Pokédex link + close)
+.detail-drawer-header-btns {
+	position: absolute;
+	top: 10px;
+	right: 12px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	z-index: 1;
+}
+
+.detail-drawer-dex-btn {
+	background: rgba(255, 255, 255, 0.07);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	color: var(--text-secondary, #aaa);
+	font-size: 0.78rem;
+	cursor: pointer;
+	padding: 4px 8px;
+	border-radius: 5px;
+	transition:
+		color 0.15s,
+		background 0.15s,
+		border-color 0.15s;
+
+	&:hover {
+		color: var(--text-primary, #fff);
+		background: rgba(255, 255, 255, 0.13);
+		border-color: rgba(255, 255, 255, 0.25);
+	}
+}
+
 // Close button
 .detail-drawer-close {
-	position: absolute;
-	top: 12px;
-	right: 14px;
 	background: none;
 	border: none;
 	color: var(--text-secondary, #aaa);
@@ -91,7 +119,6 @@
 	transition:
 		color 0.15s,
 		background 0.15s;
-	z-index: 1;
 
 	&:hover {
 		color: var(--text-primary, #fff);

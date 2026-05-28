@@ -27,6 +27,11 @@ export const Header: React.FC = () => {
 						Home
 					</Link>
 					<Link
+						to='/dex'
+						className={`nav-link ${location.pathname.startsWith('/dex') ? 'active' : ''}`}>
+						Pokédex
+					</Link>
+					<Link
 						to='/settings'
 						className={`nav-link ${location.pathname === '/settings' ? 'active' : ''}`}>
 						Settings
