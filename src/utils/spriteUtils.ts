@@ -7,7 +7,7 @@ import { environment } from '@/environments'
  * Mirrors the backend's PokemonSpritesDto.ForPokemonId() method.
  * All URLs point to local endpoints — sprites are downloaded and cached in DB.
  */
-export function buildSpritesForId(id: number, name?: string): PokemonSpritesDto {
+export function buildSpritesForId(id: number, _name?: string): PokemonSpritesDto {
 	return {
 		default: `/sprites/pokemon/${id}.png`,
 		shiny: `/sprites/pokemon/shiny/${id}.png`,
