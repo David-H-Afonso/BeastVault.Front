@@ -57,12 +57,22 @@ export interface DexSpeciesDetail {
 	evolutionChainJson: string | null
 }
 
+export interface DexGameOption {
+	id: number
+	name: string
+}
+
+export async function getDexGames(): Promise<DexGameOption[]> {
+	return customFetch<DexGameOption[]>(`${environment.baseUrl}/dex/games`)
+}
+
 export async function getDexGrid(params: {
 	page?: number
 	pageSize?: number
 	generation?: number | null
 	search?: string
 	unlockedOnly?: boolean
+	originGame?: number | null
 }): Promise<DexGridResponse> {
 	const query = new URLSearchParams()
 	if (params.page) query.set('page', String(params.page))
@@ -70,6 +80,7 @@ export async function getDexGrid(params: {
 	if (params.generation != null) query.set('generation', String(params.generation))
 	if (params.search) query.set('search', params.search)
 	if (params.unlockedOnly) query.set('unlockedOnly', 'true')
+	if (params.originGame != null) query.set('originGame', String(params.originGame))
 
 	const url = `${environment.baseUrl}/dex?${query.toString()}`
 	const res = await customFetch<DexGridResponse>(url)

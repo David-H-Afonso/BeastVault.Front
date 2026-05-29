@@ -85,6 +85,22 @@
 		}
 	}
 
+	&__game-select {
+		padding: 0.4rem 0.75rem;
+		border: 1px solid var(--border, #333);
+		border-radius: 8px;
+		background: var(--input-bg, #1e1e1e);
+		color: var(--text, #eee);
+		font-size: 0.875rem;
+		cursor: pointer;
+		max-width: 200px;
+
+		&:focus {
+			outline: none;
+			border-color: var(--accent, #6c8fff);
+		}
+	}
+
 	&__loading,
 	&__empty {
 		text-align: center;

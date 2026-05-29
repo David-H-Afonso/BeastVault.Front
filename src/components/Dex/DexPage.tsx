@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getDexGrid, getDexSpecies } from '@/services/DexService'
-import type { DexGridEntry, DexSpeciesDetail, DexOwnedPokemon } from '@/services/DexService'
+import { getDexGrid, getDexSpecies, getDexGames } from '@/services/DexService'
+import type {
+	DexGridEntry,
+	DexSpeciesDetail,
+	DexOwnedPokemon,
+	DexGameOption,
+} from '@/services/DexService'
 import { DexSpeciesModal } from './DexSpeciesModal'
 import { PokemonDetailModal } from '@/components/elements/PokemonDetailModal/PokemonDetailModal'
 import { TagManager } from '@/components/elements/TagManager/TagManager'
@@ -45,6 +50,8 @@ export const DexPage: React.FC = () => {
 
 	const [detailPokemon, setDetailPokemon] = useState<PokemonListItemDto | null>(null)
 	const [tagPokemon, setTagPokemon] = useState<PokemonListItemDto | null>(null)
+	const [gameOptions, setGameOptions] = useState<DexGameOption[]>([])
+	const [originGame, setOriginGame] = useState<number | null>(null)
 
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -64,11 +71,25 @@ export const DexPage: React.FC = () => {
 		}
 	}, [])
 
+	// Load available origin games from vault
+	useEffect(() => {
+		getDexGames()
+			.then(setGameOptions)
+			.catch(() => setGameOptions([]))
+	}, [])
+
 	const load = useCallback(async () => {
 		setLoading(true)
 		setError(null)
 		try {
-			const res = await getDexGrid({ page, pageSize: PAGE_SIZE, generation, search, unlockedOnly })
+			const res = await getDexGrid({
+				page,
+				pageSize: PAGE_SIZE,
+				generation,
+				search,
+				unlockedOnly,
+				originGame,
+			})
 			setEntries(res.items)
 			setTotal(res.total)
 		} catch (err) {
@@ -76,7 +97,7 @@ export const DexPage: React.FC = () => {
 		} finally {
 			setLoading(false)
 		}
-	}, [page, generation, search, unlockedOnly])
+	}, [page, generation, search, unlockedOnly, originGame])
 
 	useEffect(() => {
 		load()
@@ -94,6 +115,12 @@ export const DexPage: React.FC = () => {
 
 	const handleGenerationChange = (gen: number | null) => {
 		setGeneration(gen)
+		setPage(1)
+	}
+
+	const handleOriginGameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const val = e.target.value
+		setOriginGame(val === '' ? null : Number(val))
 		setPage(1)
 	}
 
@@ -225,6 +252,21 @@ export const DexPage: React.FC = () => {
 					<input type='checkbox' checked={unlockedOnly} onChange={handleUnlockedToggle} />
 					<span>Owned only</span>
 				</label>
+
+				{gameOptions.length > 0 && (
+					<select
+						className='dex-page__game-select'
+						value={originGame ?? ''}
+						onChange={handleOriginGameChange}
+						title='Filter by origin game'>
+						<option value=''>All games</option>
+						{gameOptions.map((g) => (
+							<option key={g.id} value={g.id}>
+								{g.name}
+							</option>
+						))}
+					</select>
+				)}
 			</div>
 
 			{/* Grid */}
