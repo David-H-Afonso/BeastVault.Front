@@ -14,9 +14,19 @@ interface PokemonDetailModalProps {
 	pokemon: PokemonListItemDto | null
 	isOpen: boolean
 	onClose: () => void
+	onDownload?: (id: number) => void
+	onDelete?: (id: number) => void
+	onManageTags?: (pokemon: PokemonListItemDto) => void
 }
 
-export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailModalProps) {
+export function PokemonDetailModal({
+	pokemon,
+	isOpen,
+	onClose,
+	onDownload,
+	onDelete,
+	onManageTags,
+}: PokemonDetailModalProps) {
 	const [detail, setDetail] = useState<PokemonDetailDto | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
@@ -91,6 +101,30 @@ export function PokemonDetailModal({ pokemon, isOpen, onClose }: PokemonDetailMo
 			<div ref={panelRef} className='detail-drawer-panel'>
 				{/* Header buttons */}
 				<div className='detail-drawer-header-btns'>
+					{onManageTags && (
+						<button
+							className='detail-drawer-dex-btn'
+							onClick={() => onManageTags(pokemon)}
+							title='Manage tags'>
+							🏷 Tags
+						</button>
+					)}
+					{onDownload && (
+						<button
+							className='detail-drawer-dex-btn'
+							onClick={() => onDownload(pokemon.id)}
+							title='Download PKM file'>
+							↓ Download
+						</button>
+					)}
+					{onDelete && (
+						<button
+							className='detail-drawer-dex-btn detail-drawer-dex-btn--danger'
+							onClick={() => onDelete(pokemon.id)}
+							title='Delete Pokémon'>
+							🗑 Delete
+						</button>
+					)}
 					{pokemon?.speciesId && (
 						<button
 							className='detail-drawer-dex-btn'

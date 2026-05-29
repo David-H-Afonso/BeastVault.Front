@@ -105,6 +105,17 @@
 		background: rgba(255, 255, 255, 0.13);
 		border-color: rgba(255, 255, 255, 0.25);
 	}
+
+	&--danger {
+		color: #f87171;
+		border-color: rgba(248, 113, 113, 0.25);
+
+		&:hover {
+			color: #fca5a5;
+			background: rgba(248, 113, 113, 0.12);
+			border-color: rgba(248, 113, 113, 0.45);
+		}
+	}
 }
 
 // Close button

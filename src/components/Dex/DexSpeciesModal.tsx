@@ -116,6 +116,11 @@ export function DexSpeciesModal({
 }: DexSpeciesModalProps) {
 	const [showShiny, setShowShiny] = useState(false)
 
+	// Auto-show shiny when the loaded species has owned shiny Pokémon
+	useEffect(() => {
+		setShowShiny(detail ? detail.ownedPokemon.some((p) => p.isShiny) : false)
+	}, [detail?.speciesId])
+
 	useEffect(() => {
 		const handleKey = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') onClose()

@@ -4,10 +4,12 @@ import { getDexGrid, getDexSpecies } from '@/services/DexService'
 import type { DexGridEntry, DexSpeciesDetail, DexOwnedPokemon } from '@/services/DexService'
 import { DexSpeciesModal } from './DexSpeciesModal'
 import { PokemonDetailModal } from '@/components/elements/PokemonDetailModal/PokemonDetailModal'
+import { TagManager } from '@/components/elements/TagManager/TagManager'
 import { getPreferredSpriteFromDto } from '@/utils/spriteUtils'
 import { useUISettings } from '@/hooks/useUISettings'
 import type { SpriteType } from '@/models/enums/SpriteTypes'
-import type { PokemonListItemDto } from '@/models/api/types'
+import type { PokemonListItemDto, TagDto } from '@/models/api/types'
+import { downloadPokemonFile, deletePokemonFromDatabase } from '@/services'
 import './DexPage.scss'
 
 const GENERATIONS = [
@@ -42,6 +44,7 @@ export const DexPage: React.FC = () => {
 	const [detailLoading, setDetailLoading] = useState(false)
 
 	const [detailPokemon, setDetailPokemon] = useState<PokemonListItemDto | null>(null)
+	const [tagPokemon, setTagPokemon] = useState<PokemonListItemDto | null>(null)
 
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -149,6 +152,43 @@ export const DexPage: React.FC = () => {
 		[speciesDetail]
 	)
 
+	const handleDownloadPokemon = useCallback(async (id: number) => {
+		try {
+			await downloadPokemonFile(id)
+		} catch (err) {
+			console.error('Download failed', err)
+		}
+	}, [])
+
+	const handleDeletePokemon = useCallback(
+		async (id: number) => {
+			if (!confirm('Delete this Pokémon from your vault? The file backup will be preserved.'))
+				return
+			try {
+				await deletePokemonFromDatabase(id)
+				setDetailPokemon(null)
+				// Refresh species detail so owned list updates
+				if (selectedSpeciesId) {
+					try {
+						const refreshed = await getDexSpecies(selectedSpeciesId)
+						setSpeciesDetail(refreshed)
+					} catch {
+						// ignore refresh error
+					}
+				}
+				load()
+			} catch (err) {
+				console.error('Delete failed', err)
+				alert('Failed to delete Pokémon.')
+			}
+		},
+		[selectedSpeciesId, load]
+	)
+
+	const handleManageTags = useCallback((p: PokemonListItemDto) => {
+		setTagPokemon(p)
+	}, [])
+
 	return (
 		<div className='dex-page'>
 			{/* Header */}
@@ -249,7 +289,23 @@ export const DexPage: React.FC = () => {
 				pokemon={detailPokemon}
 				isOpen={detailPokemon !== null}
 				onClose={() => setDetailPokemon(null)}
+				onDownload={handleDownloadPokemon}
+				onDelete={handleDeletePokemon}
+				onManageTags={handleManageTags}
 			/>
+
+			{tagPokemon && (
+				<TagManager
+					pokemon={tagPokemon}
+					isOpen={true}
+					onClose={() => setTagPokemon(null)}
+					onTagsUpdated={(pokemonId: number, newTags: TagDto[]) => {
+						if (detailPokemon?.id === pokemonId) {
+							setDetailPokemon((prev) => (prev ? { ...prev, tags: newTags } : prev))
+						}
+					}}
+				/>
+			)}
 		</div>
 	)
 }
