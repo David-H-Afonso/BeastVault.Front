@@ -1,5 +1,7 @@
+import { resolveSpriteUrl } from '@/utils/spriteUtils'
+
 /**
- * Get the icon URL for a Pokemon type
+ * Get the icon URL for a Pokemon type — served through the local backend cache.
  * @param typeName The name of the Pokemon type (e.g., "fire", "water", "grass")
  * @returns The URL to the type icon
  */
@@ -31,13 +33,8 @@ export function getTypeIconUrl(typeName: string): string {
 	}
 
 	const typeId = typeIdMap[typeNameLower]
-	if (!typeId) {
-		// Fallback to original name-based URL if type not found
-		return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${typeNameLower}.png`
-	}
-
-	// Use type ID for the URL — generation-ix scarlet-violet icons are compact circles
-	return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${typeId}.png`
+	const id = typeId ?? typeNameLower
+	return resolveSpriteUrl(`/sprites/types/${id}.png`) ?? ''
 }
 
 /**

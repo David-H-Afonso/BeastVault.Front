@@ -1,9 +1,16 @@
+// Tag Category type
+export type TagCategory = 'Uncategorized' | 'Run' | 'Team' | 'Collection' | 'Personal' | 'Utility'
+
 // Pokemon Tag Models
 export interface TagDto {
 	id: number
 	name: string
 	imagePath?: string
 	pokemonCount: number
+	category: TagCategory
+	colorHex?: string
+	sortOrder: number
+	description?: string
 }
 
 export interface PokemonTagAssignmentDto {
@@ -13,10 +20,31 @@ export interface PokemonTagAssignmentDto {
 
 export interface CreateTagDto {
 	name: string
+	category?: TagCategory
+	colorHex?: string
+	description?: string
 }
 
 export interface UpdateTagDto {
 	name: string
+	category?: TagCategory
+	colorHex?: string
+	sortOrder?: number
+	description?: string
+}
+
+export interface BulkTagRequest {
+	pokemonIds: number[]
+	addTagIds?: number[]
+	removeTagIds?: number[]
+	replaceTagIds?: number[]
+	includeDuplicateFiles?: boolean
+}
+
+export interface BulkTagResult {
+	affectedPokemon: number
+	tagsAdded: number
+	tagsRemoved: number
 }
 
 // Extended Pokemon model to include tags

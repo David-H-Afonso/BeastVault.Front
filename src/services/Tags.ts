@@ -2,7 +2,8 @@ import type {
 	TagDto,
 	CreateTagDto,
 	UpdateTagDto,
-	PokemonTagAssignmentDto,
+	BulkTagRequest,
+	BulkTagResult,
 } from '../models/api/types'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
@@ -63,11 +64,25 @@ export async function deleteTag(id: number): Promise<void> {
  */
 export async function uploadTagImage(id: number, imageFile: File): Promise<TagDto> {
 	const formData = new FormData()
-	formData.append('image', imageFile)
+	formData.append('file', imageFile)
 
 	return customFetch<TagDto>(`${environment.baseUrl}/tags/${id}/image`, {
 		method: 'POST',
 		body: formData,
+	})
+}
+
+/**
+ * Usar una URL como imagen de una tag
+ * PUT /tags/{id}/image-url
+ */
+export async function setTagImageUrl(id: number, imageUrl: string): Promise<TagDto> {
+	return customFetch<TagDto>(`${environment.baseUrl}/tags/${id}/image-url`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ imageUrl }),
 	})
 }
 
@@ -98,17 +113,12 @@ export async function getPokemonTags(pokemonId: number): Promise<TagDto[]> {
  * PUT /pokemon/{pokemonId}/tags
  */
 export async function assignTagsToPokemon(pokemonId: number, tagIds: number[]): Promise<void> {
-	const data: PokemonTagAssignmentDto = {
-		pokemonId,
-		tagIds,
-	}
-
 	return customFetch<void>(`${environment.baseUrl}/pokemon/${pokemonId}/tags`, {
 		method: 'PUT',
 		headers: {
 			'Content-Type': 'application/json',
 		},
-		body: JSON.stringify(data),
+		body: JSON.stringify({ tagIds }),
 	})
 }
 
@@ -119,6 +129,20 @@ export async function assignTagsToPokemon(pokemonId: number, tagIds: number[]): 
 export async function removeAllTagsFromPokemon(pokemonId: number): Promise<void> {
 	return customFetch<void>(`${environment.baseUrl}/pokemon/${pokemonId}/tags`, {
 		method: 'DELETE',
+	})
+}
+
+/**
+ * Bulk update tags for multiple Pokemon
+ * PATCH /pokemon/tags/bulk
+ */
+export async function bulkUpdateTags(request: BulkTagRequest): Promise<BulkTagResult> {
+	return customFetch<BulkTagResult>(`${environment.baseUrl}/pokemon/tags/bulk`, {
+		method: 'PATCH',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(request),
 	})
 }
 

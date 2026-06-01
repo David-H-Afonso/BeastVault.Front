@@ -18,7 +18,11 @@ import {
 	populateAbilities,
 	populateTypes,
 	populateEvolutionChains,
+	enrichBulbapedia,
+	normalizeCachedBulbapedia,
+	backfillEntriesAndLocations,
 } from '@/services/PokedexCache'
+import { refreshPokemonData } from '@/services/Pokemon'
 import type { UserDto } from '@/models/Auth'
 import type { PopulationStatus } from '@/services/PokedexCache'
 import './AdminPanel.scss'
@@ -127,6 +131,30 @@ const AdminPanel: React.FC = () => {
 	const [chainEndId, setChainEndId] = useState(549)
 	const [chainLoading, setChainLoading] = useState(false)
 	const [chainMessage, setChainMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
+	// Bulbapedia enrich
+	const [bulbStartId, setBulbStartId] = useState(1)
+	const [bulbEndId, setBulbEndId] = useState(1025)
+	const [bulbLoading, setBulbLoading] = useState(false)
+	const [bulbNormalizeLoading, setBulbNormalizeLoading] = useState(false)
+	const [bulbMessage, setBulbMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
+	// Refresh Pokemon data
+	const [refreshLoading, setRefreshLoading] = useState(false)
+	const [refreshMessage, setRefreshMessage] = useState<{
+		type: 'success' | 'error'
+		text: string
+	} | null>(null)
+
+	// Backfill entries & locations
+	const [backfillLoading, setBackfillLoading] = useState(false)
+	const [backfillMessage, setBackfillMessage] = useState<{
 		type: 'success' | 'error'
 		text: string
 	} | null>(null)
@@ -320,6 +348,80 @@ const AdminPanel: React.FC = () => {
 				text: err instanceof Error ? err.message : 'Failed to populate evolution chains',
 			})
 			setChainLoading(false)
+		}
+	}
+
+	const handleEnrichBulbapedia = async () => {
+		setBulbLoading(true)
+		setBulbMessage(null)
+		try {
+			await enrichBulbapedia(bulbStartId, bulbEndId)
+			setBulbMessage({
+				type: 'success',
+				text: `Bulbapedia enrichment started for species ${bulbStartId}-${bulbEndId}. This runs in the background.`,
+			})
+		} catch (err) {
+			setBulbMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to start Bulbapedia enrichment',
+			})
+		} finally {
+			setBulbLoading(false)
+		}
+	}
+
+	const handleNormalizeBulbapedia = async () => {
+		setBulbNormalizeLoading(true)
+		setBulbMessage(null)
+		try {
+			await normalizeCachedBulbapedia(bulbStartId, bulbEndId)
+			setBulbMessage({
+				type: 'success',
+				text: `Bulbapedia normalization started for cached species ${bulbStartId}-${bulbEndId}.`,
+			})
+			window.setTimeout(fetchPopStatus, 1500)
+		} catch (err) {
+			setBulbMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to start Bulbapedia normalization',
+			})
+		} finally {
+			setBulbNormalizeLoading(false)
+		}
+	}
+
+	const handleRefreshPokemonData = async () => {
+		setRefreshLoading(true)
+		setRefreshMessage(null)
+		try {
+			const result = await refreshPokemonData()
+			setRefreshMessage({
+				type: 'success',
+				text: result.message,
+			})
+		} catch (err) {
+			setRefreshMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to refresh Pokémon data',
+			})
+		} finally {
+			setRefreshLoading(false)
+		}
+	}
+
+	const handleBackfillEntries = async () => {
+		setBackfillLoading(true)
+		setBackfillMessage(null)
+		try {
+			const result = await backfillEntriesAndLocations()
+			setBackfillMessage({ type: 'success', text: result.message })
+		} catch (err) {
+			setBackfillMessage({
+				type: 'error',
+				text: err instanceof Error ? err.message : 'Failed to start backfill',
+			})
+		} finally {
+			setBackfillLoading(false)
 		}
 	}
 
@@ -1138,6 +1240,121 @@ const AdminPanel: React.FC = () => {
 									{chainLoading
 										? `Populating... ${popStatus?.isPopulatingChains ? `(${popStatus.populatingChainsCurrent}/${popStatus.populatingChainsTotal})` : ''}`
 										: 'Populate Evolution Chains'}
+								</button>
+							</div>
+						</section>
+
+						{/* Bulbapedia Enrich */}
+						<section className='admin-section'>
+							<div className='admin-form'>
+								<h2 className='section-title'>Bulbapedia Cache</h2>
+								<div className='form-row'>
+									<div className='form-field'>
+										<label htmlFor='bulb-start'>Start ID</label>
+										<input
+											id='bulb-start'
+											type='number'
+											min={1}
+											max={1025}
+											value={bulbStartId}
+											onChange={(e) => setBulbStartId(Number(e.target.value))}
+											disabled={bulbLoading || bulbNormalizeLoading}
+										/>
+									</div>
+									<div className='form-field'>
+										<label htmlFor='bulb-end'>End ID</label>
+										<input
+											id='bulb-end'
+											type='number'
+											min={1}
+											max={1025}
+											value={bulbEndId}
+											onChange={(e) => setBulbEndId(Number(e.target.value))}
+											disabled={bulbLoading || bulbNormalizeLoading}
+										/>
+									</div>
+								</div>
+								{popStatus && (
+									<div className='pokedex-status pokedex-status--compact'>
+										<p>
+											<strong>Raw cached:</strong> {popStatus.totalBulbapediaCached ?? 0}
+										</p>
+										<p>
+											<strong>Normalized:</strong> {popStatus.totalBulbapediaNormalized ?? 0}
+										</p>
+										<p>
+											<strong>Entries:</strong> {popStatus.totalBulbapediaFlavorEntries ?? 0}
+										</p>
+										<p>
+											<strong>Locations:</strong> {popStatus.totalBulbapediaLocations ?? 0}
+										</p>
+										<p>
+											<strong>Sprites:</strong> {popStatus.totalBulbapediaSprites ?? 0}
+										</p>
+									</div>
+								)}
+								{bulbMessage && (
+									<div className={`form-message form-message--${bulbMessage.type}`}>
+										{bulbMessage.text}
+									</div>
+								)}
+								<div className='admin-actions-row'>
+									<button
+										className='btn btn--primary'
+										onClick={handleEnrichBulbapedia}
+										disabled={bulbLoading || bulbNormalizeLoading}>
+										{bulbLoading ? 'Starting...' : 'Fetch + Normalize Bulbapedia'}
+									</button>
+									<button
+										className='btn btn--secondary'
+										onClick={handleNormalizeBulbapedia}
+										disabled={bulbLoading || bulbNormalizeLoading}>
+										{bulbNormalizeLoading ? 'Starting...' : 'Normalize Cached Pages'}
+									</button>
+								</div>
+							</div>
+						</section>
+
+						{/* Refresh Pokemon Data */}
+						<section className='admin-section'>
+							<div className='admin-form'>
+								<h2 className='section-title'>Backfill Pokédex Entries & Locations</h2>
+								<p style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: 8 }}>
+									Fetches flavor text entries and encounter locations from PokeAPI for all cached
+									species. Only fills missing data — safe to run multiple times.
+								</p>
+								{backfillMessage && (
+									<div className={`form-message form-message--${backfillMessage.type}`}>
+										{backfillMessage.text}
+									</div>
+								)}
+								<button
+									className='btn btn--primary'
+									onClick={handleBackfillEntries}
+									disabled={backfillLoading}>
+									{backfillLoading ? 'Starting...' : 'Backfill Entries & Locations'}
+								</button>
+							</div>
+						</section>
+
+						{/* Refresh Pokemon Data */}
+						<section className='admin-section'>
+							<div className='admin-form'>
+								<h2 className='section-title'>Refresh Pokémon Data</h2>
+								<p style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: 8 }}>
+									Re-parses all stored Pokémon files to fix friendship, met level, met location, and
+									other metadata.
+								</p>
+								{refreshMessage && (
+									<div className={`form-message form-message--${refreshMessage.type}`}>
+										{refreshMessage.text}
+									</div>
+								)}
+								<button
+									className='btn btn--primary'
+									onClick={handleRefreshPokemonData}
+									disabled={refreshLoading}>
+									{refreshLoading ? 'Refreshing...' : 'Refresh All Pokémon Data'}
 								</button>
 							</div>
 						</section>

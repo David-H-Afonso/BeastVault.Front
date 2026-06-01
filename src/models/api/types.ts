@@ -332,12 +332,22 @@ export const API_CONSTANTS = {
 // ===================================
 
 /**
+ * Categoría de tag
+ */
+export type TagCategory = 'Uncategorized' | 'Run' | 'Team' | 'Collection' | 'Personal' | 'Utility'
+
+/**
  * Tag DTO para el sistema de etiquetas de Pokemon
  */
 export interface TagDto {
 	id: number
 	name: string
 	imagePath?: string | null
+	pokemonCount: number
+	category: TagCategory
+	colorHex?: string | null
+	sortOrder: number
+	description?: string | null
 }
 
 /**
@@ -345,16 +355,20 @@ export interface TagDto {
  */
 export interface CreateTagDto {
 	name: string
-	imagePath?: string | null
+	category?: TagCategory
+	colorHex?: string | null
+	description?: string | null
 }
 
 /**
  * DTO para actualizar un tag existente
  */
 export interface UpdateTagDto {
-	id: number
-	name?: string
-	imagePath?: string | null
+	name: string
+	category?: TagCategory
+	colorHex?: string | null
+	sortOrder?: number
+	description?: string | null
 }
 
 /**
@@ -363,4 +377,24 @@ export interface UpdateTagDto {
 export interface PokemonTagAssignmentDto {
 	pokemonId: number
 	tagIds: number[]
+}
+
+/**
+ * Request para operaciones bulk de tags
+ */
+export interface BulkTagRequest {
+	pokemonIds: number[]
+	addTagIds?: number[]
+	removeTagIds?: number[]
+	replaceTagIds?: number[]
+	includeDuplicateFiles?: boolean
+}
+
+/**
+ * Resultado de operaciones bulk de tags
+ */
+export interface BulkTagResult {
+	affectedPokemon: number
+	tagsAdded: number
+	tagsRemoved: number
 }

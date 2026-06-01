@@ -350,13 +350,19 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--shadow-xl: #{$shadow-xl};
 	--shadow-2xl: #{$shadow-2xl};
 	--shadow-3xl: #{$shadow-3xl};
+
+	// ============ LAYOUT TOKENS ============
+	--app-header-height: 52px;
+	--bottom-nav-height: 60px;
+	--page-pad-x: 8px;
+	--page-pad-y: 12px;
+	--panel-width: 520px;
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 // ================================
 // MIXINS ÚTILES
 // ================================
-
-// Mixin para crear variantes con alpha
 @mixin color-alpha($color, $alpha) {
 	color: rgba($color, $alpha);
 }
@@ -374,11 +380,19 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	color: $base-color;
 
 	&:hover {
-		color: if($hover-color, $hover-color, lighten($base-color, 10%));
+		@if $hover-color {
+			color: $hover-color;
+		} @else {
+			color: lighten($base-color, 10%);
+		}
 	}
 
 	&:focus {
-		color: if($focus-color, $focus-color, $base-color);
+		@if $focus-color {
+			color: $focus-color;
+		} @else {
+			color: $base-color;
+		}
 		outline: 2px solid var(--color-focus-ring);
 	}
 }
@@ -402,5 +416,69 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 		box-shadow: var(--shadow-2xl);
 	} @else if $level == '3xl' {
 		box-shadow: var(--shadow-3xl);
+	}
+}
+
+// ================================
+// BREAKPOINTS & RESPONSIVE SYSTEM
+// ================================
+
+// Breakpoint thresholds (min-width)
+$bp-xs: 360px;
+$bp-sm: 600px;
+$bp-md: 900px;
+$bp-lg: 1200px;
+$bp-xl: 1440px;
+
+// Mobile-first responsive mixins
+@mixin mobile-only {
+	@media (max-width: #{$bp-sm - 1}) {
+		@content;
+	}
+}
+
+@mixin tablet-up {
+	@media (min-width: $bp-sm) {
+		@content;
+	}
+}
+
+@mixin desktop-up {
+	@media (min-width: $bp-md) {
+		@content;
+	}
+}
+
+@mixin wide-up {
+	@media (min-width: $bp-xl) {
+		@content;
+	}
+}
+
+@mixin from-width($bp) {
+	@media (min-width: $bp) {
+		@content;
+	}
+}
+
+@mixin until-width($bp) {
+	@media (max-width: #{$bp - 1}) {
+		@content;
+	}
+}
+
+// Minimum touch target size (WCAG 2.5.5)
+$touch-min: 44px;
+
+// Motion-safe animation mixin
+@mixin motion-safe {
+	@media (prefers-reduced-motion: no-preference) {
+		@content;
+	}
+}
+
+@mixin motion-reduce {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
 	}
 }

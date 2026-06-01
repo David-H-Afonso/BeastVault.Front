@@ -1,7 +1,9 @@
+@use '@/assets/styles' as *;
+
 .dex-page {
 	max-width: 1400px;
 	margin: 0 auto;
-	padding: 1.5rem 1.25rem 3rem;
+	padding: var(--page-pad-y) var(--page-pad-x) 3rem;
 
 	&__header {
 		margin-bottom: 1.5rem;
@@ -45,8 +47,15 @@
 
 	&__gen-filters {
 		display: flex;
-		flex-wrap: wrap;
 		gap: 0.25rem;
+		// Mobile: horizontal scroll chips
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scrollbar-width: none;
+		&::-webkit-scrollbar {
+			display: none;
+		}
+		-webkit-overflow-scrolling: touch;
 	}
 
 	&__gen-btn {
@@ -156,11 +165,22 @@
 
 .dex-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-	gap: 0.75rem;
+	// Mobile: 3 columns minimum, smaller cards
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.5rem;
 
-	@media (max-width: 600px) {
-		grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+	@media (max-width: 340px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	@media (min-width: 480px) {
+		grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+		gap: 0.625rem;
+	}
+
+	@media (min-width: 900px) {
+		grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+		gap: 0.75rem;
 	}
 }
 
@@ -182,6 +202,7 @@
 		box-shadow 0.15s;
 	text-align: center;
 	text-decoration: none;
+	color: inherit;
 
 	&:hover {
 		transform: translateY(-2px);

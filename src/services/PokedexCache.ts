@@ -71,6 +71,11 @@ export interface PopulationStatus {
 	populatingChainsTotal: number
 	totalTypes: number
 	isPopulatingTypes: boolean
+	totalBulbapediaCached: number
+	totalBulbapediaNormalized: number
+	totalBulbapediaFlavorEntries: number
+	totalBulbapediaLocations: number
+	totalBulbapediaSprites: number
 }
 
 const memoryCache = new Map<number, CachedSpeciesData>()
@@ -148,6 +153,36 @@ export async function populateEvolutionChains(
 	return customFetch(`${environment.baseUrl}/pokedex/populate-evolution-chains`, {
 		method: 'POST',
 		body: { startId: startId ?? 1, endId: endId ?? 549 },
+	})
+}
+
+export async function enrichBulbapedia(
+	startId?: number,
+	endId?: number
+): Promise<{ message: string }> {
+	return customFetch(`${environment.baseUrl}/pokedex/enrich`, {
+		method: 'POST',
+		body: { startId: startId ?? 1, endId: endId ?? 1025 },
+	})
+}
+
+export async function normalizeCachedBulbapedia(
+	startId?: number,
+	endId?: number
+): Promise<{ message: string }> {
+	return customFetch(`${environment.baseUrl}/pokedex/normalize-bulbapedia`, {
+		method: 'POST',
+		body: { startId: startId ?? 1, endId: endId ?? 1025 },
+	})
+}
+
+export async function backfillEntriesAndLocations(
+	startId?: number,
+	endId?: number
+): Promise<{ message: string }> {
+	return customFetch(`${environment.baseUrl}/pokedex/backfill-entries`, {
+		method: 'POST',
+		body: { startId: startId ?? 1, endId: endId ?? 1025 },
 	})
 }
 

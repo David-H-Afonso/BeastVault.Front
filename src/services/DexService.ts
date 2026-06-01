@@ -33,6 +33,56 @@ export interface DexOwnedPokemon {
 	spriteUrl: string
 }
 
+export interface DexLocalizedName {
+	language: string
+	name: string
+	romanizedName?: string
+}
+
+export interface DexFlavorEntry {
+	language: string
+	gameVersion: string
+	text: string
+	source: string
+}
+
+export interface DexLocation {
+	game: string
+	location: string
+	method?: string
+	source: string
+}
+
+export interface DexGenerationSprites {
+	generation: number
+	label: string
+	normalUrl?: string
+	shinyUrl?: string
+	backUrl?: string
+	backShinyUrl?: string
+	source: string
+}
+
+export interface DexForm {
+	pokemonId: number
+	name: string
+	isDefault: boolean
+	types: string[]
+	abilities: { name: string; isHidden: boolean; slot: number }[]
+	sprites: PokemonSpritesDto | null
+}
+
+export interface DexCacheStatus {
+	pokeApiCached: boolean
+	bulbapediaCached: boolean
+	bulbapediaStatus?: string
+	bulbapediaNormalized?: boolean
+	bulbapediaNormalizedStatus?: string
+	bulbapediaEntriesCount?: number
+	bulbapediaLocationsCount?: number
+	bulbapediaSpritesCount?: number
+}
+
 export interface DexSpeciesDetail {
 	speciesId: number
 	name: string
@@ -55,6 +105,16 @@ export interface DexSpeciesDetail {
 	isUnlocked: boolean
 	ownedPokemon: DexOwnedPokemon[]
 	evolutionChainJson: string | null
+	// Enriched data
+	localizedNames: DexLocalizedName[]
+	japaneseName?: string
+	japaneseRomanized?: string
+	nameMeaning?: string
+	flavorEntries: DexFlavorEntry[]
+	locations: DexLocation[]
+	spritesByGeneration: DexGenerationSprites[]
+	forms: DexForm[]
+	cacheStatus: DexCacheStatus
 }
 
 export interface DexGameOption {

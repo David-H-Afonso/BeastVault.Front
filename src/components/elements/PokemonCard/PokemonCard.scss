@@ -58,16 +58,24 @@
 	@include card-shadow('md');
 	transition:
 		transform 0.3s ease,
-		box-shadow 0.3s ease; // Solo transiciones para hover, no para loading
-	color: white; // Mantener blanco por defecto para temas oscuros
+		box-shadow 0.3s ease;
+	color: white;
 	font-family: 'Segoe UI', sans-serif;
 	display: flex;
 	flex-direction: column;
 	border: 3px solid transparent;
 	flex: 1 1 0;
-	max-width: 190px;
-	min-width: 140px;
-	// width: 100%;
+	// Mobile: no hard min/max so cards fit 2-column grid at 320px+
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+	text-decoration: none;
+
+	// Tablet+: restore original proportions
+	@include tablet-up {
+		max-width: 190px;
+		min-width: 140px;
+	}
 }
 
 /* Skeleton loading state */
@@ -190,8 +198,11 @@
 }
 
 .pokemonCardModern:hover {
-	transform: translateY(-2px);
 	@include card-shadow('xl');
+
+	@include motion-safe {
+		transform: translateY(-2px);
+	}
 }
 
 /* Grid container for cards (to be used in parent, e.g. .pokemon-grid) */
@@ -514,8 +525,17 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-height: 100px;
-	margin-bottom: 14px;
+	// Fixed aspect-ratio container so cards don't jump while images load
+	aspect-ratio: 1;
+	max-height: 100px;
+	margin-bottom: 8px;
+
+	@include tablet-up {
+		min-height: 100px;
+		max-height: 120px;
+		aspect-ratio: unset;
+		margin-bottom: 14px;
+	}
 }
 
 .pokemonSprite {
@@ -569,8 +589,9 @@
 .nameAndBall {
 	display: flex;
 	align-items: center;
-	max-width: fit-content;
+	max-width: 100%;
 	overflow: hidden;
+	min-width: 0;
 }
 
 .ballIconInline {
@@ -584,16 +605,20 @@
 }
 
 .pokemonName {
-	font-size: 16px;
+	font-size: 13px;
 	font-weight: 700;
 	margin: 0;
 	display: flex;
 	align-items: center;
 	gap: 4px;
-	max-width: fit-content;
+	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+
+	@include tablet-up {
+		font-size: 15px;
+	}
 }
 
 .genderSymbol {

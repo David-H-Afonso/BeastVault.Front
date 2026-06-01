@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type SyntheticEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import type { PokemonDetailDto } from '@/models/Pokemon'
 import type { PokemonListItemDto } from '@/models/api/types'
 import { getPokemonById } from '@/services'
-import { getPreferredSpriteFromDto } from '@/utils/spriteUtils'
+import { getPreferredSpriteFromDto, resolveSpriteUrl } from '@/utils/spriteUtils'
 import { getTypeIconUrl } from '@/utils'
 import { getComputedTypeColor } from '@/utils/typeColors'
 import { useUISettings } from '@/hooks/useUISettings'
@@ -33,6 +33,9 @@ export function PokemonDetailModal({
 	const { spriteType } = useUISettings()
 	const panelRef = useRef<HTMLDivElement>(null)
 	const navigate = useNavigate()
+	const hideBrokenImage = (event: SyntheticEvent<HTMLImageElement>) => {
+		event.currentTarget.style.display = 'none'
+	}
 
 	// Load detail data when opened
 	useEffect(() => {
@@ -106,7 +109,7 @@ export function PokemonDetailModal({
 							className='detail-drawer-dex-btn'
 							onClick={() => onManageTags(pokemon)}
 							title='Manage tags'>
-							🏷 Tags
+							Tags
 						</button>
 					)}
 					{onDownload && (
@@ -181,7 +184,11 @@ export function PokemonDetailModal({
 
 						{pokemon.ballSpriteUrl && (
 							<div className='detail-ball'>
-								<img src={pokemon.ballSpriteUrl} alt='Ball' />
+								<img
+									src={resolveSpriteUrl(pokemon.ballSpriteUrl) ?? ''}
+									alt='Ball'
+									onError={hideBrokenImage}
+								/>
 								<span>{pokemon.ballName}</span>
 							</div>
 						)}

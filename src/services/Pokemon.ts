@@ -313,3 +313,17 @@ export async function scanPokemonDirectory(): Promise<{
 		},
 	})
 }
+
+/**
+ * Re-parses all stored Pokémon files and updates metadata (friendship, met level, met location, etc.)
+ */
+export async function refreshPokemonData(): Promise<{
+	message: string
+	updated: number
+	errors: number
+	total: number
+}> {
+	return customFetch(`${environment.baseUrl}/scan/refresh`, {
+		method: 'POST',
+	})
+}

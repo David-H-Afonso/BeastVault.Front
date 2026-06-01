@@ -1,14 +1,27 @@
-import { useState, useEffect } from 'react'
-import type { TagDto, PokemonListItemDto } from '../../../models/api/types'
+import { useState, useEffect, type SyntheticEvent } from 'react'
+import type { TagDto, PokemonListItemDto, TagCategory } from '../../../models/api/types'
 import {
 	getAllTags,
 	createTag,
 	deleteTag,
 	assignTagsToPokemon,
 	uploadTagImage,
+	setTagImageUrl,
 	deleteTagImage,
 } from '../../../services/Tags'
+import { environment } from '@/environments'
 import './TagManager.scss'
+
+type TagImageMode = 'upload' | 'url'
+
+function resolveTagImageUrl(path: string | null | undefined): string | null {
+	if (!path) return null
+	if (/^(https?:|data:|blob:)/i.test(path)) return path
+
+	const normalized = path.replace(/\\/g, '/').replace(/^wwwroot\//i, '/')
+	if (normalized.startsWith('/')) return `${environment.baseUrl}${normalized}`
+	return `${environment.baseUrl}/${normalized}`
+}
 
 interface TagManagerProps {
 	pokemon: PokemonListItemDto
@@ -28,9 +41,13 @@ export function TagManager({
 	const [allTags, setAllTags] = useState<TagDto[]>([])
 	const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 	const [newTagName, setNewTagName] = useState('')
+	const [newTagCategory, setNewTagCategory] = useState<TagCategory>('Uncategorized')
+	const [newTagColor, setNewTagColor] = useState('#6b7280')
 	const [loading, setLoading] = useState(false)
 	const [creatingTag, setCreatingTag] = useState(false)
 	const [uploadingImages, setUploadingImages] = useState<Set<number>>(new Set())
+	const [imageModes, setImageModes] = useState<Record<number, TagImageMode>>({})
+	const [imageUrls, setImageUrls] = useState<Record<number, string>>({})
 
 	// Initialize selected tags from pokemon.tags
 	useEffect(() => {
@@ -63,10 +80,16 @@ export function TagManager({
 
 		try {
 			setCreatingTag(true)
-			const newTag = await createTag({ name: newTagName.trim() })
+			const newTag = await createTag({
+				name: newTagName.trim(),
+				category: newTagCategory !== 'Uncategorized' ? newTagCategory : undefined,
+				colorHex: newTagColor !== '#6b7280' ? newTagColor : undefined,
+			})
 			setAllTags((prev) => [...prev, newTag])
 			setSelectedTagIds((prev) => [...prev, newTag.id])
 			setNewTagName('')
+			setNewTagCategory('Uncategorized')
+			setNewTagColor('#6b7280')
 			onTagSystemChanged?.()
 		} catch (error) {
 			console.error('Error creating tag:', error)
@@ -107,7 +130,28 @@ export function TagManager({
 			setAllTags((prev) => prev.map((tag) => (tag.id === tagId ? updatedTag : tag)))
 		} catch (error) {
 			console.error('Error uploading image:', error)
-			alert('Error uploading image. Make sure it is a PNG file.')
+			alert('Error uploading image. Use PNG, JPG, WebP, or GIF.')
+		} finally {
+			setUploadingImages((prev) => {
+				const newSet = new Set(prev)
+				newSet.delete(tagId)
+				return newSet
+			})
+		}
+	}
+
+	const handleImageUrlSave = async (tagId: number) => {
+		const imageUrl = imageUrls[tagId]?.trim()
+		if (!imageUrl) return
+
+		try {
+			setUploadingImages((prev) => new Set(prev).add(tagId))
+			const updatedTag = await setTagImageUrl(tagId, imageUrl)
+			setAllTags((prev) => prev.map((tag) => (tag.id === tagId ? updatedTag : tag)))
+			setImageUrls((prev) => ({ ...prev, [tagId]: '' }))
+		} catch (error) {
+			console.error('Error setting image URL:', error)
+			alert('Error setting image URL. Use a complete http:// or https:// URL.')
 		} finally {
 			setUploadingImages((prev) => {
 				const newSet = new Set(prev)
@@ -151,16 +195,25 @@ export function TagManager({
 
 	if (!isOpen) return null
 
+	const selectedCount = selectedTagIds.length
+	const pokemonName = pokemon.nickname || pokemon.speciesName || `#${pokemon.speciesId}`
+	const hideBrokenImage = (event: SyntheticEvent<HTMLImageElement>) => {
+		event.currentTarget.style.display = 'none'
+	}
+
 	return (
 		<div className='tag-manager-overlay' onClick={handleClose}>
 			<div className='tag-manager-modal' onClick={(e) => e.stopPropagation()}>
 				<div className='tag-manager-header'>
-					<h3>🏷️ Manage Tags</h3>
-					<p>
-						<strong>{pokemon.nickname || `${pokemon.speciesId}`}</strong> - Level {pokemon.level}
-						{pokemon.isShiny && <span className='shiny-indicator'>✨</span>}
-					</p>
-					<button className='close-button' onClick={handleClose}>
+					<div>
+						<h3>Manage Tags</h3>
+						<p>
+							<strong>{pokemonName}</strong>
+							<span>Lv. {pokemon.level}</span>
+							{pokemon.isShiny && <span>Shiny</span>}
+						</p>
+					</div>
+					<button className='close-button' onClick={handleClose} aria-label='Close tag manager'>
 						×
 					</button>
 				</div>
@@ -178,11 +231,29 @@ export function TagManager({
 								onKeyPress={(e) => e.key === 'Enter' && handleCreateTag()}
 								disabled={creatingTag}
 							/>
+							<select
+								value={newTagCategory}
+								onChange={(e) => setNewTagCategory(e.target.value as TagCategory)}
+								disabled={creatingTag}>
+								<option value='Uncategorized'>Category...</option>
+								<option value='Run'>Run</option>
+								<option value='Team'>Team</option>
+								<option value='Collection'>Collection</option>
+								<option value='Personal'>Personal</option>
+								<option value='Utility'>Utility</option>
+							</select>
+							<input
+								type='color'
+								value={newTagColor}
+								onChange={(e) => setNewTagColor(e.target.value)}
+								disabled={creatingTag}
+								title='Tag color'
+							/>
 							<button
 								onClick={handleCreateTag}
 								disabled={!newTagName.trim() || creatingTag}
 								className='create-button'>
-								{creatingTag ? '⏳' : '➕'} Create
+								{creatingTag ? 'Creating...' : 'Create'}
 							</button>
 						</div>
 					</div>
@@ -198,36 +269,90 @@ export function TagManager({
 									<div
 										key={tag.id}
 										className={`tag-item ${selectedTagIds.includes(tag.id) ? 'selected' : ''}`}>
-										<div className='tag-content' onClick={() => handleTagToggle(tag.id)}>
+										<button
+											type='button'
+											className='tag-content'
+											onClick={() => handleTagToggle(tag.id)}>
+											{tag.colorHex && (
+												<span className='tag-color-dot' style={{ background: tag.colorHex }} />
+											)}
 											{tag.imagePath && (
-												<img src={`${tag.imagePath}`} alt={tag.name} className='tag-image' />
+												<img
+													src={resolveTagImageUrl(tag.imagePath) ?? ''}
+													alt={tag.name}
+													className='tag-image'
+													onError={hideBrokenImage}
+												/>
 											)}
 											<span className='tag-name'>{tag.name}</span>
+											{tag.category && tag.category !== 'Uncategorized' && (
+												<span className='tag-category-badge'>{tag.category}</span>
+											)}
 											{selectedTagIds.includes(tag.id) && (
 												<span className='selected-indicator'>✓</span>
 											)}
-										</div>
+										</button>
 
 										<div className='tag-actions'>
-											<label className='image-upload-label'>
-												📷
-												<input
-													type='file'
-													accept='.png'
-													onChange={(e) => {
-														const file = e.target.files?.[0]
-														if (file) handleImageUpload(tag.id, file)
-													}}
-													disabled={uploadingImages.has(tag.id)}
-												/>
-											</label>
+											<div className='tag-image-editor'>
+												<div className='tag-image-mode'>
+													<button
+														type='button'
+														className={imageModes[tag.id] !== 'url' ? 'active' : ''}
+														onClick={() =>
+															setImageModes((prev) => ({ ...prev, [tag.id]: 'upload' }))
+														}>
+														Upload
+													</button>
+													<button
+														type='button'
+														className={imageModes[tag.id] === 'url' ? 'active' : ''}
+														onClick={() =>
+															setImageModes((prev) => ({ ...prev, [tag.id]: 'url' }))
+														}>
+														URL
+													</button>
+												</div>
+												{imageModes[tag.id] === 'url' ? (
+													<div className='tag-image-url-row'>
+														<input
+															type='url'
+															value={imageUrls[tag.id] ?? ''}
+															onChange={(e) =>
+																setImageUrls((prev) => ({ ...prev, [tag.id]: e.target.value }))
+															}
+															placeholder='https://...'
+															disabled={uploadingImages.has(tag.id)}
+														/>
+														<button
+															type='button'
+															onClick={() => handleImageUrlSave(tag.id)}
+															disabled={uploadingImages.has(tag.id) || !imageUrls[tag.id]?.trim()}>
+															Set
+														</button>
+													</div>
+												) : (
+													<label className='image-upload-label' title='Upload image'>
+														{uploadingImages.has(tag.id) ? 'Uploading...' : 'Choose image'}
+														<input
+															type='file'
+															accept='image/png,image/jpeg,image/webp,image/gif'
+															onChange={(e) => {
+																const file = e.target.files?.[0]
+																if (file) handleImageUpload(tag.id, file)
+															}}
+															disabled={uploadingImages.has(tag.id)}
+														/>
+													</label>
+												)}
+											</div>
 
 											{tag.imagePath && (
 												<button
 													className='remove-image-button'
 													onClick={() => handleRemoveImage(tag.id)}
 													title='Remove image'>
-													🗑️
+													Remove
 												</button>
 											)}
 
@@ -235,7 +360,7 @@ export function TagManager({
 												className='delete-tag-button'
 												onClick={() => handleDeleteTag(tag.id)}
 												title='Delete tag'>
-												❌
+												Delete
 											</button>
 										</div>
 									</div>
@@ -247,14 +372,14 @@ export function TagManager({
 
 				<div className='tag-manager-footer'>
 					<div className='selected-count'>
-						{selectedTagIds.length} tag{selectedTagIds.length !== 1 ? 's' : ''} selected
+						{selectedCount} tag{selectedCount !== 1 ? 's' : ''} selected
 					</div>
 					<div className='footer-buttons'>
 						<button onClick={handleClose} className='cancel-button'>
 							Cancel
 						</button>
 						<button onClick={handleSave} disabled={loading} className='save-button'>
-							{loading ? '⏳ Saving...' : '💾 Save Tags'}
+							{loading ? 'Saving...' : 'Save Tags'}
 						</button>
 					</div>
 				</div>

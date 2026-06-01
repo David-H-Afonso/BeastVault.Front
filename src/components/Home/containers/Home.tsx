@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
-import { downloadPokemonFile } from '@/services/Pokemon'
+import { useParams, useNavigate } from 'react-router-dom'
+import { downloadPokemonFile, getPokemonById } from '@/services/Pokemon'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { PokemonListItemDto, TagDto } from '@/models/api/types'
 import { useUISettings } from '@/hooks/useUISettings'
 import { usePokemon } from '@/hooks/usePokemon'
 import { groupPokemonByTags } from '@/utils'
 import { getPreferredSpriteFromDto } from '@/utils/spriteUtils'
-import { PokemonDetailModal } from '@/components/elements/PokemonDetailModal/PokemonDetailModal'
+import { DetailShell } from '@/components/elements/DetailShell/DetailShell'
+import { PokemonDetailPanel } from '@/components/elements/PokemonDetailPanel/PokemonDetailPanel'
 import HomeComponent from '../components/HomeComponent'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateFilters } from '@/store/features/pokemon'
@@ -17,7 +19,10 @@ import { updateFilters } from '@/store/features/pokemon'
  */
 const Home = () => {
 	// Hooks para configuración de UI
-	const { spriteType, viewMode, setViewMode } = useUISettings()
+	const { spriteType, viewMode, setViewMode, organizeDensity, setOrganizeDensity, kanbanDragMode } =
+		useUISettings()
+	const { pokemonId } = useParams<{ pokemonId?: string }>()
+	const navigate = useNavigate()
 
 	// Redux state y acciones para Pokémon
 	const {
@@ -53,19 +58,80 @@ const Home = () => {
 	)
 	const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
 
-	// State for detail modal
+	// State for detail panel — driven by URL or click
 	const [detailPokemon, setDetailPokemon] = useState<PokemonListItemDto | null>(null)
 
-	const handlePokemonClick = useCallback((pokemon: PokemonListItemDto) => {
-		setDetailPokemon(pokemon)
-	}, [])
+	// Sync detailPokemon from URL param
+	useEffect(() => {
+		if (pokemonId) {
+			const id = Number(pokemonId)
+			const found = pokemon.find((p) => p.id === id)
+			if (found) {
+				setDetailPokemon(found)
+			} else {
+				// Not on current page — fetch detail and build a minimal stub
+				getPokemonById(id)
+					.then((detail) => {
+						const stub: PokemonListItemDto = {
+							id: detail.id,
+							speciesId: detail.speciesId,
+							speciesName: detail.speciesName,
+							nickname: detail.nickname ?? undefined,
+							form: detail.form,
+							formName: detail.formName ?? undefined,
+							level: detail.level,
+							isShiny: detail.isShiny,
+							ballId: detail.ballId,
+							tags: [],
+							spriteKey: detail.spriteKey ?? '',
+							originGeneration: detail.originGeneration,
+							capturedGeneration: detail.originGeneration,
+							canGigantamax: detail.displayFormName?.toLowerCase().includes('gigantamax') ?? false,
+							hasMegaStone: detail.displayFormName?.toLowerCase().includes('mega') ?? false,
+							type1: detail.type1,
+							type2: detail.type2 ?? undefined,
+							ballName: detail.ballName,
+							ballSpriteUrl: detail.ballSpriteUrl,
+							// Build sprite URLs using speciesId — the sprite endpoint uses PokeAPI pokemon ID
+							// For form 0, speciesId == PokeAPI pokemon ID (Charizard speciesId=6 → artwork/6.png)
+							sprites: {
+								default: `/sprites/pokemon/${detail.speciesId}.png`,
+								shiny: `/sprites/pokemon/shiny/${detail.speciesId}.png`,
+								official: `/sprites/pokemon/artwork/${detail.speciesId}.png`,
+								officialShiny: `/sprites/pokemon/artwork/shiny/${detail.speciesId}.png`,
+								home: `/sprites/pokemon/home/${detail.speciesId}.png`,
+								homeShiny: `/sprites/pokemon/home/shiny/${detail.speciesId}.png`,
+								showdown: `/sprites/pokemon/showdown/${detail.speciesId}.gif`,
+								showdownShiny: `/sprites/pokemon/showdown/shiny/${detail.speciesId}.gif`,
+								github: `/sprites/pokemon/github/${detail.speciesId}.png`,
+								githubShiny: `/sprites/pokemon/github/shiny/${detail.speciesId}.png`,
+							},
+						}
+						setDetailPokemon(stub)
+					})
+					.catch(() => {})
+			}
+		} else {
+			setDetailPokemon(null)
+		}
+	}, [pokemonId, pokemon])
+
+	const handlePokemonClick = useCallback(
+		(pokemon: PokemonListItemDto) => {
+			navigate(`/pokemon/${pokemon.id}`)
+		},
+		[navigate]
+	)
 
 	const handleDetailClose = useCallback(() => {
 		setDetailPokemon(null)
+		if (window.location.pathname.startsWith('/pokemon/')) {
+			window.history.replaceState(null, '', '/')
+		}
 	}, [])
 
 	const handleFiltersChange = async (filters: PokemonListFilterDto) => {
-		if (viewMode === 'tags') {
+		if (viewMode === 'organize') {
 			const { tagIds, tagNames, anyTagIds, anyTagNames, hasNoTags, ...cleanFilters } = filters
 			const currentPage = Math.floor((filters.Skip || 0) / (filters.Take || 20)) + 1
 			await fetchPokemonByTagsView(cleanFilters, currentPage, filters.Take)
@@ -136,7 +202,7 @@ const Home = () => {
 			updatePokemonTagsById(pokemonId, newTags)
 
 			// Reload data based on current view mode to reflect tag changes
-			if (viewMode === 'tags') {
+			if (viewMode === 'organize') {
 				// For tags view, refetch to get updated groupings
 				fetchPokemonByTagsView()
 			} else {
@@ -151,7 +217,7 @@ const Home = () => {
 	 * Handles when tags are created or deleted - reloads data for tags view
 	 */
 	const handleTagSystemChanged = useCallback(() => {
-		if (viewMode === 'tags') {
+		if (viewMode === 'organize') {
 			// For tags view, refetch to get updated tag groups
 			fetchPokemonByTagsView()
 		}
@@ -202,7 +268,7 @@ const Home = () => {
 	 * For tags view, use tagGroups from store. For other views, group locally.
 	 */
 	const groupedPokemonData = useCallback(() => {
-		if (viewMode === 'tags' && tagGroups.length > 0) {
+		if (viewMode === 'organize' && tagGroups.length > 0) {
 			// Use server-grouped data for tags view
 			const grouped: { [key: string]: PokemonListItemDto[] } = {}
 			let untagged: PokemonListItemDto[] = []
@@ -224,7 +290,7 @@ const Home = () => {
 
 	// Load initial pokemon list - different method based on view mode
 	useEffect(() => {
-		if (viewMode === 'tags') {
+		if (viewMode === 'organize') {
 			fetchPokemonByTagsView()
 		} else {
 			fetchPokemon()
@@ -233,7 +299,7 @@ const Home = () => {
 
 	// Effect para re-fetch automático cuando cambian los filtros de paginación en grid/list views
 	useEffect(() => {
-		if (shouldRefetchForPagination && viewMode !== 'tags') {
+		if (shouldRefetchForPagination && viewMode !== 'organize') {
 			fetchPokemon()
 			setShouldRefetchForPagination(false)
 		}
@@ -243,7 +309,7 @@ const Home = () => {
 	const onItemsPerPageChange = (newItemsPerPage: number) => {
 		dispatch(updateFilters({ Take: newItemsPerPage, Skip: 0 }))
 		// Re-fetch with new pagination for all view modes
-		if (viewMode === 'tags') {
+		if (viewMode === 'organize') {
 			fetchPokemonByTagsView(undefined, 1, newItemsPerPage)
 		} else {
 			// For grid/list views, trigger the useEffect above
@@ -259,7 +325,7 @@ const Home = () => {
 		dispatch(updateFilters({ Skip: newSkip }))
 
 		// Re-fetch with new page for all view modes
-		if (viewMode === 'tags') {
+		if (viewMode === 'organize') {
 			fetchPokemonByTagsView(undefined, page, take)
 		} else {
 			// For grid/list views, trigger the useEffect above
@@ -267,8 +333,19 @@ const Home = () => {
 		}
 	}
 
+	const panelContent = detailPokemon ? (
+		<PokemonDetailPanel
+			pokemon={detailPokemon}
+			onDownload={handleDownload}
+			onDelete={handleDelete}
+			onManageTags={handleManageTags}
+		/>
+	) : null
+
 	return (
-		<>
+		<DetailShell
+			panel={panelContent}
+			onClosePanel={handleDetailClose}>
 			<HomeComponent
 				processedPokemon={processedPokemonData()}
 				groupedPokemon={groupedPokemonData()}
@@ -277,6 +354,8 @@ const Home = () => {
 				error={error}
 				viewMode={viewMode}
 				setViewMode={setViewMode}
+				organizeDensity={organizeDensity}
+				setOrganizeDensity={setOrganizeDensity}
 				collapsedSections={collapsedSections}
 				confirmOpen={confirmOpen}
 				tagManagerOpen={tagManagerOpen}
@@ -297,13 +376,10 @@ const Home = () => {
 				currentPage={currentPage}
 				onPageChange={onPageChange}
 				onPokemonClick={handlePokemonClick}
+				kanbanDragMode={kanbanDragMode}
+				onKanbanTagsChanged={handleTagSystemChanged}
 			/>
-			<PokemonDetailModal
-				pokemon={detailPokemon}
-				isOpen={detailPokemon !== null}
-				onClose={handleDetailClose}
-			/>
-		</>
+		</DetailShell>
 	)
 }
 

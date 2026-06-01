@@ -1,9 +1,12 @@
 import type { PokemonListItemDto, TagDto } from '@/models/api/types'
 import type { PokemonListFilterDto } from '@/models/Pokemon'
 import type { ViewMode } from '@/models/store/StylesSetting'
+import type { OrganizeDensity } from '@/models/store/StylesSetting'
 import { ConfirmDialog } from '@/ConfirmDialog'
-import { PokemonFilters, PokemonCard, PokemonListRow, Pagination } from '@/components/elements'
+import { PokemonFilters, PokemonCard, Pagination } from '@/components/elements'
 import { TagManager } from '@/components/elements/TagManager/TagManager'
+import { BoxView } from './views/BoxView'
+import { KanbanView } from './views/KanbanView'
 import './HomeComponent.scss'
 
 /**
@@ -32,6 +35,8 @@ interface HomeComponentProps {
 	// Configuración de UI
 	viewMode: ViewMode
 	setViewMode: (mode: ViewMode) => void
+	organizeDensity: OrganizeDensity
+	setOrganizeDensity: (density: OrganizeDensity) => void
 	collapsedSections: Set<string>
 
 	// Estados de dialogs
@@ -60,6 +65,10 @@ interface HomeComponentProps {
 
 	// Detail
 	onPokemonClick?: (pokemon: PokemonListItemDto) => void
+
+	// Kanban
+	kanbanDragMode?: 'move' | 'copy'
+	onKanbanTagsChanged?: () => void
 }
 
 /**
@@ -77,6 +86,8 @@ const HomeComponent = ({
 	// Configuración de UI
 	viewMode,
 	setViewMode,
+	organizeDensity,
+	setOrganizeDensity,
 	collapsedSections,
 
 	// Estados de dialogs
@@ -103,6 +114,8 @@ const HomeComponent = ({
 	currentPage,
 	onPageChange,
 	onPokemonClick,
+	kanbanDragMode,
+	onKanbanTagsChanged,
 }: HomeComponentProps) => {
 	/**
 	 * Renderiza el header de la aplicación
@@ -140,117 +153,146 @@ const HomeComponent = ({
 	 * Renderiza la barra de controles con información y selectores de vista
 	 */
 	const renderControlBar = () => (
-		<div
-			style={{
-				display: 'flex',
-				justifyContent: 'space-between',
-				alignItems: 'center',
-				marginBottom: '1rem',
-			}}>
-			{/* Selector de modo de vista */}
-			<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-				<button
-					onClick={() => setViewMode('tags')}
-					style={{
-						background: viewMode === 'tags' ? '#3b82f6' : '#6b7280',
-						color: 'white',
-						border: 'none',
-						borderRadius: '6px',
-						padding: '6px 12px',
-						fontSize: '0.8rem',
-						cursor: 'pointer',
-						transition: 'all 0.2s',
-					}}>
-					🏷️ Group by Tags
-				</button>
-				<button
-					onClick={() => setViewMode('grid')}
-					style={{
-						background: viewMode === 'grid' ? '#3b82f6' : '#6b7280',
-						color: 'white',
-						border: 'none',
-						borderRadius: '6px',
-						padding: '6px 12px',
-						fontSize: '0.8rem',
-						cursor: 'pointer',
-						transition: 'all 0.2s',
-					}}>
-					📋 Grid View
-				</button>
-				<button
-					onClick={() => setViewMode('list')}
-					style={{
-						background: viewMode === 'list' ? '#3b82f6' : '#6b7280',
-						color: 'white',
-						border: 'none',
-						borderRadius: '6px',
-						padding: '6px 12px',
-						fontSize: '0.8rem',
-						cursor: 'pointer',
-						transition: 'all 0.2s',
-					}}>
-					📝 List View
-				</button>
+		<div className='view-controls'>
+			<div className='view-controls__modes'>
+				{(['grid', 'organize', 'box', 'kanban'] as ViewMode[]).map((mode) => {
+					const labels: Record<ViewMode, { label: string }> = {
+						grid: { label: 'Grid' },
+						organize: { label: 'Organize' },
+						box: { label: 'Box' },
+						kanban: { label: 'Kanban' },
+					}
+					const { label } = labels[mode]
+					return (
+						<button
+							key={mode}
+							onClick={() => setViewMode(mode)}
+							className={`view-controls__btn ${viewMode === mode ? 'view-controls__btn--active' : ''}`}>
+							{label}
+						</button>
+					)
+				})}
 			</div>
+
+			{viewMode === 'organize' && (
+				<div className='view-controls__options'>
+					<div className='view-controls__density'>
+						<button
+							className={organizeDensity === 'expanded' ? 'active' : ''}
+							onClick={() => setOrganizeDensity('expanded')}>
+							Expanded
+						</button>
+						<button
+							className={organizeDensity === 'compact' ? 'active' : ''}
+							onClick={() => setOrganizeDensity('compact')}>
+							Compact
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 
 	/**
-	 * Renderiza un grupo de Pokémon por tag
+	 * Renderiza la vista de organización por tags (antes "tags view")
 	 */
-	const renderPokemonGroup = (
-		tagName: string,
-		pokemonList: PokemonListItemDto[],
-		sectionKey: string
-	) => {
-		const isCollapsed = collapsedSections.has(sectionKey)
-
-		return (
-			<div key={tagName} className='pokemon-group'>
-				<h3 className='group-title clickable' onClick={() => toggleSectionCollapse(sectionKey)}>
-					<span className={`toggle-icon ${isCollapsed ? '' : 'expanded'}`}>▶</span>
-					🏷️ {tagName} ({pokemonList.length})
-				</h3>
-				{!isCollapsed && (
-					<div className='pokemon-grid'>
-						{pokemonList.map((p) => {
-							const pokemonData = processedPokemon.find((item) => item.pokemon.id === p.id)
-							return (
-								<PokemonCard
-									key={p.id}
-									pokemon={p}
-									sprite={pokemonData?.sprite}
-									type1={pokemonData?.type1}
-									type2={pokemonData?.type2}
-									onClick={onPokemonClick}
-									onDelete={handleDelete}
-									onDownload={handleDownload}
-									onManageTags={handleManageTags}
-									loading={loading}
-								/>
-							)
-						})}
-					</div>
-				)}
-			</div>
-		)
-	}
-
-	/**
-	 * Renderiza la vista agrupada por tags
-	 */
-	const renderTagsView = () => {
+	const renderOrganizeView = () => {
 		const { grouped, untagged } = groupedPokemon
 
 		return (
-			<div className='pokemon-groups'>
-				{/* Grupos con tags */}
-				{Object.entries(grouped).map(([tagName, taggedPokemon]) =>
-					renderPokemonGroup(tagName, taggedPokemon, `tag-${tagName}`)
-				)}
+			<div
+				className={`organize-view ${organizeDensity === 'compact' ? 'organize-view--compact' : ''}`}>
+				{Object.entries(grouped).map(([tagName, taggedPokemon]) => {
+					const sectionKey = `tag-${tagName}`
+					const isCollapsed = collapsedSections.has(sectionKey)
 
-				{/* Pokémon sin tags */}
-				{untagged.length > 0 && renderPokemonGroup('OTHERS (No Tags)', untagged, 'untagged')}
+					return (
+						<div key={tagName} className='organize-view__group'>
+							<div
+								className='organize-view__group-header'
+								onClick={() => toggleSectionCollapse(sectionKey)}>
+								<div className='organize-view__group-title'>
+									<span
+										className={`organize-view__group-toggle ${!isCollapsed ? 'organize-view__group-toggle--expanded' : ''}`}>
+										▶
+									</span>
+									{tagName}
+								</div>
+								<span className='organize-view__group-count'>{taggedPokemon.length}</span>
+							</div>
+							{!isCollapsed && (
+								<div className='organize-view__group-body'>
+									<div className='pokemon-grid'>
+										{taggedPokemon.map((p) => {
+											const pokemonData = processedPokemon.find((item) => item.pokemon.id === p.id)
+											return (
+												<PokemonCard
+													key={p.id}
+													pokemon={p}
+													sprite={pokemonData?.sprite}
+													type1={pokemonData?.type1}
+													type2={pokemonData?.type2}
+													onClick={onPokemonClick}
+													onDelete={handleDelete}
+													onDownload={handleDownload}
+													onManageTags={handleManageTags}
+													loading={loading}
+												/>
+											)
+										})}
+									</div>
+								</div>
+							)}
+						</div>
+					)
+				})}
+
+				{untagged.length > 0 &&
+					(() => {
+						const sectionKey = 'untagged'
+						const isCollapsed = collapsedSections.has(sectionKey)
+						return (
+							<div className='organize-view__group'>
+								<div
+									className='organize-view__group-header'
+									onClick={() => toggleSectionCollapse(sectionKey)}>
+									<div className='organize-view__group-title'>
+										<span
+											className={`organize-view__group-toggle ${!isCollapsed ? 'organize-view__group-toggle--expanded' : ''}`}>
+											▶
+										</span>
+										No Tags
+									</div>
+									<span className='organize-view__group-count'>{untagged.length}</span>
+								</div>
+								{!isCollapsed && (
+									<div className='organize-view__group-body'>
+										<div className='pokemon-grid'>
+											{untagged.map((p) => {
+												const pokemonData = processedPokemon.find(
+													(item) => item.pokemon.id === p.id
+												)
+												return (
+													<PokemonCard
+														key={p.id}
+														pokemon={p}
+														sprite={pokemonData?.sprite}
+														type1={pokemonData?.type1}
+														type2={pokemonData?.type2}
+														onClick={onPokemonClick}
+														onDelete={handleDelete}
+														onDownload={handleDownload}
+														onManageTags={handleManageTags}
+														loading={loading}
+													/>
+												)
+											})}
+										</div>
+									</div>
+								)}
+							</div>
+						)
+					})()}
 			</div>
 		)
 	}
@@ -279,36 +321,41 @@ const HomeComponent = ({
 	)
 
 	/**
-	 * Renderiza la vista en lista
-	 */
-	const renderListView = () => (
-		<div className='pokemon-list-container'>
-			{processedPokemon.length === 0 && !loading && <p>No Pokémon found.</p>}
-			{processedPokemon.map(({ pokemon, sprite }) => (
-				<PokemonListRow
-					key={pokemon.id}
-					pokemon={pokemon}
-					sprite={sprite}
-					onDelete={handleDelete}
-					onDownload={handleDownload}
-					onManageTags={handleManageTags}
-					loading={loading}
-				/>
-			))}
-		</div>
-	)
-
-	/**
 	 * Renderiza el contenido principal según el modo de vista seleccionado
 	 */
 	const renderPokemonContent = () => {
 		switch (viewMode) {
-			case 'tags':
-				return renderTagsView()
+			case 'organize':
+				return renderOrganizeView()
 			case 'grid':
 				return renderGridView()
-			case 'list':
-				return renderListView()
+			case 'box':
+				return (
+					<BoxView
+						processedPokemon={processedPokemon}
+						onPokemonClick={onPokemonClick}
+						onDelete={handleDelete}
+						onDownload={handleDownload}
+						onManageTags={handleManageTags}
+						loading={loading}
+						currentPage={currentPage}
+						totalPages={totalPages}
+						onPageChange={onPageChange}
+					/>
+				)
+			case 'kanban':
+				return (
+					<KanbanView
+						processedPokemon={processedPokemon}
+						groupedPokemon={groupedPokemon}
+						onPokemonClick={onPokemonClick}
+						onDelete={handleDelete}
+						onManageTags={handleManageTags}
+						loading={loading}
+						dragMode={kanbanDragMode}
+						onTagsChanged={onKanbanTagsChanged}
+					/>
+				)
 			default:
 				return renderGridView()
 		}

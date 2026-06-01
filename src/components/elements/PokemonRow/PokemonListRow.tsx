@@ -1,6 +1,5 @@
 import type { PokemonListItemDto } from '../../../models/api/types'
-import { usePokeBallIcon } from '../../../hooks/useAssets'
-import { getBallNameFromId } from '../../../models/enums/PokemonBalls'
+import { resolveSpriteUrl } from '@/utils/spriteUtils'
 import './PokemonListRow.scss'
 
 interface PokemonListRowProps {
@@ -20,8 +19,7 @@ export function PokemonListRow({
 	onManageTags,
 	loading = false,
 }: PokemonListRowProps) {
-	const ballName = getBallNameFromId(pokemon.ballId)
-	const { icon: ballIcon } = usePokeBallIcon(ballName)
+	const ballIcon = pokemon.ballSpriteUrl ? resolveSpriteUrl(pokemon.ballSpriteUrl) : null
 
 	// Use species name and form name directly from backend - no API calls needed!
 	const speciesName = pokemon.speciesName
@@ -107,7 +105,7 @@ export function PokemonListRow({
 					onClick={() => onManageTags(pokemon)}
 					title='Manage Tags'
 					disabled={loading}>
-					🏷️
+					Tags
 				</button>
 				<button
 					className='action-btn download-btn'

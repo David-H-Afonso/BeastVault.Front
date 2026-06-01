@@ -1,89 +1,89 @@
 // Importar el sistema de temas
 @use '@/assets/styles' as *;
 
-.logo {
-	height: 6em;
-	padding: 1.5em;
-	will-change: filter;
-	transition: filter 300ms;
-}
-.logo:hover {
-	filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-	filter: drop-shadow(0 0 2em #61dafbaa);
-}
+// ===================================
+// Main page container
+// ===================================
 
-// Beast Vault App Styles
 .app-container {
 	margin: 0;
-	padding: 16px 24px;
+	padding: var(--page-pad-y) var(--page-pad-x);
 	font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
 
 	h1 {
 		text-align: center;
 		color: var(--text-primary);
 		margin-bottom: 1.5rem;
-		font-size: 2rem;
+		font-size: 1.5rem;
 		font-weight: 700;
+
+		@include tablet-up {
+			font-size: 2rem;
+		}
 	}
 
 	h2 {
 		color: var(--text-secondary);
 		margin-bottom: 1rem;
-		font-size: 1.25rem;
+		font-size: 1.1rem;
 		font-weight: 600;
+
+		@include tablet-up {
+			font-size: 1.25rem;
+		}
 	}
 }
 
-.file-input {
-	padding: 0.5rem;
-	border: 2px dashed var(--border-secondary);
-	border-radius: 8px;
-	background: var(--bg-tertiary);
-	cursor: pointer;
-	color: var(--text-primary);
-
-	&:hover {
-		border-color: var(--color-primary);
-		background: var(--bg-surface);
-	}
-}
-
-.error {
-	color: var(--color-error-light);
-	background: var(--color-error-dark);
-	padding: 0.75rem;
-	border-radius: 8px;
-	border: 1px solid var(--color-error);
-	margin-bottom: 1rem;
-}
+// ===================================
+// Pokemon grid — mobile-first
+// ===================================
 
 .pokemon-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	// Mobile: 2 columns at xs+, 1 column below 340px
+	grid-template-columns: repeat(2, 1fr);
 	gap: 0.5rem;
-	margin-top: 1.5rem;
-	margin-left: auto;
-	margin-right: auto;
-	justify-content: center;
+	margin-top: 1rem;
 
-	@media (min-width: 640px) {
-		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	@media (max-width: 339px) {
+		grid-template-columns: 1fr;
+	}
+
+	@include from-width(480px) {
+		grid-template-columns: repeat(3, 1fr);
 		gap: 0.625rem;
 	}
 
-	@media (min-width: 1024px) {
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	@include tablet-up {
+		grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+		gap: 0.625rem;
+	}
+
+	@include desktop-up {
+		grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 		gap: 0.75rem;
 	}
 
-	@media (min-width: 1440px) {
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	@include wide-up {
+		grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
 		gap: 1rem;
 	}
 }
 
+// ===================================
+// Error / loading states
+// ===================================
+
+.error {
+	color: var(--color-error-light);
+	background: var(--color-error-bg);
+	padding: 0.75rem;
+	border-radius: 8px;
+	border: 1px solid var(--color-error-border);
+	margin-bottom: 1rem;
+}
+
+// Legacy card class (kept for compatibility)
 .pokemon-card {
 	position: relative;
 	background: var(--gradient-surface);
@@ -139,11 +139,6 @@
 		max-width: 100%;
 		max-height: 100%;
 		object-fit: contain;
-		transition: transform 0.3s ease;
-	}
-
-	&:hover img {
-		transform: scale(1.05);
 	}
 }
 
@@ -158,16 +153,18 @@
 }
 
 .pokemon-name {
-	font-size: 0.95rem;
+	font-size: 0.9rem;
 	font-weight: 600;
 	color: var(--text-primary);
-	margin: 0 0 0.25rem 0;
+	margin: 0 0 0.25rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.25rem;
 	font-family: 'Inter', sans-serif;
-	letter-spacing: -0.01em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .shiny-star {
@@ -180,21 +177,16 @@
 	font-size: 0.75rem;
 	margin: 0;
 	font-weight: 500;
-	font-family: 'Inter', sans-serif;
 }
 
-@keyframes logo-spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-@media (prefers-reduced-motion: no-preference) {
-	a:nth-of-type(2) .logo {
-		animation: logo-spin infinite 20s linear;
+@include motion-safe {
+	@keyframes logo-spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 }
 

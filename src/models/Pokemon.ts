@@ -91,6 +91,18 @@ export interface PokemonDetailDto {
 	natureBoostedStat?: string | null
 	natureReducedStat?: string | null
 	originGeneration: number
+
+	// Clean display fields from backend mapper
+	originGameName: string
+	metLevel: number
+	metLocationName?: string | null
+	ballSpriteUrl: string
+	heldItemSpriteUrl?: string | null
+	displayFormName?: string | null
+	personalityIdHex: string
+	encryptionConstantHex: string
+	effectiveFriendship: number
+
 	heightScalar: number
 	weightScalar: number
 	scale: number

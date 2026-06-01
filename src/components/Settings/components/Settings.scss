@@ -1,7 +1,9 @@
+@use '@/assets/styles' as *;
+
 .settings-page {
-	min-height: 100vh;
+	min-height: 100dvh;
 	background: var(--bg-primary);
-	padding: 20px;
+	padding: var(--page-pad-y) var(--page-pad-x);
 }
 
 .settings-container {
@@ -20,13 +22,18 @@
 
 .settings-title {
 	color: var(--text-primary);
-	font-size: 2.2rem;
+	font-size: 1.75rem;
 	font-weight: 700;
 	margin: 0 0 12px 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 12px;
+
+	@include mobile-only {
+		font-size: 1.3rem;
+		gap: 6px;
+	}
 }
 
 .settings-description {
@@ -95,55 +102,31 @@
 	}
 }
 
-// Responsive design
-@media (max-width: 768px) {
+// Responsive design — mobile-first using mixins
+@include mobile-only {
 	.settings-page {
-		padding: 16px;
+		padding: var(--page-pad-y) var(--page-pad-x);
 	}
 
 	.settings-header {
-		padding: 20px;
-		margin-bottom: 24px;
-	}
-
-	.settings-title {
-		font-size: 1.8rem;
-		flex-direction: column;
-		gap: 8px;
+		padding: 16px;
+		margin-bottom: 20px;
 	}
 
 	.settings-description {
-		font-size: 1rem;
+		font-size: 0.95rem;
 	}
 
 	.settings-content {
-		gap: 20px;
+		gap: 16px;
 	}
 
 	.settings-section {
-		padding: 20px;
+		padding: 16px;
 	}
 
 	.section-title {
-		font-size: 1.2rem;
-	}
-}
-
-@media (max-width: 480px) {
-	.settings-page {
-		padding: 12px;
-	}
-
-	.settings-header {
-		padding: 16px;
-	}
-
-	.settings-title {
-		font-size: 1.6rem;
-	}
-
-	.settings-section {
-		padding: 16px;
+		font-size: 1.1rem;
 	}
 }
 

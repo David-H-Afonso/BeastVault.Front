@@ -26,9 +26,21 @@ import { setAuthToken } from '@/utils/authToken'
 const persistConfig = {
 	key: 'root',
 	storage,
+	version: 1,
 	whitelist: ['pokemon', 'styleSettings', 'layout', 'auth'], // Don't persist assets (memory only)
-	// Note: We can add blacklist here for any specific parts we don't want to persist
-	// Transform configurations can be added here for complex data transformations
+	migrate: (state: any) => {
+		if (state?.styleSettings) {
+			// Migrate legacy view modes to new names
+			const vm = state.styleSettings.viewMode
+			if (vm === 'tags') state.styleSettings.viewMode = 'organize'
+			else if (vm === 'list') state.styleSettings.viewMode = 'grid'
+
+			// Ensure new fields have defaults
+			if (!state.styleSettings.organizeDensity) state.styleSettings.organizeDensity = 'expanded'
+			if (!state.styleSettings.kanbanDragMode) state.styleSettings.kanbanDragMode = 'move'
+		}
+		return Promise.resolve(state)
+	},
 }
 
 // Combine reducers - All using plain reducers, persistence handled at root level

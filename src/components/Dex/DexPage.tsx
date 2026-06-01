@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom'
 import { getDexGrid, getDexSpecies, getDexGames } from '@/services/DexService'
 import type {
 	DexGridEntry,
@@ -7,14 +7,12 @@ import type {
 	DexOwnedPokemon,
 	DexGameOption,
 } from '@/services/DexService'
-import { DexSpeciesModal } from './DexSpeciesModal'
-import { PokemonDetailModal } from '@/components/elements/PokemonDetailModal/PokemonDetailModal'
-import { TagManager } from '@/components/elements/TagManager/TagManager'
+import { DetailShell } from '@/components/elements/DetailShell/DetailShell'
+import { DexSpeciesPanel } from './DexSpeciesPanel'
 import { getPreferredSpriteFromDto } from '@/utils/spriteUtils'
 import { useUISettings } from '@/hooks/useUISettings'
+import { formatSlugName } from '@/utils/formatSlugName'
 import type { SpriteType } from '@/models/enums/SpriteTypes'
-import type { PokemonListItemDto, TagDto } from '@/models/api/types'
-import { downloadPokemonFile, deletePokemonFromDatabase } from '@/services'
 import './DexPage.scss'
 
 const GENERATIONS = [
@@ -48,28 +46,30 @@ export const DexPage: React.FC = () => {
 	const [speciesDetail, setSpeciesDetail] = useState<DexSpeciesDetail | null>(null)
 	const [detailLoading, setDetailLoading] = useState(false)
 
-	const [detailPokemon, setDetailPokemon] = useState<PokemonListItemDto | null>(null)
-	const [tagPokemon, setTagPokemon] = useState<PokemonListItemDto | null>(null)
 	const [gameOptions, setGameOptions] = useState<DexGameOption[]>([])
 	const [originGame, setOriginGame] = useState<number | null>(null)
 
 	const [searchParams, setSearchParams] = useSearchParams()
+	const { speciesId: speciesIdParam } = useParams<{ speciesId: string }>()
+	const navigate = useNavigate()
 
 	const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 	const totalPages = Math.ceil(total / PAGE_SIZE)
 
-	// Open modal for a specific species when navigating from elsewhere (e.g. ?species=25)
+	// Open modal for a specific species from URL param or query string
 	useEffect(() => {
-		const speciesParam = searchParams.get('species')
-		if (speciesParam) {
-			const id = parseInt(speciesParam, 10)
-			if (!isNaN(id)) {
-				setSelectedSpeciesId(id)
-				openSpeciesDetail(id)
+		const idFromParam = speciesIdParam ? parseInt(speciesIdParam, 10) : NaN
+		const idFromQuery = parseInt(searchParams.get('species') || '', 10)
+		const id = !isNaN(idFromParam) ? idFromParam : !isNaN(idFromQuery) ? idFromQuery : null
+
+		if (id) {
+			setSelectedSpeciesId(id)
+			openSpeciesDetail(id)
+			if (!isNaN(idFromQuery)) {
+				setSearchParams({}, { replace: true })
 			}
-			setSearchParams({}, { replace: true })
 		}
-	}, [])
+	}, [speciesIdParam])
 
 	// Load available origin games from vault
 	useEffect(() => {
@@ -129,7 +129,7 @@ export const DexPage: React.FC = () => {
 		setPage(1)
 	}
 
-	const openSpeciesDetail = async (speciesId: number) => {
+	const openSpeciesDetail = useCallback(async (speciesId: number) => {
 		setSelectedSpeciesId(speciesId)
 		setSpeciesDetail(null)
 		setDetailLoading(true)
@@ -141,214 +141,141 @@ export const DexPage: React.FC = () => {
 		} finally {
 			setDetailLoading(false)
 		}
-	}
+	}, [])
 
 	const handleCardClick = async (entry: DexGridEntry) => {
+		navigate(`/dex/${entry.speciesId}`)
 		await openSpeciesDetail(entry.speciesId)
 	}
 
 	const handleCloseModal = () => {
 		setSelectedSpeciesId(null)
 		setSpeciesDetail(null)
+		if (window.location.pathname.startsWith('/dex/')) {
+			window.history.replaceState(null, '', '/dex')
+		}
 	}
 
 	const handleViewOwnedPokemon = useCallback(
 		(p: DexOwnedPokemon) => {
-			// Build a minimal PokemonListItemDto so PokemonDetailModal can open and fetch full detail
-			const minimal: PokemonListItemDto = {
-				id: p.id,
-				speciesId: speciesDetail?.speciesId ?? 0,
-				speciesName: speciesDetail?.name ?? p.formName,
-				form: 0,
-				formName: p.formName,
-				nickname: p.nickname ?? undefined,
-				level: p.level,
-				isShiny: p.isShiny,
-				ballId: 0,
-				spriteKey: '',
-				originGeneration: 0,
-				capturedGeneration: 0,
-				canGigantamax: false,
-				hasMegaStone: false,
-				sprites: p.spriteUrl
-					? ({ default: p.spriteUrl, shiny: p.spriteUrl, official: p.spriteUrl } as any)
-					: undefined,
-			}
-			setDetailPokemon(minimal)
+			navigate(`/pokemon/${p.id}`)
 		},
-		[speciesDetail]
+		[navigate]
 	)
 
-	const handleDownloadPokemon = useCallback(async (id: number) => {
-		try {
-			await downloadPokemonFile(id)
-		} catch (err) {
-			console.error('Download failed', err)
-		}
-	}, [])
-
-	const handleDeletePokemon = useCallback(
-		async (id: number) => {
-			if (!confirm('Delete this Pokémon from your vault? The file backup will be preserved.'))
-				return
-			try {
-				await deletePokemonFromDatabase(id)
-				setDetailPokemon(null)
-				// Refresh species detail so owned list updates
-				if (selectedSpeciesId) {
-					try {
-						const refreshed = await getDexSpecies(selectedSpeciesId)
-						setSpeciesDetail(refreshed)
-					} catch {
-						// ignore refresh error
-					}
-				}
-				load()
-			} catch (err) {
-				console.error('Delete failed', err)
-				alert('Failed to delete Pokémon.')
-			}
-		},
-		[selectedSpeciesId, load]
-	)
-
-	const handleManageTags = useCallback((p: PokemonListItemDto) => {
-		setTagPokemon(p)
-	}, [])
+	const panelContent = speciesDetail ? (
+		<DexSpeciesPanel
+			detail={speciesDetail}
+			loading={detailLoading}
+			onOwnedClick={handleViewOwnedPokemon}
+			onClose={handleCloseModal}
+		/>
+	) : detailLoading ? (
+		<p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Loading...</p>
+	) : null
 
 	return (
-		<div className='dex-page'>
-			{/* Header */}
-			<div className='dex-page__header'>
-				<h1 className='dex-page__title'>Vault Pokédex</h1>
-				<p className='dex-page__subtitle'>
-					{total > 0 ? `${total} species — ` : ''}
-					Showing Pokémon registered in PokeAPI cache
-				</p>
-			</div>
-
-			{/* Filters */}
-			<div className='dex-page__filters'>
-				<input
-					className='dex-page__search'
-					type='text'
-					placeholder='Search by name…'
-					value={searchInput}
-					onChange={handleSearchChange}
-				/>
-
-				<div className='dex-page__gen-filters'>
-					{GENERATIONS.map((g) => (
-						<button
-							key={String(g.value)}
-							className={`dex-page__gen-btn${generation === g.value ? ' active' : ''}`}
-							onClick={() => handleGenerationChange(g.value)}>
-							{g.label}
-						</button>
-					))}
+		<DetailShell
+			panel={selectedSpeciesId !== null ? panelContent : null}
+			onClosePanel={handleCloseModal}>
+			<div className='dex-page'>
+				{/* Header */}
+				<div className='dex-page__header'>
+					<h1 className='dex-page__title'>Vault Pokédex</h1>
+					<p className='dex-page__subtitle'>
+						{total > 0 ? `${total} species — ` : ''}
+						Showing Pokémon registered in PokeAPI cache
+					</p>
 				</div>
 
-				<label className='dex-page__toggle'>
-					<input type='checkbox' checked={unlockedOnly} onChange={handleUnlockedToggle} />
-					<span>Owned only</span>
-				</label>
+				{/* Filters */}
+				<div className='dex-page__filters'>
+					<input
+						className='dex-page__search'
+						type='text'
+						placeholder='Search by name…'
+						value={searchInput}
+						onChange={handleSearchChange}
+					/>
 
-				{gameOptions.length > 0 && (
-					<select
-						className='dex-page__game-select'
-						value={originGame ?? ''}
-						onChange={handleOriginGameChange}
-						title='Filter by origin game'>
-						<option value=''>All games</option>
-						{gameOptions.map((g) => (
-							<option key={g.id} value={g.id}>
-								{g.name}
-							</option>
+					<div className='dex-page__gen-filters'>
+						{GENERATIONS.map((g) => (
+							<button
+								key={String(g.value)}
+								className={`dex-page__gen-btn${generation === g.value ? ' active' : ''}`}
+								onClick={() => handleGenerationChange(g.value)}>
+								{g.label}
+							</button>
 						))}
-					</select>
+					</div>
+
+					<label className='dex-page__toggle'>
+						<input type='checkbox' checked={unlockedOnly} onChange={handleUnlockedToggle} />
+						<span>Owned only</span>
+					</label>
+
+					{gameOptions.length > 0 && (
+						<select
+							className='dex-page__game-select'
+							value={originGame ?? ''}
+							onChange={handleOriginGameChange}
+							title='Filter by origin game'>
+							<option value=''>All games</option>
+							{gameOptions.map((g) => (
+								<option key={g.id} value={g.id}>
+									{g.name}
+								</option>
+							))}
+						</select>
+					)}
+				</div>
+
+				{/* Grid */}
+				{error && <div className='dex-page__error'>{error}</div>}
+
+				{loading ? (
+					<div className='dex-page__loading'>Loading Pokédex…</div>
+				) : entries.length === 0 && !loading ? (
+					<div className='dex-page__empty'>
+						{total === 0
+							? 'No Pokédex data cached yet. Ask an admin to run Populate Pokédex Cache.'
+							: 'No Pokémon match your filters.'}
+					</div>
+				) : (
+					<div className='dex-grid'>
+						{entries.map((entry) => (
+							<DexCard
+								key={entry.speciesId}
+								entry={entry}
+								onClick={handleCardClick}
+								spriteType={spriteType}
+							/>
+						))}
+					</div>
+				)}
+
+				{/* Pagination */}
+				{totalPages > 1 && (
+					<div className='dex-page__pagination'>
+						<button
+							className='dex-page__page-btn'
+							disabled={page <= 1}
+							onClick={() => setPage((p) => p - 1)}>
+							‹ Prev
+						</button>
+						<span className='dex-page__page-info'>
+							{page} / {totalPages}
+						</span>
+						<button
+							className='dex-page__page-btn'
+							disabled={page >= totalPages}
+							onClick={() => setPage((p) => p + 1)}>
+							Next ›
+						</button>
+					</div>
 				)}
 			</div>
-
-			{/* Grid */}
-			{error && <div className='dex-page__error'>{error}</div>}
-
-			{loading ? (
-				<div className='dex-page__loading'>Loading Pokédex…</div>
-			) : entries.length === 0 && !loading ? (
-				<div className='dex-page__empty'>
-					{total === 0
-						? 'No Pokédex data cached yet. Ask an admin to run Populate Pokédex Cache.'
-						: 'No Pokémon match your filters.'}
-				</div>
-			) : (
-				<div className='dex-grid'>
-					{entries.map((entry) => (
-						<DexCard
-							key={entry.speciesId}
-							entry={entry}
-							onClick={handleCardClick}
-							spriteType={spriteType}
-						/>
-					))}
-				</div>
-			)}
-
-			{/* Pagination */}
-			{totalPages > 1 && (
-				<div className='dex-page__pagination'>
-					<button
-						className='dex-page__page-btn'
-						disabled={page <= 1}
-						onClick={() => setPage((p) => p - 1)}>
-						‹ Prev
-					</button>
-					<span className='dex-page__page-info'>
-						{page} / {totalPages}
-					</span>
-					<button
-						className='dex-page__page-btn'
-						disabled={page >= totalPages}
-						onClick={() => setPage((p) => p + 1)}>
-						Next ›
-					</button>
-				</div>
-			)}
-
-			{/* Detail Modal */}
-			{selectedSpeciesId !== null && (
-				<DexSpeciesModal
-					speciesId={selectedSpeciesId}
-					detail={speciesDetail}
-					loading={detailLoading}
-					onClose={handleCloseModal}
-					spriteType={spriteType}
-					onNavigateToSpecies={(id) => openSpeciesDetail(id)}
-					onViewPokemon={handleViewOwnedPokemon}
-				/>
-			)}
-
-			<PokemonDetailModal
-				pokemon={detailPokemon}
-				isOpen={detailPokemon !== null}
-				onClose={() => setDetailPokemon(null)}
-				onDownload={handleDownloadPokemon}
-				onDelete={handleDeletePokemon}
-				onManageTags={handleManageTags}
-			/>
-
-			{tagPokemon && (
-				<TagManager
-					pokemon={tagPokemon}
-					isOpen={true}
-					onClose={() => setTagPokemon(null)}
-					onTagsUpdated={(pokemonId: number, newTags: TagDto[]) => {
-						if (detailPokemon?.id === pokemonId) {
-							setDetailPokemon((prev) => (prev ? { ...prev, tags: newTags } : prev))
-						}
-					}}
-				/>
-			)}
-		</div>
+		</DetailShell>
 	)
 }
 
@@ -371,7 +298,13 @@ function DexCard({ entry, onClick, spriteType }: DexCardProps) {
 		setShowShiny((v) => !v)
 	}
 
-	const handleCardClick = () => onClick(entry)
+	const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+		// Middle-click / Ctrl+click / Shift+click → let browser open in new tab natively
+		if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return
+		e.preventDefault()
+		onClick(entry)
+	}
+
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault()
@@ -380,11 +313,11 @@ function DexCard({ entry, onClick, spriteType }: DexCardProps) {
 	}
 
 	return (
-		<div
+		<a
+			href={`/dex/${entry.speciesId}`}
 			className={`dex-card${isLocked ? ' dex-card--locked' : ''}${showShiny ? ' dex-card--shiny-active' : ''}`}
 			onClick={handleCardClick}
 			onKeyDown={handleKeyDown}
-			role='button'
 			tabIndex={0}
 			title={entry.name}>
 			<div className='dex-card__sprite-wrap'>
@@ -411,16 +344,16 @@ function DexCard({ entry, onClick, spriteType }: DexCardProps) {
 			</div>
 			<div className='dex-card__info'>
 				<span className='dex-card__id'>#{String(entry.speciesId).padStart(4, '0')}</span>
-				<span className='dex-card__name'>{isLocked ? '???' : entry.name}</span>
+				<span className='dex-card__name'>{isLocked ? '???' : formatSlugName(entry.name)}</span>
 				<div className='dex-card__types'>
 					{(isLocked ? [] : entry.types).map((t) => (
 						<span key={t} className={`dex-card__type type-${t.toLowerCase()}`}>
-							{t}
+							{formatSlugName(t)}
 						</span>
 					))}
 				</div>
 			</div>
-		</div>
+		</a>
 	)
 }
 

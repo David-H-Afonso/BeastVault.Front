@@ -4,6 +4,7 @@ import { getTypeNameFromId } from '@/models/enums/PokemonTypes'
 import { useUISettings } from '@/hooks/useUISettings'
 import { CardBackgroundType } from '@/models/enums/CardBackgroundTypes'
 import { getComputedTypeColor } from '@/utils/typeColors'
+import { resolveSpriteUrl } from '@/utils/spriteUtils'
 import './PokemonCard.scss'
 
 interface PokemonCardProps {
@@ -36,7 +37,7 @@ export function PokemonCard({
 	loading = false,
 }: PokemonCardProps) {
 	// Ball icon comes from the backend enriched data
-	const ballIcon = pokemon.ballSpriteUrl || null
+	const ballIcon = pokemon.ballSpriteUrl ? resolveSpriteUrl(pokemon.ballSpriteUrl) : null
 
 	// Types come from props (enriched at backend level)
 	const finalType1 = propType1
@@ -106,13 +107,17 @@ export function PokemonCard({
 					</div>
 				</div>
 			) : (
-				<div
+				<a
+					href={`/pokemon/${pokemon.id}`}
 					className={getCardClassName()}
 					style={getCardStyle()}
-					onClick={() => onClick?.(pokemon)}
-					role='button'
+					onClick={(e) => {
+						if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button !== 1) {
+							e.preventDefault()
+							onClick?.(pokemon)
+						}
+					}}
 					tabIndex={0}>
-					{/* Card Header */}
 					<div className='cardHeader'>
 						<div className='cardActions'>
 							<button
@@ -314,7 +319,7 @@ export function PokemonCard({
 							</div>
 						</div>
 					</div>{' '}
-				</div>
+				</a>
 			)}
 		</>
 	)

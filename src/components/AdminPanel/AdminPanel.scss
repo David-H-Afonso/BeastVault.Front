@@ -1,9 +1,9 @@
 @use '@/assets/styles' as *;
 
 .admin-panel {
-	min-height: 100vh;
+	min-height: 100dvh;
 	background: var(--bg-primary);
-	padding: 20px;
+	padding: var(--page-pad-y) var(--page-pad-x);
 }
 
 .admin-container {
@@ -70,6 +70,44 @@
 
 	.form-field {
 		flex: 1;
+	}
+
+	@include mobile-only {
+		flex-direction: column;
+	}
+}
+
+.admin-actions-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+
+	.btn {
+		flex: 1 1 220px;
+	}
+}
+
+.pokedex-status {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 8px 12px;
+	padding: 12px;
+	border: 1px solid var(--border-overlay-light);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+
+	p {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.85rem;
+	}
+
+	strong {
+		color: var(--text-primary);
+	}
+
+	&--compact {
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 	}
 }
 

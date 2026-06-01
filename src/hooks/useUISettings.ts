@@ -5,10 +5,17 @@ import {
 	setViewMode as setViewModeAction,
 	setSpriteType,
 	setBackgroundType as setBackgroundTypeAction,
+	setOrganizeDensity as setOrganizeDensityAction,
+	setKanbanDragMode as setKanbanDragModeAction,
 	syncPreferences,
 } from '@/store/features/styleSettings'
 import { setLayoutType } from '@/store/features/layout'
-import type { ThemeName, ViewMode } from '@/models/store/StylesSetting'
+import type {
+	ThemeName,
+	ViewMode,
+	OrganizeDensity,
+	KanbanDragMode,
+} from '@/models/store/StylesSetting'
 import type { LayoutType } from '@/models/store/Layout'
 import type { SpriteTypeName } from '../models/enums/SpriteTypes'
 import type { CardBackgroundTypeName } from '../models/enums/CardBackgroundTypes'
@@ -22,6 +29,8 @@ export function useUISettings() {
 	const spriteType = useAppSelector((state) => state.styleSettings.spriteType)
 	const layoutType = useAppSelector((state) => state.layout.layoutType)
 	const backgroundType = useAppSelector((state) => state.styleSettings.backgroundType)
+	const organizeDensity = useAppSelector((state) => state.styleSettings.organizeDensity)
+	const kanbanDragMode = useAppSelector((state) => state.styleSettings.kanbanDragMode)
 	const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
 
 	const syncToBackend = useCallback(() => {
@@ -55,6 +64,16 @@ export function useUISettings() {
 		syncToBackend()
 	}
 
+	const setOrganizeDensity = (density: OrganizeDensity) => {
+		dispatch(setOrganizeDensityAction(density))
+		syncToBackend()
+	}
+
+	const setKanbanDragMode = (mode: KanbanDragMode) => {
+		dispatch(setKanbanDragModeAction(mode))
+		syncToBackend()
+	}
+
 	// Initialize theme on DOM when hook is first used
 	if (currentTheme) {
 		document.documentElement.setAttribute('data-theme', currentTheme)
@@ -80,5 +99,13 @@ export function useUISettings() {
 		// Background Type
 		backgroundType,
 		setBackgroundType,
+
+		// Organize Density
+		organizeDensity,
+		setOrganizeDensity,
+
+		// Kanban Drag Mode
+		kanbanDragMode,
+		setKanbanDragMode,
 	}
 }

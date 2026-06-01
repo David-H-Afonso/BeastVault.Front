@@ -1,5 +1,9 @@
-// Header.scss - Cabecera principal de la aplicación
-// @import /App.scss';
+// Header.scss — mobile-first app header + bottom nav
+@use '@/assets/styles/variables' as *;
+
+// ===================================
+// Top app bar
+// ===================================
 
 .app-header {
 	background: var(--overlay-light);
@@ -11,33 +15,27 @@
 	backdrop-filter: blur(10px);
 
 	.header-content {
-		max-width: 1200px;
-		margin: 0 auto;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 12px 20px;
+		padding: 8px 12px;
+		gap: 8px;
 	}
 
 	.header-logo {
 		display: flex;
 		align-items: center;
 		text-decoration: none;
-		transition: all 0.2s ease;
+		transition: opacity 0.2s ease;
 		color: var(--text-primary);
-
-		&:hover {
-			transform: translateY(-1px);
-			color: var(--text-primary);
-		}
+		flex-shrink: 0;
 
 		svg {
-			height: 40px;
+			height: 32px;
 			width: auto;
 			fill: currentColor;
 			stroke: currentColor;
 			color: inherit;
-			transition: color 0.2s ease;
 
 			path {
 				fill: currentColor;
@@ -45,111 +43,90 @@
 			}
 		}
 
-		.logo-image {
-			height: 40px;
-			width: auto;
+		&:hover {
+			opacity: 0.85;
 		}
 	}
 
+	// Desktop nav — hidden by default (mobile first)
 	.header-nav {
-		display: flex;
-		gap: 16px;
-		align-items: center;
+		display: none;
 	}
 
 	.nav-link {
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		padding: 8px 16px;
+		padding: 8px 14px;
+		min-height: 34px;
 		text-decoration: none;
 		color: var(--text-secondary);
 		font-weight: 500;
 		font-size: 0.9rem;
 		border-radius: 8px;
 		border: 1px solid transparent;
-		transition: all 0.2s ease;
+		transition: all 0.15s ease;
+		white-space: nowrap;
 
 		&:hover {
 			background: var(--overlay-medium);
 			color: var(--text-primary);
 			border-color: var(--border-overlay-medium);
-			transform: translateY(-1px);
 		}
 
 		&.active {
-			background: var(--color-primary-alpha-20);
+			background: var(--color-primary-bg);
 			color: var(--color-primary);
-			border-color: var(--color-primary-alpha-50);
+			border-color: var(--color-focus-ring);
 			font-weight: 600;
-		}
-	}
-
-	// Responsive design
-	@media (max-width: 768px) {
-		.header-content {
-			padding: 8px 16px;
-		}
-
-		.header-logo {
-			svg {
-				height: 32px;
-				fill: currentColor;
-				stroke: currentColor;
-				color: var(--text-primary); // Ensure visibility on mobile
-			}
-		}
-
-		.nav-link {
-			padding: 6px 12px;
-			font-size: 0.85rem;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.header-content {
-			gap: 12px;
-			padding: 12px 16px;
-		}
-
-		.header-nav {
-			width: 100%;
-			justify-content: center;
 		}
 	}
 
 	.quick-actions {
 		display: flex;
 		align-items: center;
+		gap: 4px;
 
 		.import-btn {
 			background: var(--color-success);
-			height: 36px;
+			min-height: 36px;
+			min-width: 36px;
 			cursor: pointer;
-			transition: all 0.2s ease;
-			font-size: 1.2rem;
-			color: var(--text-primary);
+			transition: all 0.15s ease;
+			color: white;
 			display: flex;
 			align-items: center;
-			gap: 8px;
-			padding: 8px 12px;
+			justify-content: center;
+			gap: 6px;
+			padding: 0 10px;
 			border: none;
 			border-radius: 8px;
+			font-size: 0.85rem;
+			font-weight: 600;
+
+			&__label {
+				display: none;
+			}
 
 			&:hover {
-				transform: scale(1.05);
+				filter: brightness(1.1);
 			}
 		}
 
 		.user-menu {
 			display: flex;
 			align-items: center;
-			gap: 8px;
-			margin-left: 8px;
+			gap: 6px;
+			margin-left: 4px;
 
 			.user-name {
+				display: none; // hidden on mobile
 				font-size: 0.85rem;
 				color: var(--text-secondary);
+				max-width: 120px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 
 			.logout-btn {
@@ -157,16 +134,174 @@
 				border: 1px solid var(--border-overlay-light);
 				color: var(--text-secondary);
 				cursor: pointer;
-				padding: 4px 8px;
-				border-radius: 6px;
-				font-size: 0.85rem;
-				transition: all 0.2s ease;
+				padding: 0;
+				width: 36px;
+				height: 36px;
+				border-radius: 8px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: all 0.15s ease;
 
 				&:hover {
 					color: var(--text-primary);
 					border-color: var(--text-secondary);
+					background: var(--overlay-medium);
 				}
 			}
+		}
+	}
+
+	// ── Tablet and up: show desktop nav ──
+	@include tablet-up {
+		.header-content {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 10px 20px;
+		}
+
+		.header-logo svg {
+			height: 34px;
+		}
+
+		.header-nav {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+		}
+
+		.quick-actions {
+			gap: 8px;
+
+			.import-btn {
+				padding: 0 12px;
+
+				&__label {
+					display: inline;
+				}
+			}
+
+			.user-menu {
+				.user-name {
+					display: block;
+				}
+			}
+		}
+	}
+
+	@include desktop-up {
+		.header-content {
+			padding: 8px 20px;
+		}
+
+		.nav-link {
+			padding: 6px 12px;
+			font-size: 0.85rem;
+		}
+	}
+}
+
+// ===================================
+// Mobile bottom navigation bar
+// ===================================
+
+.mobile-bottom-nav {
+	display: flex;
+	align-items: stretch;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 200;
+	background: var(--bg-secondary);
+	border-top: 1px solid var(--border-light);
+	height: calc(var(--bottom-nav-height) + var(--safe-bottom));
+	padding-bottom: var(--safe-bottom);
+	backdrop-filter: blur(12px);
+
+	// Hidden on tablet+ (bottom nav only for mobile)
+	@include tablet-up {
+		display: none;
+	}
+}
+
+.mobile-nav-item {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	text-decoration: none;
+	color: var(--text-muted);
+	font-size: 0.6rem;
+	font-weight: 500;
+	min-height: $touch-min;
+	cursor: pointer;
+	background: none;
+	border: none;
+	padding: 6px 4px;
+	transition: color 0.15s ease;
+	-webkit-tap-highlight-color: transparent;
+
+	svg {
+		width: 22px;
+		height: 22px;
+		flex-shrink: 0;
+	}
+
+	span {
+		line-height: 1;
+		white-space: nowrap;
+	}
+
+	&--active {
+		color: var(--color-primary);
+
+		svg {
+			stroke: var(--color-primary);
+		}
+	}
+
+	&--action {
+		color: var(--text-secondary);
+
+		.mobile-nav-item__plus {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 28px;
+			height: 28px;
+			background: var(--color-success);
+			color: white;
+			border-radius: 50%;
+			font-size: 1.3rem;
+			line-height: 1;
+			font-weight: 700;
+		}
+	}
+
+	&:active {
+		opacity: 0.7;
+	}
+}
+
+// ===================================
+// Header layout wrapper
+// ===================================
+
+.header-layout {
+	display: flex;
+	flex-direction: column;
+	min-height: 100dvh;
+
+	// Push content above bottom nav on mobile
+	.header-layout__content {
+		flex: 1;
+		padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
+
+		@include tablet-up {
+			padding-bottom: 0;
 		}
 	}
 }

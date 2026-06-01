@@ -33,3 +33,12 @@
 
 // 4. Sistema de temas principal (incluye clases utilitarias)
 @use 'themes' as *;
+
+// 5. View controls and new views
+@use 'view-controls' as *;
+
+// 6. Detail shell and panels
+@use 'detail-shell' as *;
+
+// 7. Final responsive fixes that must win over legacy component blocks
+@use 'responsive-fixes' as *;

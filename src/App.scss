@@ -1,14 +1,32 @@
 // Importar el sistema de temas
 @use '@/assets/styles' as *;
 
-#root {
-	min-width: 100%;
-	width: 100%;
-	margin: 0;
-	padding: 0;
-	font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-	background-color: var(--bg-primary);
-	min-height: 100vh;
+// Responsive layout token overrides
+@include tablet-up {
+	:root {
+		--page-pad-x: 16px;
+		--page-pad-y: 16px;
+		--bottom-nav-height: 0px;
+		--app-header-height: 60px;
+	}
+}
+
+@include desktop-up {
+	:root {
+		--page-pad-x: 24px;
+		--page-pad-y: 20px;
+		--panel-width: 560px;
+	}
+}
+
+@include wide-up {
+	:root {
+		--panel-width: 620px;
+	}
+}
+
+html {
+	overflow-x: hidden;
 }
 
 body {
@@ -16,4 +34,16 @@ body {
 	padding: 0;
 	font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
 	background-color: var(--bg-primary);
+	overflow-x: hidden;
+	min-height: 100dvh;
+}
+
+#root {
+	min-width: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+	background-color: var(--bg-primary);
+	min-height: 100dvh;
 }

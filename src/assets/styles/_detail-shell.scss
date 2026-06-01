@@ -1,0 +1,1523 @@
+@use '@/assets/styles/variables' as *;
+
+// ===================================
+// Body scroll lock when panel is open on mobile
+// ===================================
+
+body.detail-panel-open {
+	@include mobile-only {
+		overflow: hidden;
+	}
+}
+
+// ===================================
+// Detail Shell - Responsive right panel
+// ===================================
+
+@keyframes detail-slide-in {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@keyframes detail-slide-up {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+.detail-shell {
+	&__detail {
+		position: fixed;
+		z-index: 1000;
+		background: var(--bg-secondary);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		box-shadow: -4px 0 24px rgba(0, 0, 0, 0.3);
+		padding: 16px;
+
+		// Phone: full-screen sheet from bottom edge
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 100dvh;
+		animation: detail-slide-up 0.25s ease forwards;
+
+		@include tablet-up {
+			// Tablet: right side sheet
+			top: 0;
+			right: 0;
+			bottom: unset;
+			left: unset;
+			width: min(88vw, 640px);
+			height: 100dvh;
+			animation: detail-slide-in 0.25s ease forwards;
+		}
+
+		@include desktop-up {
+			// Desktop: right panel, doesn't cover main content
+			width: var(--panel-width);
+			animation: detail-slide-in 0.25s ease forwards;
+		}
+
+		@include wide-up {
+			width: min(var(--panel-width), 760px);
+		}
+	}
+}
+
+// ===================================
+// Pokemon Detail Panel
+// ===================================
+
+.pokemon-detail {
+	&__hero {
+		display: flex;
+		align-items: flex-start;
+		gap: 16px;
+		margin-bottom: 16px;
+		padding-bottom: 16px;
+		border-bottom: 1px solid var(--border-light);
+
+		// Phone: stack sprite and info
+		@include mobile-only {
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+		}
+	}
+
+	&__hero-sprite {
+		width: 96px;
+		height: 96px;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--bg-tertiary);
+		border-radius: 12px;
+		border: 1px solid var(--border-light);
+
+		img {
+			max-width: 80px;
+			max-height: 80px;
+			object-fit: contain;
+		}
+
+		@include mobile-only {
+			width: 112px;
+			height: 112px;
+
+			img {
+				max-width: 96px;
+				max-height: 96px;
+			}
+		}
+	}
+
+	&__hero-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__name {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--text-primary);
+		margin: 0 0 4px;
+	}
+
+	&__close-btn {
+		background: transparent;
+		border: 1px solid var(--border-light);
+		color: var(--text-secondary);
+		border-radius: 6px;
+		min-width: $touch-min;
+		min-height: $touch-min;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		font-size: 0.85rem;
+		flex-shrink: 0;
+		transition: all 0.15s ease;
+
+		&:hover {
+			background: var(--bg-surface);
+			color: var(--text-primary);
+			border-color: var(--border-secondary);
+		}
+	}
+
+	&__subtitle {
+		font-size: 0.75rem;
+		color: var(--text-secondary);
+		margin: 0 0 8px;
+	}
+
+	&__badges {
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+	}
+
+	&__badge {
+		font-size: 0.65rem;
+		padding: 2px 8px;
+		border-radius: 10px;
+		font-weight: 500;
+		white-space: nowrap;
+
+		&--type {
+			color: white;
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+		}
+
+		&--shiny {
+			background: linear-gradient(135deg, #ffd700, #ffaa00);
+			color: #333;
+		}
+
+		&--level {
+			background: var(--bg-surface);
+			color: var(--text-secondary);
+			border: 1px solid var(--border-light);
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 6px;
+		padding: 8px 0 12px;
+		flex-wrap: wrap;
+	}
+
+	// Tabs
+	&__tabs {
+		display: flex;
+		border-bottom: 1px solid var(--border-light);
+		margin-bottom: 12px;
+		overflow-x: auto;
+		flex-shrink: 0;
+		// Prevent visible scrollbar on tabs
+		scrollbar-width: none;
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	&__tab {
+		background: transparent;
+		border: none;
+		color: var(--text-muted);
+		padding: 10px 14px;
+		font-size: 0.75rem;
+		font-weight: 500;
+		cursor: pointer;
+		border-bottom: 2px solid transparent;
+		transition: all 0.15s ease;
+		white-space: nowrap;
+		min-height: $touch-min;
+
+		&:hover {
+			color: var(--text-secondary);
+		}
+
+		&--active {
+			color: var(--color-primary);
+			border-bottom-color: var(--color-primary);
+		}
+	}
+
+	// Section
+	&__section {
+		margin-bottom: 16px;
+	}
+
+	&__section-title {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		margin-bottom: 8px;
+	}
+
+	// Info rows — wrap on mobile instead of overflowing
+	&__row {
+		display: flex;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 2px;
+		padding: 4px 0;
+		font-size: 0.8rem;
+
+		&-label {
+			color: var(--text-secondary);
+			flex-shrink: 0;
+		}
+
+		&-value {
+			color: var(--text-primary);
+			font-weight: 500;
+			text-align: right;
+			word-break: break-all;
+		}
+	}
+
+	// Stats
+	&__stat {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 4px;
+		font-size: 0.75rem;
+	}
+
+	&__stat-name {
+		width: 40px;
+		text-align: right;
+		color: var(--text-secondary);
+		font-weight: 500;
+		flex-shrink: 0;
+	}
+
+	&__stat-bar {
+		flex: 1;
+		height: 6px;
+		background: var(--bg-tertiary);
+		border-radius: 3px;
+		overflow: hidden;
+	}
+
+	&__stat-fill {
+		height: 100%;
+		border-radius: 3px;
+		@include motion-safe {
+			transition: width 0.3s ease;
+		}
+	}
+
+	&__stat-value {
+		width: 28px;
+		text-align: right;
+		color: var(--text-primary);
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+
+	// Moves table
+	&__move {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 0;
+		font-size: 0.75rem;
+		border-bottom: 1px solid var(--border-light);
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	&__move-name {
+		flex: 1;
+		color: var(--text-primary);
+		font-weight: 500;
+	}
+
+	&__move-type {
+		font-size: 0.6rem;
+		padding: 1px 6px;
+		border-radius: 8px;
+		color: white;
+	}
+
+	&__move-pp {
+		color: var(--text-muted);
+		font-size: 0.65rem;
+	}
+
+	// Tags in detail — chip wrap, no horizontal scroll
+	&__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	&__tag {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 0.7rem;
+		padding: 3px 8px;
+		border-radius: 10px;
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		border: 1px solid var(--border-light);
+	}
+
+	&__tag-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+	}
+}
+
+// ===================================
+// Action buttons (shared)
+// ===================================
+
+.action-btn {
+	background: var(--bg-surface);
+	border: 1px solid var(--border-light);
+	color: var(--text-secondary);
+	border-radius: 6px;
+	padding: 8px 14px;
+	min-height: $touch-min;
+	font-size: 0.75rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	&:hover {
+		background: var(--bg-surface-alt);
+		color: var(--text-primary);
+		border-color: var(--border-secondary);
+	}
+
+	&--danger {
+		&:hover {
+			background: var(--color-error-dark);
+			color: var(--color-error-light);
+			border-color: var(--color-error);
+		}
+	}
+
+	&--primary {
+		background: var(--color-primary);
+		color: white;
+		border-color: var(--color-primary);
+
+		&:hover {
+			opacity: 0.9;
+		}
+	}
+}
+
+// ===================================
+// Dex Species Panel
+// ===================================
+
+.dex-detail {
+	&__names {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		margin-bottom: 8px;
+	}
+
+	&__jp-name {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+	}
+
+	&__meaning {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		font-style: italic;
+	}
+
+	&__progress {
+		display: flex;
+		gap: 12px;
+		margin-bottom: 12px;
+		padding: 8px 12px;
+		background: var(--bg-tertiary);
+		border-radius: 8px;
+		border: 1px solid var(--border-light);
+
+		// 3 equal columns on all sizes
+		justify-content: space-around;
+	}
+
+	&__progress-item {
+		text-align: center;
+		flex: 1;
+	}
+
+	&__progress-value {
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	&__progress-label {
+		font-size: 0.6rem;
+		color: var(--text-muted);
+		text-transform: uppercase;
+	}
+
+	&__entries-section {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	&__flavor-list {
+		flex: 1;
+		overflow-y: auto;
+	}
+
+	&__flavor-entry {
+		padding: 6px 0;
+		border-bottom: 1px solid var(--border-light);
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	&__flavor-game {
+		font-size: 0.65rem;
+		font-weight: 600;
+		color: var(--text-secondary);
+		margin-bottom: 2px;
+	}
+
+	&__flavor-text {
+		font-size: 0.75rem;
+		color: var(--text-primary);
+		line-height: 1.4;
+	}
+
+	// Location table → cards on mobile
+	&__location-table {
+		width: 100%;
+		font-size: 0.75rem;
+		border-collapse: collapse;
+
+		th {
+			text-align: left;
+			color: var(--text-muted);
+			font-weight: 500;
+			padding: 4px 8px 4px 0;
+			border-bottom: 1px solid var(--border-secondary);
+		}
+
+		td {
+			padding: 4px 8px 4px 0;
+			color: var(--text-primary);
+			border-bottom: 1px solid var(--border-light);
+			word-break: break-word;
+		}
+
+		@include mobile-only {
+			// Hide table, show card layout instead
+			display: none;
+		}
+	}
+
+	// Location card layout for mobile
+	&__location-cards {
+		display: none;
+		flex-direction: column;
+		gap: 6px;
+
+		@include mobile-only {
+			display: flex;
+		}
+	}
+
+	&__location-card {
+		background: var(--bg-surface);
+		border: 1px solid var(--border-light);
+		border-radius: 8px;
+		padding: 8px;
+		font-size: 0.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+
+		span {
+			display: flex;
+			gap: 6px;
+
+			strong {
+				color: var(--text-muted);
+				font-weight: 500;
+				min-width: 50px;
+				flex-shrink: 0;
+			}
+		}
+	}
+
+	&__sprites-gallery {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+		gap: 8px;
+	}
+
+	&__sprite-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		padding: 8px;
+		background: var(--bg-tertiary);
+		border-radius: 8px;
+		border: 1px solid var(--border-light);
+		aspect-ratio: 1;
+		justify-content: center;
+
+		img {
+			width: 64px;
+			height: 64px;
+			object-fit: contain;
+			image-rendering: pixelated;
+		}
+	}
+
+	&__sprite-label {
+		font-size: 0.6rem;
+		color: var(--text-muted);
+		text-align: center;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		max-width: 100%;
+		// Two-line max
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		white-space: normal;
+	}
+
+	&__owned-list {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	&__owned-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px;
+		background: var(--bg-surface);
+		border: 1px solid var(--border-light);
+		border-radius: 8px;
+		cursor: pointer;
+		min-height: $touch-min;
+		transition: all 0.15s ease;
+
+		&:hover {
+			border-color: var(--color-primary);
+		}
+
+		img {
+			width: 36px;
+			height: 36px;
+			object-fit: contain;
+			flex-shrink: 0;
+		}
+	}
+
+	&__owned-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__owned-name {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--text-primary);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__owned-meta {
+		font-size: 0.65rem;
+		color: var(--text-muted);
+	}
+
+	&__no-data {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		font-style: italic;
+		padding: 8px 0;
+	}
+}
+
+// ===================================
+// Actual final responsive overrides
+// This duplicated stylesheet has legacy blocks above; keep this section at EOF.
+// ===================================
+
+.detail-shell {
+	&__detail {
+		box-sizing: border-box;
+		padding: 48px 12px 16px;
+		width: 100%;
+		height: 100dvh;
+
+		@include tablet-up {
+			padding: 52px 16px 18px;
+			width: min(88vw, 640px);
+		}
+
+		@include desktop-up {
+			padding: 52px 18px 20px;
+			width: clamp(520px, 38vw, 680px);
+		}
+	}
+
+	&__close {
+		position: sticky;
+		top: 58px;
+		margin-left: auto;
+		margin-top: -40px;
+		margin-bottom: 8px;
+		z-index: 3;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: $touch-min;
+		height: $touch-min;
+		border: 1px solid var(--border-light);
+		border-radius: 10px;
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		box-shadow: var(--shadow-md);
+
+		@include desktop-up {
+			width: 34px;
+			height: 34px;
+			margin-top: -38px;
+			border-radius: 8px;
+			font-size: 1rem;
+		}
+	}
+}
+
+.pokemon-detail {
+	&__hero {
+		@include mobile-only {
+			flex-direction: row;
+			align-items: center;
+			gap: 12px;
+			text-align: left;
+		}
+	}
+
+	&__hero-sprite {
+		@include mobile-only {
+			width: 84px;
+			height: 84px;
+
+			img {
+				max-width: 72px;
+				max-height: 72px;
+			}
+		}
+	}
+
+	&__badges,
+	&__actions {
+		@include mobile-only {
+			justify-content: flex-start;
+		}
+	}
+
+	&__actions {
+		@include mobile-only {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	&__tab {
+		min-height: 34px;
+		padding: 7px 12px;
+
+		@include mobile-only {
+			min-height: $touch-min;
+			padding: 10px 14px;
+		}
+	}
+
+	&__row {
+		flex-wrap: wrap;
+		gap: 4px 10px;
+
+		&-value {
+			min-width: 0;
+			word-break: break-word;
+		}
+	}
+}
+
+.action-btn {
+	min-height: 34px;
+	padding: 6px 10px;
+
+	@include mobile-only {
+		min-height: $touch-min;
+		justify-content: center;
+	}
+}
+
+// ===================================
+// Last-pass responsive overrides
+// This file currently contains duplicated legacy blocks; these rules must stay last.
+// ===================================
+
+.detail-shell {
+	&__detail {
+		box-sizing: border-box;
+		padding: 48px 12px 16px;
+		width: 100%;
+		height: 100dvh;
+
+		@include tablet-up {
+			padding: 52px 16px 18px;
+			width: min(88vw, 640px);
+		}
+
+		@include desktop-up {
+			padding: 52px 18px 20px;
+			width: clamp(520px, 38vw, 680px);
+		}
+	}
+
+	&__close {
+		position: sticky;
+		top: 0;
+		margin-left: auto;
+		margin-top: -40px;
+		margin-bottom: 8px;
+		z-index: 3;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: $touch-min;
+		height: $touch-min;
+		border: 1px solid var(--border-light);
+		border-radius: 10px;
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		box-shadow: var(--shadow-md);
+
+		@include desktop-up {
+			width: 34px;
+			height: 34px;
+			margin-top: -38px;
+			border-radius: 8px;
+			font-size: 1rem;
+		}
+	}
+}
+
+.pokemon-detail {
+	&__hero {
+		@include mobile-only {
+			flex-direction: row;
+			align-items: center;
+			gap: 12px;
+			text-align: left;
+		}
+	}
+
+	&__hero-sprite {
+		@include mobile-only {
+			width: 84px;
+			height: 84px;
+
+			img {
+				max-width: 72px;
+				max-height: 72px;
+			}
+		}
+	}
+
+	&__badges,
+	&__actions {
+		@include mobile-only {
+			justify-content: flex-start;
+		}
+	}
+
+	&__actions {
+		@include mobile-only {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	&__tab {
+		min-height: 34px;
+		padding: 7px 12px;
+
+		@include mobile-only {
+			min-height: $touch-min;
+			padding: 10px 14px;
+		}
+	}
+
+	&__row {
+		flex-wrap: wrap;
+		gap: 4px 10px;
+
+		&-value {
+			min-width: 0;
+			word-break: break-word;
+		}
+	}
+}
+
+.action-btn {
+	min-height: 34px;
+	padding: 6px 10px;
+
+	@include mobile-only {
+		min-height: $touch-min;
+		justify-content: center;
+	}
+}
+
+// ===================================
+// Final responsive overrides
+// Keep these last because this file still contains legacy duplicate blocks above.
+// ===================================
+
+.detail-shell {
+	&__detail {
+		box-sizing: border-box;
+		padding: 48px 12px 16px;
+		width: 100%;
+		height: 100dvh;
+
+		@include tablet-up {
+			padding: 52px 16px 18px;
+			width: min(88vw, 640px);
+		}
+
+		@include desktop-up {
+			padding: 52px 18px 20px;
+			width: clamp(520px, 38vw, 680px);
+		}
+	}
+
+	&__close {
+		position: sticky;
+		top: 0;
+		margin-left: auto;
+		margin-top: -40px;
+		margin-bottom: 8px;
+		z-index: 3;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: $touch-min;
+		height: $touch-min;
+		border: 1px solid var(--border-light);
+		border-radius: 10px;
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		box-shadow: var(--shadow-md);
+
+		@include desktop-up {
+			width: 34px;
+			height: 34px;
+			margin-top: -38px;
+			border-radius: 8px;
+			font-size: 1rem;
+		}
+	}
+}
+
+.pokemon-detail {
+	&__hero {
+		@include mobile-only {
+			flex-direction: row;
+			align-items: center;
+			gap: 12px;
+			text-align: left;
+		}
+	}
+
+	&__hero-sprite {
+		@include mobile-only {
+			width: 84px;
+			height: 84px;
+
+			img {
+				max-width: 72px;
+				max-height: 72px;
+			}
+		}
+	}
+
+	&__badges,
+	&__actions {
+		@include mobile-only {
+			justify-content: flex-start;
+		}
+	}
+
+	&__actions {
+		@include mobile-only {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	&__tab {
+		min-height: 34px;
+		padding: 7px 12px;
+
+		@include mobile-only {
+			min-height: $touch-min;
+			padding: 10px 14px;
+		}
+	}
+
+	&__row {
+		flex-wrap: wrap;
+		gap: 4px 10px;
+
+		&-value {
+			min-width: 0;
+			word-break: break-word;
+		}
+	}
+}
+
+.action-btn {
+	min-height: 34px;
+	padding: 6px 10px;
+
+	@include mobile-only {
+		min-height: $touch-min;
+		justify-content: center;
+	}
+}
+
+// ===================================
+// Pokemon Detail Panel
+// ===================================
+
+.pokemon-detail {
+	&__hero {
+		display: flex;
+		align-items: flex-start;
+		gap: 16px;
+		margin-bottom: 16px;
+		padding-bottom: 16px;
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	&__hero-sprite {
+		width: 96px;
+		height: 96px;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--bg-tertiary);
+		border-radius: 12px;
+		border: 1px solid var(--border-light);
+
+		img {
+			max-width: 80px;
+			max-height: 80px;
+			object-fit: contain;
+		}
+	}
+
+	&__hero-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__name {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--text-primary);
+		margin: 0 0 4px;
+	}
+
+	&__close-btn {
+		background: transparent;
+		border: 1px solid var(--border-light);
+		color: var(--text-secondary);
+		border-radius: 6px;
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		font-size: 0.85rem;
+		flex-shrink: 0;
+		transition: all 0.15s ease;
+
+		&:hover {
+			background: var(--bg-surface);
+			color: var(--text-primary);
+			border-color: var(--border-secondary);
+		}
+	}
+
+	&__subtitle {
+		font-size: 0.75rem;
+		color: var(--text-secondary);
+		margin: 0 0 8px;
+	}
+
+	&__badges {
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+	}
+
+	&__badge {
+		font-size: 0.65rem;
+		padding: 2px 8px;
+		border-radius: 10px;
+		font-weight: 500;
+		white-space: nowrap;
+
+		&--type {
+			color: white;
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+		}
+
+		&--shiny {
+			background: linear-gradient(135deg, #ffd700, #ffaa00);
+			color: #333;
+		}
+
+		&--level {
+			background: var(--bg-surface);
+			color: var(--text-secondary);
+			border: 1px solid var(--border-light);
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 6px;
+		padding: 8px 0 12px;
+		flex-wrap: wrap;
+	}
+
+	// Tabs
+	&__tabs {
+		display: flex;
+		border-bottom: 1px solid var(--border-light);
+		margin-bottom: 12px;
+		overflow-x: auto;
+		flex-shrink: 0;
+	}
+
+	&__tab {
+		background: transparent;
+		border: none;
+		color: var(--text-muted);
+		padding: 8px 14px;
+		font-size: 0.75rem;
+		font-weight: 500;
+		cursor: pointer;
+		border-bottom: 2px solid transparent;
+		transition: all 0.15s ease;
+		white-space: nowrap;
+
+		&:hover {
+			color: var(--text-secondary);
+		}
+
+		&--active {
+			color: var(--color-primary);
+			border-bottom-color: var(--color-primary);
+		}
+	}
+
+	// Section
+	&__section {
+		margin-bottom: 16px;
+	}
+
+	&__section-title {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		margin-bottom: 8px;
+	}
+
+	// Info rows
+	&__row {
+		display: flex;
+		justify-content: space-between;
+		padding: 4px 0;
+		font-size: 0.8rem;
+
+		&-label {
+			color: var(--text-secondary);
+		}
+
+		&-value {
+			color: var(--text-primary);
+			font-weight: 500;
+			text-align: right;
+		}
+	}
+
+	// Stats
+	&__stat {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 4px;
+		font-size: 0.75rem;
+	}
+
+	&__stat-name {
+		width: 40px;
+		text-align: right;
+		color: var(--text-secondary);
+		font-weight: 500;
+		flex-shrink: 0;
+	}
+
+	&__stat-bar {
+		flex: 1;
+		height: 6px;
+		background: var(--bg-tertiary);
+		border-radius: 3px;
+		overflow: hidden;
+	}
+
+	&__stat-fill {
+		height: 100%;
+		border-radius: 3px;
+		transition: width 0.3s ease;
+	}
+
+	&__stat-value {
+		width: 28px;
+		text-align: right;
+		color: var(--text-primary);
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+
+	// Moves table
+	&__move {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 4px 0;
+		font-size: 0.75rem;
+		border-bottom: 1px solid var(--border-light);
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	&__move-name {
+		flex: 1;
+		color: var(--text-primary);
+		font-weight: 500;
+	}
+
+	&__move-type {
+		font-size: 0.6rem;
+		padding: 1px 6px;
+		border-radius: 8px;
+		color: white;
+	}
+
+	&__move-pp {
+		color: var(--text-muted);
+		font-size: 0.65rem;
+	}
+
+	// Tags in detail
+	&__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	&__tag {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 0.7rem;
+		padding: 3px 8px;
+		border-radius: 10px;
+		background: var(--bg-surface);
+		color: var(--text-primary);
+		border: 1px solid var(--border-light);
+	}
+
+	&__tag-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+	}
+}
+
+// ===================================
+// Action buttons (shared)
+// ===================================
+
+.action-btn {
+	background: var(--bg-surface);
+	border: 1px solid var(--border-light);
+	color: var(--text-secondary);
+	border-radius: 6px;
+	padding: 6px 12px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	&:hover {
+		background: var(--bg-surface-alt);
+		color: var(--text-primary);
+		border-color: var(--border-secondary);
+	}
+
+	&--danger {
+		&:hover {
+			background: var(--color-error-dark);
+			color: var(--color-error-light);
+			border-color: var(--color-error);
+		}
+	}
+
+	&--primary {
+		background: var(--color-primary);
+		color: white;
+		border-color: var(--color-primary);
+
+		&:hover {
+			opacity: 0.9;
+		}
+	}
+}
+
+// ===================================
+// Dex Species Panel
+// ===================================
+
+.dex-detail {
+	&__names {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		margin-bottom: 8px;
+	}
+
+	&__jp-name {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+	}
+
+	&__meaning {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		font-style: italic;
+	}
+
+	&__progress {
+		display: flex;
+		gap: 12px;
+		margin-bottom: 12px;
+		padding: 8px 12px;
+		background: var(--bg-tertiary);
+		border-radius: 8px;
+		border: 1px solid var(--border-light);
+	}
+
+	&__progress-item {
+		text-align: center;
+	}
+
+	&__progress-value {
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	&__progress-label {
+		font-size: 0.6rem;
+		color: var(--text-muted);
+		text-transform: uppercase;
+	}
+
+	&__entries-section {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	&__flavor-list {
+		flex: 1;
+		overflow-y: auto;
+	}
+
+	&__flavor-entry {
+		padding: 6px 0;
+		border-bottom: 1px solid var(--border-light);
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	&__flavor-game {
+		font-size: 0.65rem;
+		font-weight: 600;
+		color: var(--text-secondary);
+		margin-bottom: 2px;
+	}
+
+	&__flavor-text {
+		font-size: 0.75rem;
+		color: var(--text-primary);
+		line-height: 1.4;
+	}
+
+	&__location-table {
+		width: 100%;
+		font-size: 0.75rem;
+		border-collapse: collapse;
+
+		th {
+			text-align: left;
+			color: var(--text-muted);
+			font-weight: 500;
+			padding: 4px 8px 4px 0;
+			border-bottom: 1px solid var(--border-secondary);
+		}
+
+		td {
+			padding: 4px 8px 4px 0;
+			color: var(--text-primary);
+			border-bottom: 1px solid var(--border-light);
+		}
+	}
+
+	&__sprites-gallery {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+		gap: 8px;
+	}
+
+	&__sprite-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		padding: 8px;
+		background: var(--bg-tertiary);
+		border-radius: 8px;
+		border: 1px solid var(--border-light);
+
+		img {
+			width: 64px;
+			height: 64px;
+			object-fit: contain;
+			image-rendering: pixelated;
+		}
+	}
+
+	&__sprite-label {
+		font-size: 0.6rem;
+		color: var(--text-muted);
+		text-align: center;
+	}
+
+	&__owned-list {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	&__owned-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px;
+		background: var(--bg-surface);
+		border: 1px solid var(--border-light);
+		border-radius: 8px;
+		cursor: pointer;
+		transition: all 0.15s ease;
+
+		&:hover {
+			border-color: var(--color-primary);
+		}
+
+		img {
+			width: 36px;
+			height: 36px;
+			object-fit: contain;
+		}
+	}
+
+	&__owned-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__owned-name {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--text-primary);
+	}
+
+	&__owned-meta {
+		font-size: 0.65rem;
+		color: var(--text-muted);
+	}
+
+	&__no-data {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		font-style: italic;
+		padding: 8px 0;
+	}
+}

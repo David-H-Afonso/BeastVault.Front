@@ -6,7 +6,14 @@ export { default as styleSettingsReducer } from './styleSettingsSlice'
 // ===================================
 // ACTIONS
 // ===================================
-export { setBackgroundType, setViewMode, setTheme, setSpriteType } from './styleSettingsSlice'
+export {
+	setBackgroundType,
+	setViewMode,
+	setTheme,
+	setSpriteType,
+	setOrganizeDensity,
+	setKanbanDragMode,
+} from './styleSettingsSlice'
 
 // ===================================
 // THUNKS
