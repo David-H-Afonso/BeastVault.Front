@@ -20,18 +20,30 @@ interface Props {
 		nickname: string
 		level: number
 		isShiny: boolean
+		favorite: boolean
+		isEgg: boolean
 		ballId: number
+		heldItemId: number
+		gender: number
 		spriteKey: string
 		originGeneration: number
 		capturedGeneration: number
 		hasMegaStone: boolean
 	}[]
 	backgroundOptions: CardBackgroundTypeName[]
+	boxIconPreviewUrls: { bulbapedia: string; home: string }
 }
 
 const SettingComponent: FC<Props> = (props) => {
-	const { defaultPokemon, spriteURL, backgroundOptions } = props
-	const { backgroundType, setBackgroundType, spriteType, setSpriteType } = useUISettings()
+	const { defaultPokemon, spriteURL, backgroundOptions, boxIconPreviewUrls } = props
+	const {
+		backgroundType,
+		setBackgroundType,
+		spriteType,
+		setSpriteType,
+		boxIconStyle,
+		setBoxIconStyle,
+	} = useUISettings()
 
 	return (
 		<div className='settings-page'>
@@ -101,6 +113,48 @@ const SettingComponent: FC<Props> = (props) => {
 												</option>
 											))}
 										</select>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					{/* Box Icons */}
+					<section className='settings-section'>
+						<h2 className='section-title'>📦 Box Icons</h2>
+						<div className='section-content'>
+							<div className='ui-options-selector'>
+								<div className='options-flex'>
+									<div className='option-group'>
+										<label className='option-label'>Icon style</label>
+										<label className='settings-toggle'>
+											<input
+												type='checkbox'
+												checked={boxIconStyle === 'bulbapedia'}
+												onChange={(e) => setBoxIconStyle(e.target.checked ? 'bulbapedia' : 'home')}
+											/>
+											<span className='settings-toggle__track' />
+											<span className='settings-toggle__label'>
+												{boxIconStyle === 'bulbapedia'
+													? 'Bulbapedia HOME icons'
+													: 'PokeAPI HOME icons'}
+											</span>
+										</label>
+									</div>
+									<div className='option-group'>
+										<label className='option-label'>Preview (Charizard)</label>
+										<div className='settings-box-icon-preview'>
+											<div
+												className={`settings-box-icon-preview__item${boxIconStyle === 'bulbapedia' ? ' settings-box-icon-preview__item--active' : ''}`}>
+												<img src={boxIconPreviewUrls.bulbapedia} alt='Bulbapedia HOME icon' />
+												<small>Bulbapedia</small>
+											</div>
+											<div
+												className={`settings-box-icon-preview__item${boxIconStyle === 'home' ? ' settings-box-icon-preview__item--active' : ''}`}>
+												<img src={boxIconPreviewUrls.home} alt='PokeAPI HOME icon' />
+												<small>PokeAPI HOME</small>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>

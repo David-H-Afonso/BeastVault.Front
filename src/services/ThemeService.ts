@@ -5,15 +5,7 @@
  * Servicio para gestionar el cambio de temas dinámicamente
  */
 
-export type ThemeType =
-	| 'dark'
-	| 'light'
-	| 'pokemon'
-	| 'water'
-	| 'fire'
-	| 'grass'
-	| 'electric'
-	| 'psychic'
+export type ThemeType = 'dark' | 'home'
 
 export interface ThemeConfig {
 	id: ThemeType
@@ -29,39 +21,9 @@ export const AVAILABLE_THEMES: ThemeConfig[] = [
 		description: 'Tema oscuro por defecto',
 	},
 	{
-		id: 'light',
-		name: 'Claro',
-		description: 'Tema claro moderno',
-	},
-	{
-		id: 'pokemon',
-		name: 'Pokemon',
-		description: 'Inspirado en los juegos Pokemon',
-	},
-	{
-		id: 'water',
-		name: 'Agua',
-		description: 'Inspirado en Pokemon tipo Agua',
-	},
-	{
-		id: 'fire',
-		name: 'Fuego',
-		description: 'Inspirado en Pokemon tipo Fuego',
-	},
-	{
-		id: 'grass',
-		name: 'Hierba',
-		description: 'Inspirado en Pokemon tipo Hierba',
-	},
-	{
-		id: 'electric',
-		name: 'Eléctrico',
-		description: 'Inspirado en Pokemon tipo Eléctrico',
-	},
-	{
-		id: 'psychic',
-		name: 'Psíquico',
-		description: 'Inspirado en Pokemon tipo Psíquico',
+		id: 'home',
+		name: 'HOME',
+		description: 'Inspirado en Pokémon HOME para colección y Pokédex',
 	},
 ]
 
@@ -128,10 +90,7 @@ class ThemeService {
 	/**
 	 * Detecta el tema preferido del sistema
 	 */
-	getSystemPreferredTheme(): 'dark' | 'light' {
-		if (typeof window !== 'undefined' && window.matchMedia) {
-			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-		}
+	getSystemPreferredTheme(): ThemeType {
 		return 'dark'
 	}
 

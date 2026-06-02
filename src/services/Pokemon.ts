@@ -3,12 +3,41 @@ import type {
 	PokemonListItemDtoPagedResult,
 	PokemonMetadata,
 	PokemonDetailDto,
+	UpdatePokemonDto,
 } from '../models/Pokemon'
 import type { ImportResultDto } from '../models/api/types'
 import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
 import { getAuthToken } from '../utils/authToken'
+
+function extractFilename(response: Response, fallback: string) {
+	const contentDisposition = response.headers.get('Content-Disposition')
+	if (!contentDisposition) return fallback
+
+	const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+	if (filenameMatch && filenameMatch[1]) {
+		return filenameMatch[1].replace(/['"]/g, '')
+	}
+
+	const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
+	if (filenameStarMatch && filenameStarMatch[1]) {
+		return decodeURIComponent(filenameStarMatch[1])
+	}
+
+	return fallback
+}
+
+function triggerBrowserDownload(blob: Blob, filename: string) {
+	const url = window.URL.createObjectURL(blob)
+	const link = document.createElement('a')
+	link.href = url
+	link.download = filename
+	document.body.appendChild(link)
+	link.click()
+	document.body.removeChild(link)
+	window.URL.revokeObjectURL(url)
+}
 
 /**
  * Fetches metadata for pokemon filters (types, pokeballs, natures, etc.)
@@ -53,6 +82,34 @@ export async function getPokemonById(id: number): Promise<PokemonDetailDto> {
 	return customFetch<PokemonDetailDto>(`${environment.baseUrl}/pokemon/${id}`, {
 		headers: { Accept: 'application/json' },
 	})
+}
+
+export async function updatePokemon(id: number, dto: UpdatePokemonDto): Promise<void> {
+	await customFetch(`${environment.baseUrl}/pokemon/${id}`, {
+		method: 'PATCH',
+		body: JSON.stringify(dto),
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+		},
+	})
+}
+
+export async function getPokemonShowdownExport(id: number): Promise<string> {
+	const token = getAuthToken()
+	const response = await fetch(`${environment.baseUrl}/pokemon/${id}/showdown`, {
+		method: 'GET',
+		headers: {
+			Accept: 'text/plain',
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
+		},
+	})
+
+	if (!response.ok) {
+		throw new Error(`Failed to export Showdown set: ${response.statusText}`)
+	}
+
+	return response.text()
 }
 
 /**
@@ -163,23 +220,7 @@ export async function downloadFileById(id: number): Promise<{ blob: Blob; filena
 		throw new Error(`Failed to download file with id ${id}: ${response.statusText}`)
 	}
 
-	// Extract filename from Content-Disposition header
-	const contentDisposition = response.headers.get('Content-Disposition')
-	let filename = `pokemon_${id}.pk9`
-
-	if (contentDisposition) {
-		// Try to extract filename from Content-Disposition header
-		const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
-		if (filenameMatch && filenameMatch[1]) {
-			filename = filenameMatch[1].replace(/['"]/g, '')
-		}
-		// Also try filename* format (RFC 5987)
-		const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
-		if (filenameStarMatch && filenameStarMatch[1]) {
-			filename = decodeURIComponent(filenameStarMatch[1])
-		}
-	}
-
+	const filename = extractFilename(response, `pokemon_${id}.pk9`)
 	const blob = await response.blob()
 	return { blob, filename }
 }
@@ -203,36 +244,9 @@ export async function downloadPokemonFile(pokemonId: number): Promise<void> {
 			throw new Error(`Failed to download Pokemon file: ${response.statusText}`)
 		}
 
-		// Get the blob
 		const blob = await response.blob()
-
-		// Extract filename from Content-Disposition header or use default
-		const contentDisposition = response.headers.get('Content-Disposition')
-		let filename = `pokemon_${pokemonId}.pk9`
-
-		if (contentDisposition) {
-			const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
-			if (filenameMatch && filenameMatch[1]) {
-				filename = filenameMatch[1].replace(/['"]/g, '')
-			}
-			// Also try filename* format (RFC 5987)
-			const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
-			if (filenameStarMatch && filenameStarMatch[1]) {
-				filename = decodeURIComponent(filenameStarMatch[1])
-			}
-		}
-
-		// Create download link and trigger download
-		const url = window.URL.createObjectURL(blob)
-		const link = document.createElement('a')
-		link.href = url
-		link.download = filename
-		document.body.appendChild(link)
-		link.click()
-
-		// Cleanup
-		document.body.removeChild(link)
-		window.URL.revokeObjectURL(url)
+		const filename = extractFilename(response, `pokemon_${pokemonId}.pk9`)
+		triggerBrowserDownload(blob, filename)
 	} catch (error) {
 		console.error('Download failed:', error)
 		throw error
@@ -263,25 +277,33 @@ export async function downloadPkmFileFromDisk(
 		)
 	}
 
-	// Extract filename from Content-Disposition header
-	const contentDisposition = response.headers.get('Content-Disposition')
-	let filename = `pokemon_${pokemonId}.pk9`
+	const filename = extractFilename(response, `pokemon_${pokemonId}.pk9`)
+	const blob = await response.blob()
+	return { blob, filename }
+}
 
-	if (contentDisposition) {
-		// Try to extract filename from Content-Disposition header
-		const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
-		if (filenameMatch && filenameMatch[1]) {
-			filename = filenameMatch[1].replace(/['"]/g, '')
-		}
-		// Also try filename* format (RFC 5987)
-		const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
-		if (filenameStarMatch && filenameStarMatch[1]) {
-			filename = decodeURIComponent(filenameStarMatch[1])
-		}
+export async function downloadPokemonFileFromDisk(pokemonId: number): Promise<void> {
+	const { blob, filename } = await downloadPkmFileFromDisk(pokemonId)
+	triggerBrowserDownload(blob, filename)
+}
+
+export async function downloadPokemonBackupFile(pokemonId: number): Promise<void> {
+	const token = getAuthToken()
+	const response = await fetch(`${environment.baseUrl}/export/backup/${pokemonId}`, {
+		method: 'GET',
+		headers: {
+			Accept: 'application/octet-stream',
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
+		},
+	})
+
+	if (!response.ok) {
+		throw new Error(`Failed to download backup file for Pokémon ID ${pokemonId}: ${response.statusText}`)
 	}
 
 	const blob = await response.blob()
-	return { blob, filename }
+	const filename = extractFilename(response, `pokemon_${pokemonId}_backup.pk9`)
+	triggerBrowserDownload(blob, filename)
 }
 
 /**

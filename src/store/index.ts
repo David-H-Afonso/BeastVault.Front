@@ -32,8 +32,15 @@ const persistConfig = {
 		if (state?.styleSettings) {
 			// Migrate legacy view modes to new names
 			const vm = state.styleSettings.viewMode
-			if (vm === 'tags') state.styleSettings.viewMode = 'organize'
-			else if (vm === 'list') state.styleSettings.viewMode = 'grid'
+			if (vm === 'box' || vm === 'boxes') {
+				state.styleSettings.viewMode = 'boxes'
+			} else {
+				state.styleSettings.viewMode = 'browse'
+			}
+
+			if (!state.styleSettings.browseLayout) {
+				state.styleSettings.browseLayout = vm === 'grid' ? 'grid' : 'list'
+			}
 
 			// Ensure new fields have defaults
 			if (!state.styleSettings.organizeDensity) state.styleSettings.organizeDensity = 'expanded'

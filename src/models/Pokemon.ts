@@ -242,6 +242,10 @@ export interface PokemonListFilterDto {
 	SpeciesName?: string
 	Nickname?: string
 	IsShiny?: boolean
+	Favorite?: boolean
+	CanGigantamax?: boolean
+	HasMegaStone?: boolean
+	IsEgg?: boolean
 
 	// Pokemon characteristics
 	Form?: number
@@ -277,7 +281,6 @@ export interface PokemonListFilterDto {
 	BallId?: number
 	OriginGame?: number
 	TeraType?: number
-	Favorite?: boolean
 
 	/** IDs de tags que el Pokémon DEBE tener (todos los tags especificados) */
 	tagIds?: number[]
@@ -287,6 +290,8 @@ export interface PokemonListFilterDto {
 	anyTagIds?: number[]
 	/** Nombres de tags donde el Pokémon PUEDE tener cualquiera de ellos */
 	anyTagNames?: string[]
+	/** IDs de tags que el Pokémon no debe tener */
+	excludedTagIds?: number[]
 	/** Filtrar Pokémon que no tienen ningún tag */
 	hasNoTags?: boolean
 }

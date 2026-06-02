@@ -4,6 +4,7 @@ import type { CardBackgroundTypeName } from '@/models/enums/CardBackgroundTypes'
 import { CardBackgroundType } from '@/models/enums/CardBackgroundTypes'
 import { useUISettings } from '@/hooks/useUISettings'
 import { getBestSpriteByType } from '@/utils'
+import { environment } from '@/environments'
 import SettingComponent from '../components/SettingsComponent'
 
 const CHARIZARD_DEFAULT_SPRITES = {
@@ -42,7 +43,11 @@ const CHARIZARD_DEFAULT_VALUES = {
 	nickname: 'Charizard',
 	level: 100,
 	isShiny: false,
+	favorite: false,
+	isEgg: false,
 	ballId: 0,
+	heldItemId: 0,
+	gender: 1,
 	spriteKey: '1025_n_0',
 	originGeneration: 1,
 	capturedGeneration: 9,
@@ -71,6 +76,10 @@ const Settings: React.FC = () => {
 			defaultPokemon={defaultPokemon}
 			spriteURL={spriteURL}
 			backgroundOptions={backgroundOptions}
+			boxIconPreviewUrls={{
+				bulbapedia: `${environment.baseUrl}/sprites/bulbapedia/6/68px-Menu_HOME_0006.png`,
+				home: CHARIZARD_DEFAULT_SPRITES.home,
+			}}
 		/>
 	)
 }

@@ -47,3 +47,12 @@ body {
 	background-color: var(--bg-primary);
 	min-height: 100dvh;
 }
+
+[data-theme='home'] body,
+[data-theme='home'] #root {
+	background:
+		radial-gradient(circle at top left, rgba(255, 255, 255, 0.88), transparent 34%),
+		radial-gradient(circle at top right, rgba(171, 236, 221, 0.54), transparent 28%),
+		radial-gradient(circle at bottom right, rgba(219, 200, 245, 0.46), transparent 24%),
+		linear-gradient(180deg, #edf8e5 0%, #daf4de 48%, #ecf7ec 100%);
+}

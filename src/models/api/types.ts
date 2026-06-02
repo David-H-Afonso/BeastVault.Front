@@ -146,6 +146,14 @@ export interface AdvancedPokemonQuery {
 	nickname?: string
 	/** Filtrar por estado shiny */
 	isShiny?: boolean
+	/** Filtrar por favorito */
+	favorite?: boolean
+	/** Filtrar Pokémon capaces de Gigantamax */
+	canGigantamax?: boolean
+	/** Filtrar Pokémon con Mega Stone equipada */
+	hasMegaStone?: boolean
+	/** Filtrar huevos */
+	isEgg?: boolean
 	/** Filtrar por ID de forma */
 	form?: number
 	/** Filtrar por género (0 = indefinido, 1 = macho, 2 = hembra) */
@@ -204,6 +212,8 @@ export interface AdvancedPokemonQuery {
 	originGame?: number
 	/** Filtro legacy de tipo Tera */
 	teraType?: number
+	/** IDs de tags que el Pokémon no debe tener */
+	excludedTagIds?: number[]
 }
 
 export interface UpdatePokemonDto {
@@ -234,8 +244,16 @@ export interface PokemonListItemDto {
 	level: number
 	/** Si es shiny */
 	isShiny: boolean
+	/** Si está marcado como favorito */
+	favorite: boolean
+	/** Si es un huevo */
+	isEgg: boolean
 	/** ID de la Pokébola en la que fue capturado */
 	ballId: number
+	/** ID de objeto equipado */
+	heldItemId: number
+	/** Género del Pokémon */
+	gender: number
 	/** Tipo Tera (Gen 9), null si no aplica */
 	teraType?: number
 	/** Clave para identificar el sprite (especie+forma+shiny) */
@@ -262,6 +280,8 @@ export interface PokemonListItemDto {
 	ballSpriteUrl?: string
 	/** Sprite URLs for different display modes */
 	sprites?: PokemonSpritesDto
+	/** True if this Pokémon occupies a slot in any box */
+	isBoxed?: boolean
 }
 
 export interface PokemonSpritesDto {
@@ -286,6 +306,41 @@ export interface AdvancedPokemonListResponse {
 		filterCount: number
 		sortFields: string[]
 	}
+}
+
+export interface PokemonBoxSummaryDto {
+	id: number
+	name: string
+	sortOrder: number
+	pokemonCount: number
+}
+
+export interface PokemonBoxSlotDto {
+	slotIndex: number
+	pokemon: PokemonListItemDto
+}
+
+export interface PokemonBoxDetailDto {
+	id: number
+	name: string
+	sortOrder: number
+	pokemonCount: number
+	slots: PokemonBoxSlotDto[]
+}
+
+export interface CreatePokemonBoxRequest {
+	name: string
+}
+
+export interface UpdatePokemonBoxRequest {
+	name?: string | null
+	sortOrder?: number | null
+}
+
+export interface MovePokemonBoxSlotRequest {
+	pokemonId: number
+	targetBoxId: number
+	targetSlotIndex: number
 }
 
 // ===================================

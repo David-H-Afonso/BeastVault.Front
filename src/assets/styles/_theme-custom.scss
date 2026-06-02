@@ -11,6 +11,65 @@
 // TEMA POKEMON (Inspirado en los juegos)
 // ================================
 
+[data-theme='home'] {
+	--bg-primary: #e8f6e2;
+	--bg-secondary: rgba(255, 255, 255, 0.72);
+	--bg-tertiary: #dff5ef;
+	--bg-surface: rgba(255, 255, 255, 0.9);
+	--bg-surface-alt: rgba(255, 255, 255, 0.76);
+	--bg-accent: #21b6b1;
+
+	--surface-primary: rgba(255, 255, 255, 0.92);
+	--surface-secondary: rgba(255, 255, 255, 0.74);
+
+	--text-primary: #28515a;
+	--text-secondary: rgba(40, 81, 90, 0.78);
+	--text-tertiary: rgba(40, 81, 90, 0.56);
+	--text-muted: rgba(40, 81, 90, 0.44);
+	--text-inverse: #ffffff;
+
+	--border-primary: rgba(42, 136, 142, 0.22);
+	--border-secondary: rgba(42, 136, 142, 0.18);
+	--border-light: rgba(255, 255, 255, 0.65);
+	--border-medium: rgba(52, 148, 148, 0.24);
+	--border-strong: rgba(42, 136, 142, 0.42);
+
+	--color-primary: #18b0ad;
+	--color-primary-hover: #159997;
+	--color-primary-active: #0f7f7f;
+	--color-primary-bg: rgba(24, 176, 173, 0.16);
+	--color-secondary: #8bcfd0;
+	--color-success: #22b36f;
+	--color-success-light: #1fbb84;
+	--color-success-dark: #118857;
+	--color-success-bg: rgba(34, 179, 111, 0.12);
+	--color-success-border: rgba(34, 179, 111, 0.24);
+	--color-error-bg: rgba(220, 90, 90, 0.12);
+	--color-error-border: rgba(220, 90, 90, 0.24);
+	--color-warning: #f4b400;
+	--color-warning-light: #ffd258;
+	--color-info: #59a7ff;
+	--color-info-bg: rgba(89, 167, 255, 0.16);
+	--color-focus: #18b0ad;
+	--color-focus-ring: rgba(24, 176, 173, 0.18);
+
+	--gradient-primary: linear-gradient(135deg, #e8f6e2 0%, #cff2cf 38%, #daf3ef 72%, #e2d3f7 100%);
+	--gradient-secondary: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(222, 245, 238, 0.82) 55%, rgba(228, 216, 246, 0.8) 100%);
+	--gradient-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.97) 0%, rgba(235, 249, 242, 0.93) 100%);
+
+	--overlay-light: rgba(255, 255, 255, 0.68);
+	--overlay-medium: rgba(232, 246, 226, 0.86);
+	--overlay-heavy: rgba(40, 81, 90, 0.18);
+	--overlay-backdrop: rgba(68, 80, 93, 0.26);
+
+	--shadow-sm: 0 6px 16px rgba(58, 123, 121, 0.08);
+	--shadow-md: 0 10px 28px rgba(58, 123, 121, 0.1);
+	--shadow-lg: 0 18px 44px rgba(58, 123, 121, 0.12);
+	--shadow-xl: 0 22px 56px rgba(58, 123, 121, 0.14);
+	--shadow-2xl: 0 28px 68px rgba(58, 123, 121, 0.16);
+	--shadow-3xl: 0 32px 84px rgba(58, 123, 121, 0.18);
+}
+
 [data-theme='pokemon'] {
 	// Colores base inspirados en los juegos de Pokemon
 	--bg-primary: #1a1a2e;

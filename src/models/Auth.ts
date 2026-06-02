@@ -43,6 +43,7 @@ export interface UserPreferencesDto {
 	viewMode: string
 	spriteType: string
 	backgroundType: string
+	browseLayout: string
 	organizeDensity: string
 	kanbanDragMode: string
 }
@@ -52,6 +53,7 @@ export interface UpdatePreferencesRequest {
 	viewMode?: string | null
 	spriteType?: string | null
 	backgroundType?: string | null
+	browseLayout?: string | null
 	organizeDensity?: string | null
 	kanbanDragMode?: string | null
 }

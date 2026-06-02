@@ -5,17 +5,21 @@ import type {
 	StyleSettingsState,
 	ThemeName,
 	ViewMode,
+	BrowseLayout,
 	OrganizeDensity,
 	KanbanDragMode,
+	BoxIconStyle,
 } from '@/models/store/StylesSetting'
 
 const initialState: StyleSettingsState = {
 	backgroundType: CardBackgroundType.DIAGONAL_45,
-	viewMode: 'grid',
+	viewMode: 'browse',
+	browseLayout: 'list',
 	theme: 'dark',
 	spriteType: SpriteType.SPRITES,
 	organizeDensity: 'expanded',
 	kanbanDragMode: 'move',
+	boxIconStyle: 'bulbapedia',
 }
 
 const styleSettingsSlice = createSlice({
@@ -27,6 +31,9 @@ const styleSettingsSlice = createSlice({
 		},
 		setViewMode: (state, action: PayloadAction<ViewMode>) => {
 			state.viewMode = action.payload
+		},
+		setBrowseLayout: (state, action: PayloadAction<BrowseLayout>) => {
+			state.browseLayout = action.payload
 		},
 		setTheme: (state, action: PayloadAction<ThemeName>) => {
 			state.theme = action.payload
@@ -40,6 +47,9 @@ const styleSettingsSlice = createSlice({
 		setKanbanDragMode: (state, action: PayloadAction<KanbanDragMode>) => {
 			state.kanbanDragMode = action.payload
 		},
+		setBoxIconStyle: (state, action: PayloadAction<BoxIconStyle>) => {
+			state.boxIconStyle = action.payload
+		},
 	},
 })
 
@@ -51,10 +61,12 @@ const styleSettingsSlice = createSlice({
 export const {
 	setBackgroundType,
 	setViewMode,
+	setBrowseLayout,
 	setTheme,
 	setSpriteType,
 	setOrganizeDensity,
 	setKanbanDragMode,
+	setBoxIconStyle,
 } = styleSettingsSlice.actions
 export default styleSettingsSlice.reducer
 

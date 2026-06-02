@@ -120,6 +120,21 @@
 		}
 	}
 
+	&[data-theme='home'] {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: #21b6b1;
+		}
+	}
+
 	&[data-theme='water'] {
 		position: relative;
 
@@ -339,6 +354,10 @@
 
 	&--pokemon {
 		background: linear-gradient(135deg, #3b4cca 0%, #ffcb05 100%);
+	}
+
+	&--home {
+		background: linear-gradient(135deg, #dff6dd 0%, #78d4d8 52%, #d8c5f2 100%);
 	}
 
 	&--water {

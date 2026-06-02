@@ -14,9 +14,16 @@ export {
 	deletePokemonCompletely,
 	downloadFileById,
 	downloadPkmFileFromDisk,
+	downloadPokemonBackupFile,
 	downloadPokemonFile,
+	downloadPokemonFileFromDisk,
+	getPokemonShowdownExport,
 	scanPokemonDirectory,
+	updatePokemon,
 } from './Pokemon'
+
+// Export Box service functions
+export * from './Boxes'
 
 // Export TaggedPokemon service functions
 export * from './TaggedPokemon'

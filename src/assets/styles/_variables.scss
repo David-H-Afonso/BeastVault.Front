@@ -251,6 +251,10 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--bg-surface-alt: #{$surface-alt};
 	--bg-accent: #{$accent-dark};
 
+	// ============ SURFACE COLORS (card/panel backgrounds) ============
+	--surface-primary: #{$surface-dark}; // #1e2329
+	--surface-secondary: #{$surface-alt}; // #243142
+
 	// ============ CARD BACKGROUND COLORS ============
 	--card-background-color: var(--bg-primary);
 

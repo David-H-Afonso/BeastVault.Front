@@ -178,7 +178,7 @@ export const DexPage: React.FC = () => {
 		<DetailShell
 			panel={selectedSpeciesId !== null ? panelContent : null}
 			onClosePanel={handleCloseModal}>
-			<div className='dex-page'>
+			<div className='dex-page dex-page--home'>
 				{/* Header */}
 				<div className='dex-page__header'>
 					<h1 className='dex-page__title'>Vault Pokédex</h1>
@@ -187,6 +187,29 @@ export const DexPage: React.FC = () => {
 						Showing Pokémon registered in PokeAPI cache
 					</p>
 				</div>
+
+				{
+					<div className='dex-page__home-hero'>
+						<div className='dex-page__home-card dex-page__home-card--intro'>
+							<span className='dex-page__home-label'>National Pokédex</span>
+							<h2>{total} registered species</h2>
+							<p>
+								Browse your owned species in a HOME-inspired index with quick generation jumps and
+								detail sheets.
+							</p>
+						</div>
+						<div className='dex-page__home-card dex-page__home-card--generations'>
+							{GENERATIONS.slice(1).map((g) => (
+								<button
+									key={String(g.value)}
+									className={`dex-page__home-region${generation === g.value ? ' active' : ''}`}
+									onClick={() => handleGenerationChange(g.value)}>
+									<span>{g.label}</span>
+								</button>
+							))}
+						</div>
+					</div>
+				}
 
 				{/* Filters */}
 				<div className='dex-page__filters'>

@@ -232,3 +232,21 @@
 		background: var(--bg-primary);
 	}
 }
+
+[data-theme='home'] {
+	.pagination-container {
+		border-top-color: rgba(24, 176, 173, 0.12);
+	}
+
+	.pagination-btn,
+	.page-size-select {
+		border-radius: 999px;
+		border-color: rgba(24, 176, 173, 0.12);
+		background: rgba(255, 255, 255, 0.84);
+	}
+
+	.pagination-btn.active {
+		background: var(--color-primary);
+		border-color: var(--color-primary);
+	}
+}

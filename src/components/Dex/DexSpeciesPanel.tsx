@@ -1,9 +1,10 @@
-import { useState, type SyntheticEvent } from 'react'
+import { useEffect, useMemo, useState, type SyntheticEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { DexSpeciesDetail, DexOwnedPokemon, DexGenerationSprites } from '@/services/DexService'
 import { getComputedTypeColor } from '@/utils/typeColors'
 import { formatSlugName } from '@/utils/formatSlugName'
 import { resolveSpriteUrl } from '@/utils/spriteUtils'
+import { HomeStatRadar } from '@/components/elements/HomeStatRadar/HomeStatRadar'
 
 type DexTab = 'info' | 'entries' | 'locations' | 'sprites' | 'owned'
 
@@ -54,6 +55,11 @@ const GAME_LABELS: Record<string, string> = {
 	'scarlet': 'Scarlet',
 	'violet': 'Violet',
 	'legends-za': 'Legends: Z-A',
+	'pokopia': 'Pokopia',
+	'stadium': 'Stadium',
+	'stadium-2': 'Stadium 2',
+	'lets-go-pikachu': "Let's Go Pikachu",
+	'lets-go-eevee': "Let's Go Eevee",
 	'the-teal-mask': 'The Teal Mask',
 	'the-indigo-disk': 'The Indigo Disk',
 	'paldean-fates': 'Paldean Fates',
@@ -82,10 +88,12 @@ const GAME_RELEASE_ORDER: string[] = [
 	'blue',
 	'red-blue',
 	'yellow',
+	'stadium',
 	'gold',
 	'silver',
 	'gold-silver',
 	'crystal',
+	'stadium-2',
 	'ruby',
 	'sapphire',
 	'ruby-sapphire',
@@ -117,6 +125,8 @@ const GAME_RELEASE_ORDER: string[] = [
 	'ultra-sun',
 	'ultra-moon',
 	'ultra-sun-ultra-moon',
+	'lets-go-pikachu',
+	'lets-go-eevee',
 	'sword',
 	'shield',
 	'brilliant-diamond',
@@ -129,6 +139,7 @@ const GAME_RELEASE_ORDER: string[] = [
 	'the-teal-mask',
 	'the-indigo-disk',
 	'legends-za',
+	'pokopia',
 	'generation-viii',
 	'generation-ix',
 	'icons',
@@ -211,11 +222,81 @@ interface DexSpeciesPanelProps {
 	onClose?: () => void
 }
 
+function normalizeFlavorLanguage(language: string): string {
+	return language === 'ja-Hrkt' ? 'ja' : language.toLowerCase()
+}
+
+function isDisplayableFlavorText(text?: string | null): boolean {
+	const cleaned = text?.replace(/\s+/g, ' ').trim() ?? ''
+	if (!cleaned) return false
+
+	const normalized = cleaned
+		.normalize('NFD')
+		.replace(/\p{Diacritic}/gu, '')
+		.toLowerCase()
+
+	if (
+		normalized === 'no entry' ||
+		normalized === 'no entry.' ||
+		normalized === 'no pokedex entry' ||
+		normalized === 'no pokedex entry.'
+	) {
+		return false
+	}
+
+	if (
+		normalized.startsWith('no entry') ||
+		normalized.includes('no pokedex entry') ||
+		normalized.includes('has no pokedex entry') ||
+		normalized.includes('does not have a pokedex entry') ||
+		normalized.includes('no tiene entrada') ||
+		normalized.includes('sin entrada')
+	) {
+		return false
+	}
+
+	return !(
+		normalized.includes('pokopia') &&
+		(normalized.includes('not in') ||
+			normalized.includes('not available') ||
+			normalized.includes('unavailable') ||
+			normalized.includes('no esta'))
+	)
+}
+
+function isDisplayableLocation(location?: string | null, method?: string | null): boolean {
+	const cleanedLocation = location?.replace(/\s+/g, ' ').trim() ?? ''
+	if (!cleanedLocation) return false
+
+	const normalized = `${cleanedLocation} ${method ?? ''}`
+		.normalize('NFD')
+		.replace(/\p{Diacritic}/gu, '')
+		.toLowerCase()
+
+	if (
+		normalized.includes('unobtainable') ||
+		normalized.includes('unavailable') ||
+		normalized.includes('no entry') ||
+		normalized.includes('no pokedex entry')
+	) {
+		return false
+	}
+
+	return !(
+		normalized.includes('pokopia') &&
+		(normalized.includes('not in') ||
+			normalized.includes('not available') ||
+			normalized.includes('unavailable') ||
+			normalized.includes('no esta'))
+	)
+}
+
+const HOME_STAT_ORDER = ['hp', 'attack', 'defense', 'speed', 'special-defense', 'special-attack']
+
 export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPanelProps) {
 	const [tab, setTab] = useState<DexTab>('info')
 	const [flavorLang, setFlavorLang] = useState('en')
 	const navigate = useNavigate()
-
 	const tabs: { key: DexTab; label: string }[] = [
 		{ key: 'info', label: 'Info' },
 		{ key: 'entries', label: 'Entries' },
@@ -226,9 +307,31 @@ export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPan
 
 	// Filter entries to en, es, ja only
 	const allowedLangs = ['en', 'es', 'ja']
-	const langEntries = detail.flavorEntries.filter((e) => allowedLangs.includes(e.language))
-	const uniqueFlavorLangs = [...new Set(langEntries.map((e) => e.language))]
+	const langEntries = useMemo(
+		() =>
+			detail.flavorEntries
+				.map((entry) => ({
+					...entry,
+					language: normalizeFlavorLanguage(entry.language),
+					text: entry.text.replace(/\s+/g, ' ').trim(),
+				}))
+				.filter((e) => allowedLangs.includes(e.language) && isDisplayableFlavorText(e.text)),
+		[detail.flavorEntries]
+	)
+	const uniqueFlavorLangs = useMemo(
+		() => [...new Set(langEntries.map((e) => e.language))],
+		[langEntries]
+	)
 	const filteredEntries = sortByRelease(langEntries.filter((e) => e.language === flavorLang))
+	const flavorText = isDisplayableFlavorText(detail.flavorText)
+		? detail.flavorText.replace(/\s+/g, ' ').trim()
+		: ''
+
+	useEffect(() => {
+		if (uniqueFlavorLangs.length > 0 && !uniqueFlavorLangs.includes(flavorLang)) {
+			setFlavorLang(uniqueFlavorLangs[0])
+		}
+	}, [flavorLang, uniqueFlavorLangs])
 
 	// Sort sprites by game release order
 	const sortedSprites = sortByRelease(
@@ -241,13 +344,24 @@ export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPan
 		resolveSpriteUrl(detail.sprites?.home) ??
 		resolveSpriteUrl(detail.sprites?.default)
 
-	const sortedLocations = sortByRelease(detail.locations)
+	const sortedLocations = sortByRelease(
+		detail.locations.filter((loc) => isDisplayableLocation(loc.location, loc.method))
+	)
+	const baseStatRows = useMemo(() => {
+		if (!detail.baseStats) return []
+		return HOME_STAT_ORDER.map((key) => ({
+			key,
+			label: formatStatName(key),
+			value: detail.baseStats[key] ?? 0,
+		}))
+	}, [detail.baseStats])
+
 	const hideBrokenImage = (event: SyntheticEvent<HTMLImageElement>) => {
 		event.currentTarget.style.display = 'none'
 	}
 
 	return (
-		<div>
+		<div className='pokemon-detail pokemon-detail--home dex-detail--home'>
 			{/* Header with close button */}
 			<div className='pokemon-detail__hero'>
 				<div className='pokemon-detail__hero-sprite'>
@@ -310,7 +424,7 @@ export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPan
 			{/* Info tab */}
 			{tab === 'info' && (
 				<div className='pokemon-detail__section'>
-					{detail.flavorText && (
+					{flavorText && (
 						<p
 							style={{
 								fontSize: '0.8rem',
@@ -318,8 +432,39 @@ export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPan
 								lineHeight: 1.5,
 								marginBottom: 12,
 							}}>
-							{detail.flavorText}
+							{flavorText}
 						</p>
+					)}
+
+					{detail.baseStats && (
+						<div className='dex-detail__home-summary'>
+							<div className='dex-detail__home-profile'>
+								<div className='pokemon-detail__section-title'>Pokédex profile</div>
+								<p>{flavorText || detail.genus}</p>
+								<div className='dex-detail__home-mini-grid'>
+									<div>
+										<span>Generation</span>
+										<strong>Gen {detail.generation}</strong>
+									</div>
+									<div>
+										<span>Capture Rate</span>
+										<strong>{detail.captureRate}</strong>
+									</div>
+									<div>
+										<span>Base Happiness</span>
+										<strong>{detail.baseHappiness}</strong>
+									</div>
+									<div>
+										<span>Color</span>
+										<strong>{formatSlugName(detail.color)}</strong>
+									</div>
+								</div>
+							</div>
+							<div className='dex-detail__home-radar-card'>
+								<div className='pokemon-detail__section-title'>Base stats</div>
+								<HomeStatRadar rows={baseStatRows} maxValue={255} />
+							</div>
+						</div>
 					)}
 
 					<div className='pokemon-detail__section-title'>Details</div>
@@ -349,38 +494,6 @@ export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPan
 						<span className='pokemon-detail__row-label'>Color</span>
 						<span className='pokemon-detail__row-value'>{formatSlugName(detail.color)}</span>
 					</div>
-
-					{/* Base stats */}
-					{detail.baseStats && (
-						<>
-							<div className='pokemon-detail__section-title' style={{ marginTop: 12 }}>
-								Base Stats
-							</div>
-							{Object.entries(detail.baseStats).map(([name, value]) => {
-								const pct = Math.min((value / 255) * 100, 100)
-								return (
-									<div key={name} className='pokemon-detail__stat'>
-										<span className='pokemon-detail__stat-name'>{formatStatName(name)}</span>
-										<div className='pokemon-detail__stat-bar'>
-											<div
-												className='pokemon-detail__stat-fill'
-												style={{
-													width: `${pct}%`,
-													background:
-														value >= 100
-															? '#4caf50'
-															: value >= 60
-																? 'var(--color-primary)'
-																: '#ff9800',
-												}}
-											/>
-										</div>
-										<span className='pokemon-detail__stat-value'>{value}</span>
-									</div>
-								)
-							})}
-						</>
-					)}
 
 					{/* Abilities */}
 					{detail.abilities && Array.isArray(detail.abilities) && (
@@ -455,7 +568,7 @@ export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPan
 			{/* Locations tab */}
 			{tab === 'locations' && (
 				<div className='pokemon-detail__section'>
-					{detail.locations.length > 0 ? (
+					{sortedLocations.length > 0 ? (
 						<>
 							<table className='dex-detail__location-table'>
 								<thead>

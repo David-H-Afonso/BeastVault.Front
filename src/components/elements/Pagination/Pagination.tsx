@@ -80,7 +80,7 @@ export function Pagination({
 	/**
 	 * Opciones para elementos por página
 	 */
-	const itemsPerPageOptions = [10, 25, 50, 100, 200]
+	const itemsPerPageOptions = [10, 25, 30, 50, 100, 200]
 
 	if (totalItems === 0) {
 		return null // No mostrar paginación si no hay elementos

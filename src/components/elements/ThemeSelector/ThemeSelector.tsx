@@ -3,16 +3,7 @@ import { useUISettings } from '@/hooks/useUISettings'
 import './ThemeSelector.scss'
 import type { ThemeName } from '@/models/store/StylesSetting'
 
-const AVAILABLE_THEMES: ThemeName[] = [
-	'dark',
-	'light',
-	'pokemon',
-	'water',
-	'fire',
-	'grass',
-	'electric',
-	'psychic',
-]
+const AVAILABLE_THEMES: ThemeName[] = ['dark', 'home']
 
 interface ThemeSelectorProps {
 	compact?: boolean

@@ -3,18 +3,22 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import {
 	setTheme as setThemeAction,
 	setViewMode as setViewModeAction,
+	setBrowseLayout as setBrowseLayoutAction,
 	setSpriteType,
 	setBackgroundType as setBackgroundTypeAction,
 	setOrganizeDensity as setOrganizeDensityAction,
 	setKanbanDragMode as setKanbanDragModeAction,
+	setBoxIconStyle as setBoxIconStyleAction,
 	syncPreferences,
 } from '@/store/features/styleSettings'
 import { setLayoutType } from '@/store/features/layout'
 import type {
 	ThemeName,
 	ViewMode,
+	BrowseLayout,
 	OrganizeDensity,
 	KanbanDragMode,
+	BoxIconStyle,
 } from '@/models/store/StylesSetting'
 import type { LayoutType } from '@/models/store/Layout'
 import type { SpriteTypeName } from '../models/enums/SpriteTypes'
@@ -24,13 +28,16 @@ export function useUISettings() {
 	const dispatch = useAppDispatch()
 	const syncTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-	const currentTheme = useAppSelector((state) => state.styleSettings.theme)
+	const currentThemeRaw = useAppSelector((state) => state.styleSettings.theme)
+	const currentTheme: ThemeName = currentThemeRaw === 'home' ? 'home' : 'dark'
 	const viewMode = useAppSelector((state) => state.styleSettings.viewMode)
+	const browseLayout = useAppSelector((state) => state.styleSettings.browseLayout)
 	const spriteType = useAppSelector((state) => state.styleSettings.spriteType)
 	const layoutType = useAppSelector((state) => state.layout.layoutType)
 	const backgroundType = useAppSelector((state) => state.styleSettings.backgroundType)
 	const organizeDensity = useAppSelector((state) => state.styleSettings.organizeDensity)
 	const kanbanDragMode = useAppSelector((state) => state.styleSettings.kanbanDragMode)
+	const boxIconStyle = useAppSelector((state) => state.styleSettings.boxIconStyle)
 	const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
 
 	const syncToBackend = useCallback(() => {
@@ -47,6 +54,11 @@ export function useUISettings() {
 
 	const setViewMode = (newMode: ViewMode) => {
 		dispatch(setViewModeAction(newMode))
+		syncToBackend()
+	}
+
+	const setBrowseLayout = (newLayout: BrowseLayout) => {
+		dispatch(setBrowseLayoutAction(newLayout))
 		syncToBackend()
 	}
 
@@ -74,6 +86,11 @@ export function useUISettings() {
 		syncToBackend()
 	}
 
+	const setBoxIconStyle = (style: BoxIconStyle) => {
+		dispatch(setBoxIconStyleAction(style))
+		syncToBackend()
+	}
+
 	// Initialize theme on DOM when hook is first used
 	if (currentTheme) {
 		document.documentElement.setAttribute('data-theme', currentTheme)
@@ -87,6 +104,8 @@ export function useUISettings() {
 		// View Mode
 		viewMode,
 		setViewMode,
+		browseLayout,
+		setBrowseLayout,
 
 		// Layout
 		layoutType,
@@ -107,5 +126,9 @@ export function useUISettings() {
 		// Kanban Drag Mode
 		kanbanDragMode,
 		setKanbanDragMode,
+
+		// Box Icon Style
+		boxIconStyle,
+		setBoxIconStyle,
 	}
 }
