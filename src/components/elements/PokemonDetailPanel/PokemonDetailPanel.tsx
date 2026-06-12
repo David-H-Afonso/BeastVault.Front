@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { PokemonDetailDto } from '@/models/Pokemon'
 import type { PokemonListItemDto } from '@/models/api/types'
-import { getPokemonById } from '@/services'
+import { getPokemonById, updatePokemon } from '@/services'
 import { useUISettings } from '@/hooks/useUISettings'
 import { getComputedTypeColor } from '@/utils/typeColors'
 import { getPreferredSpriteFromDto, resolveSpriteUrl } from '@/utils/spriteUtils'
@@ -59,6 +59,10 @@ export function PokemonDetailPanel({
 	const [tab, setTab] = useState<Tab>('summary')
 	const [actionsOpen, setActionsOpen] = useState(false)
 	const [showdownCopied, setShowdownCopied] = useState(false)
+	const [notesText, setNotesText] = useState('')
+	const [notesSaved, setNotesSaved] = useState('')
+	const [notesSaving, setNotesSaving] = useState(false)
+	const [notesError, setNotesError] = useState<string | null>(null)
 	const navigate = useNavigate()
 	const { spriteType } = useUISettings()
 
@@ -66,7 +70,11 @@ export function PokemonDetailPanel({
 		setLoading(true)
 		setDetail(null)
 		getPokemonById(pokemon.id)
-			.then(setDetail)
+			.then((d) => {
+				setDetail(d)
+				setNotesText(d.notes ?? '')
+				setNotesSaved(d.notes ?? '')
+			})
 			.catch(() => setDetail(null))
 			.finally(() => setLoading(false))
 	}, [pokemon.id])
@@ -157,6 +165,33 @@ export function PokemonDetailPanel({
 		const nextFavorite = !isFavorite
 		await onToggleFavorite(pokemon)
 		setDetail((current) => (current ? { ...current, favorite: nextFavorite } : current))
+	}
+
+	const notesDirty = notesText !== notesSaved
+
+	const handleSaveNotes = async () => {
+		setNotesSaving(true)
+		setNotesError(null)
+		try {
+			await updatePokemon(pokemon.id, { notes: notesText || '' })
+			setNotesSaved(notesText)
+			setDetail((current) => (current ? { ...current, notes: notesText || '' } : current))
+		} catch {
+			setNotesError('Failed to save notes')
+		} finally {
+			setNotesSaving(false)
+		}
+	}
+
+	const handleDiscardNotes = () => {
+		setNotesText(notesSaved)
+		setNotesError(null)
+	}
+
+	const handleNotesBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+		const related = e.relatedTarget as HTMLElement | null
+		if (related?.dataset.notesAction) return
+		if (notesDirty) handleSaveNotes()
 	}
 
 	return (
@@ -387,6 +422,47 @@ export function PokemonDetailPanel({
 						{detail.heldItemName && detail.heldItemName !== '(None)' && (
 							<Row label='Held Item' value={detail.heldItemName} />
 						)}
+					</div>
+
+					<div className='pokemon-detail__personal-notes'>
+						<div className='pokemon-detail__section-title'>Personal notes</div>
+						<textarea
+							className='pokemon-detail__notes-textarea'
+							value={notesText}
+							onChange={(e) => setNotesText(e.target.value)}
+							onBlur={handleNotesBlur}
+							placeholder='Add your personal notes about this Pokémon...'
+							rows={3}
+						/>
+						<div className='pokemon-detail__notes-bar'>
+							{notesDirty && (
+								<>
+									<button
+										type='button'
+										className='action-btn'
+										data-notes-action='save'
+										onClick={handleSaveNotes}
+										disabled={notesSaving}>
+										{notesSaving ? 'Saving…' : 'Save'}
+									</button>
+									<button
+										type='button'
+										className='action-btn'
+										data-notes-action='discard'
+										onClick={handleDiscardNotes}>
+										Discard
+									</button>
+								</>
+							)}
+							{!notesDirty && notesSaved && (
+								<span className='pokemon-detail__notes-status'>Saved</span>
+							)}
+							{notesError && (
+								<span className='pokemon-detail__notes-status pokemon-detail__notes-status--error'>
+									{notesError}
+								</span>
+							)}
+						</div>
 					</div>
 				</div>
 			)}

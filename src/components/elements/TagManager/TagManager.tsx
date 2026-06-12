@@ -48,6 +48,7 @@ export function TagManager({
 	const [uploadingImages, setUploadingImages] = useState<Set<number>>(new Set())
 	const [imageModes, setImageModes] = useState<Record<number, TagImageMode>>({})
 	const [imageUrls, setImageUrls] = useState<Record<number, string>>({})
+	const [editingImageTagId, setEditingImageTagId] = useState<number | null>(null)
 
 	// Initialize selected tags from pokemon.tags
 	useEffect(() => {
@@ -165,6 +166,7 @@ export function TagManager({
 		try {
 			const updatedTag = await deleteTagImage(tagId)
 			setAllTags((prev) => prev.map((tag) => (tag.id === tagId ? updatedTag : tag)))
+			setEditingImageTagId(null)
 		} catch (error) {
 			console.error('Error removing image:', error)
 			alert('Error removing image.')
@@ -206,7 +208,7 @@ export function TagManager({
 			<div className='tag-manager-modal' onClick={(e) => e.stopPropagation()}>
 				<div className='tag-manager-header'>
 					<div>
-						<h3>Manage Tags</h3>
+						<h3>Tags</h3>
 						<p>
 							<strong>{pokemonName}</strong>
 							<span>Lv. {pokemon.level}</span>
@@ -219,16 +221,15 @@ export function TagManager({
 				</div>
 
 				<div className='tag-manager-content'>
-					{/* Create New Tag */}
 					<div className='create-tag-section'>
-						<h4>Create New Tag</h4>
+						<h4>New tag</h4>
 						<div className='create-tag-form'>
 							<input
 								type='text'
 								value={newTagName}
 								onChange={(e) => setNewTagName(e.target.value)}
-								placeholder='Enter tag name...'
-								onKeyPress={(e) => e.key === 'Enter' && handleCreateTag()}
+								placeholder='Tag name'
+								onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
 								disabled={creatingTag}
 							/>
 							<select
@@ -253,118 +254,133 @@ export function TagManager({
 								onClick={handleCreateTag}
 								disabled={!newTagName.trim() || creatingTag}
 								className='create-button'>
-								{creatingTag ? 'Creating...' : 'Create'}
+								{creatingTag ? 'Creating...' : 'Create tag'}
 							</button>
 						</div>
 					</div>
 
-					{/* Existing Tags */}
 					<div className='existing-tags-section'>
-						<h4>Available Tags ({allTags.length})</h4>
+						<div className='tag-section-heading'>
+							<h4>Available tags</h4>
+							<span>{allTags.length}</span>
+						</div>
 						{loading ? (
 							<div className='loading'>Loading tags...</div>
 						) : (
 							<div className='tags-grid'>
-								{allTags.map((tag) => (
-									<div
-										key={tag.id}
-										className={`tag-item ${selectedTagIds.includes(tag.id) ? 'selected' : ''}`}>
-										<button
-											type='button'
-											className='tag-content'
-											onClick={() => handleTagToggle(tag.id)}>
-											{tag.colorHex && (
-												<span className='tag-color-dot' style={{ background: tag.colorHex }} />
-											)}
-											{tag.imagePath && (
-												<img
-													src={resolveTagImageUrl(tag.imagePath) ?? ''}
-													alt={tag.name}
-													className='tag-image'
-													onError={hideBrokenImage}
-												/>
-											)}
-											<span className='tag-name'>{tag.name}</span>
-											{tag.category && tag.category !== 'Uncategorized' && (
-												<span className='tag-category-badge'>{tag.category}</span>
-											)}
-											{selectedTagIds.includes(tag.id) && (
-												<span className='selected-indicator'>✓</span>
-											)}
-										</button>
+								{allTags.map((tag) => {
+									const selected = selectedTagIds.includes(tag.id)
+									const imageEditorOpen = editingImageTagId === tag.id
 
-										<div className='tag-actions'>
-											<div className='tag-image-editor'>
-												<div className='tag-image-mode'>
-													<button
-														type='button'
-														className={imageModes[tag.id] !== 'url' ? 'active' : ''}
-														onClick={() =>
-															setImageModes((prev) => ({ ...prev, [tag.id]: 'upload' }))
-														}>
-														Upload
-													</button>
-													<button
-														type='button'
-														className={imageModes[tag.id] === 'url' ? 'active' : ''}
-														onClick={() =>
-															setImageModes((prev) => ({ ...prev, [tag.id]: 'url' }))
-														}>
-														URL
-													</button>
-												</div>
-												{imageModes[tag.id] === 'url' ? (
-													<div className='tag-image-url-row'>
-														<input
-															type='url'
-															value={imageUrls[tag.id] ?? ''}
-															onChange={(e) =>
-																setImageUrls((prev) => ({ ...prev, [tag.id]: e.target.value }))
-															}
-															placeholder='https://...'
-															disabled={uploadingImages.has(tag.id)}
+									return (
+										<div
+											key={tag.id}
+											className={`tag-item ${selected ? 'selected' : ''}`}>
+											<button
+												type='button'
+												className='tag-select-card'
+												aria-pressed={selected}
+												onClick={() => handleTagToggle(tag.id)}>
+												<span className='tag-check'>{selected ? '✓' : ''}</span>
+												<span className='tag-visual' style={{ background: tag.colorHex ?? undefined }}>
+													{tag.imagePath && (
+														<img
+															src={resolveTagImageUrl(tag.imagePath) ?? ''}
+															alt={tag.name}
+															onError={hideBrokenImage}
 														/>
-														<button
-															type='button'
-															onClick={() => handleImageUrlSave(tag.id)}
-															disabled={uploadingImages.has(tag.id) || !imageUrls[tag.id]?.trim()}>
-															Set
-														</button>
-													</div>
-												) : (
-													<label className='image-upload-label' title='Upload image'>
-														{uploadingImages.has(tag.id) ? 'Uploading...' : 'Choose image'}
-														<input
-															type='file'
-															accept='image/png,image/jpeg,image/webp,image/gif'
-															onChange={(e) => {
-																const file = e.target.files?.[0]
-																if (file) handleImageUpload(tag.id, file)
-															}}
-															disabled={uploadingImages.has(tag.id)}
-														/>
-													</label>
-												)}
+													)}
+												</span>
+												<span className='tag-copy'>
+													<span className='tag-name'>{tag.name}</span>
+													{tag.category && tag.category !== 'Uncategorized' && (
+														<span className='tag-category-badge'>{tag.category}</span>
+													)}
+												</span>
+											</button>
+
+											<div className='tag-card-actions'>
+												<button
+													type='button'
+													className='tag-tool-button'
+													aria-expanded={imageEditorOpen}
+													onClick={() => setEditingImageTagId(imageEditorOpen ? null : tag.id)}>
+													{tag.imagePath ? 'Image' : 'Add image'}
+												</button>
+												<button
+													type='button'
+													className='tag-tool-button tag-tool-button--danger'
+													onClick={() => handleDeleteTag(tag.id)}
+													title='Delete tag'>
+													Delete
+												</button>
 											</div>
 
-											{tag.imagePath && (
-												<button
-													className='remove-image-button'
-													onClick={() => handleRemoveImage(tag.id)}
-													title='Remove image'>
-													Remove
-												</button>
+											{imageEditorOpen && (
+												<div className='tag-image-editor'>
+													<div className='tag-image-mode'>
+														<button
+															type='button'
+															className={imageModes[tag.id] !== 'url' ? 'active' : ''}
+															onClick={() =>
+																setImageModes((prev) => ({ ...prev, [tag.id]: 'upload' }))
+															}>
+															Upload
+														</button>
+														<button
+															type='button'
+															className={imageModes[tag.id] === 'url' ? 'active' : ''}
+															onClick={() =>
+																setImageModes((prev) => ({ ...prev, [tag.id]: 'url' }))
+															}>
+															URL
+														</button>
+													</div>
+													{imageModes[tag.id] === 'url' ? (
+														<div className='tag-image-url-row'>
+															<input
+																type='url'
+																value={imageUrls[tag.id] ?? ''}
+																onChange={(e) =>
+																	setImageUrls((prev) => ({ ...prev, [tag.id]: e.target.value }))
+																}
+																placeholder='https://...'
+																disabled={uploadingImages.has(tag.id)}
+															/>
+															<button
+																type='button'
+																onClick={() => handleImageUrlSave(tag.id)}
+																disabled={uploadingImages.has(tag.id) || !imageUrls[tag.id]?.trim()}>
+																Set
+															</button>
+														</div>
+													) : (
+														<label className='image-upload-label' title='Upload image'>
+															{uploadingImages.has(tag.id) ? 'Uploading...' : 'Choose image'}
+															<input
+																type='file'
+																accept='image/png,image/jpeg,image/webp,image/gif'
+																onChange={(e) => {
+																	const file = e.target.files?.[0]
+																	if (file) handleImageUpload(tag.id, file)
+																}}
+																disabled={uploadingImages.has(tag.id)}
+															/>
+														</label>
+													)}
+													{tag.imagePath && (
+														<button
+															type='button'
+															className='remove-image-button'
+															onClick={() => handleRemoveImage(tag.id)}>
+															Remove image
+														</button>
+													)}
+												</div>
 											)}
-
-											<button
-												className='delete-tag-button'
-												onClick={() => handleDeleteTag(tag.id)}
-												title='Delete tag'>
-												Delete
-											</button>
 										</div>
-									</div>
-								))}
+									)
+								})}
 							</div>
 						)}
 					</div>
@@ -372,14 +388,16 @@ export function TagManager({
 
 				<div className='tag-manager-footer'>
 					<div className='selected-count'>
-						{selectedCount} tag{selectedCount !== 1 ? 's' : ''} selected
+						{selectedCount === 0
+							? 'No tags selected'
+							: `${selectedCount} tag${selectedCount !== 1 ? 's' : ''} selected`}
 					</div>
 					<div className='footer-buttons'>
 						<button onClick={handleClose} className='cancel-button'>
 							Cancel
 						</button>
 						<button onClick={handleSave} disabled={loading} className='save-button'>
-							{loading ? 'Saving...' : 'Save Tags'}
+							{loading ? 'Saving...' : 'Save tags'}
 						</button>
 					</div>
 				</div>

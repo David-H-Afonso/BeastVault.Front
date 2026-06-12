@@ -22,7 +22,7 @@ type CustomFetchOptions = {
 	/** Request body data (automatically serialized for JSON) */
 	body?: any
 	/** URL query parameters to append to the endpoint */
-	params?: Record<string, string | number | boolean>
+	params?: Record<string, string | number | boolean | number[]>
 	/** AbortSignal for request cancellation */
 	signal?: AbortSignal
 	/** Request timeout in milliseconds */
@@ -38,15 +38,25 @@ type CustomFetchOptions = {
  * @param queryParameters - Object containing query parameters
  * @returns Formatted query string with leading '?' or empty string
  */
-const buildQueryString = (queryParameters?: Record<string, string | number | boolean>): string => {
+const buildQueryString = (
+	queryParameters?: Record<string, string | number | boolean | number[]>
+): string => {
 	if (!queryParameters || Object.keys(queryParameters).length === 0) {
 		return ''
 	}
 
 	const encodeURIComponent = window.encodeURIComponent
-	const queryPairs = Object.entries(queryParameters)
-		.filter(([_, value]) => value !== null && value !== undefined)
-		.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+	const queryPairs: string[] = []
+	for (const [key, value] of Object.entries(queryParameters)) {
+		if (value === null || value === undefined) continue
+		if (Array.isArray(value)) {
+			for (const item of value) {
+				queryPairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(item))}`)
+			}
+		} else {
+			queryPairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+		}
+	}
 
 	return queryPairs.length > 0 ? `?${queryPairs.join('&')}` : ''
 }

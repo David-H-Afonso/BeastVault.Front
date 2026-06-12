@@ -16,25 +16,33 @@ import {
 	downloadPokemonFile,
 	downloadPokemonFileFromDisk,
 	getPokemonById,
+	getPokemonMetadata,
 	getPokemonShowdownExport,
 	updatePokemon,
 } from '@/services/Pokemon'
-import { createTag, getAllTags } from '@/services/Tags'
-import type { PokemonListFilterDto } from '@/models/Pokemon'
+import { createTag, getAllTags, bulkUpdateTags } from '@/services/Tags'
+import type { PokemonBall, PokemonListFilterDto } from '@/models/Pokemon'
 import type {
 	PokemonBoxDetailDto,
 	PokemonBoxSummaryDto,
 	PokemonListItemDto,
 	TagDto,
+	BulkTagResult,
 } from '@/models/api/types'
 import { useUISettings } from '@/hooks/useUISettings'
 import { usePokemon } from '@/hooks/usePokemon'
 import { getPreferredSpriteFromDto } from '@/utils/spriteUtils'
+import { PokemonBalls } from '@/models/enums/PokemonBalls'
 import { DetailShell } from '@/components/elements/DetailShell/DetailShell'
 import { PokemonDetailPanel } from '@/components/elements/PokemonDetailPanel/PokemonDetailPanel'
 import HomeComponent from '../components/HomeComponent'
 import { useAppDispatch } from '@/store/hooks'
 import { updateFilters } from '@/store/features/pokemon'
+
+const FALLBACK_POKEBALLS: PokemonBall[] = Object.entries(PokemonBalls).map(([id, name]) => ({
+	id: Number(id),
+	name,
+}))
 
 const Home = () => {
 	const { spriteType, viewMode, setViewMode, browseLayout, setBrowseLayout } = useUISettings()
@@ -68,6 +76,7 @@ const Home = () => {
 	const [selectedBox, setSelectedBox] = useState<PokemonBoxDetailDto | null>(null)
 	const [activeBoxId, setActiveBoxId] = useState<number | null>(null)
 	const [boxLoading, setBoxLoading] = useState(false)
+	const [pokeballs, setPokeballs] = useState<PokemonBall[]>(FALLBACK_POKEBALLS)
 
 	const { Take: itemsPerPage = 20, Skip = 0 } = currentFilters
 
@@ -114,6 +123,9 @@ const Home = () => {
 		fetchPokemon()
 		loadTags()
 		refreshBoxes()
+		getPokemonMetadata()
+			.then((meta) => setPokeballs(meta.pokeballs?.length ? meta.pokeballs : FALLBACK_POKEBALLS))
+			.catch(() => {})
 	}, [])
 
 	useEffect(() => {
@@ -338,6 +350,26 @@ const Home = () => {
 		await handleTagSystemChanged()
 	}, [handleTagSystemChanged])
 
+	const handleBulkTagUpdate = useCallback(
+		async (
+			pokemonIds: number[],
+			action: 'add' | 'remove' | 'replace',
+			tagIds: number[]
+		): Promise<BulkTagResult> => {
+			const request = {
+				pokemonIds,
+				addTagIds: action === 'add' ? tagIds : undefined,
+				removeTagIds: action === 'remove' ? tagIds : undefined,
+				replaceTagIds: action === 'replace' ? tagIds : undefined,
+				includeDuplicateFiles: false,
+			}
+			const result = await bulkUpdateTags(request)
+			await refreshCollection()
+			return result
+		},
+		[refreshCollection]
+	)
+
 	const handleSelectBox = useCallback(async (id: number) => {
 		setBoxLoading(true)
 		try {
@@ -463,6 +495,7 @@ const Home = () => {
 				error={error}
 				currentFilters={currentFilters}
 				availableTags={availableTags}
+				pokeballs={pokeballs}
 				viewMode={viewMode}
 				setViewMode={setViewMode}
 				browseLayout={browseLayout}
@@ -497,6 +530,7 @@ const Home = () => {
 				currentPage={currentPage}
 				onPageChange={onPageChange}
 				onPokemonClick={handlePokemonClick}
+				onBulkTagUpdate={handleBulkTagUpdate}
 			/>
 		</DetailShell>
 	)

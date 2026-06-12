@@ -89,7 +89,7 @@ export async function updatePokemon(id: number, dto: UpdatePokemonDto): Promise<
 		method: 'PATCH',
 		body: JSON.stringify(dto),
 		headers: {
-			Accept: 'application/json',
+			'Accept': 'application/json',
 			'Content-Type': 'application/json',
 		},
 	})
@@ -132,10 +132,12 @@ export async function getPokemonList(
 		transformedParams.ThenSortBy = mapSortByToBackend(transformedParams.ThenSortBy as any) as any
 	}
 
-	// Filter out undefined values to keep query string clean
-	const cleanParams = Object.fromEntries(
-		Object.entries(transformedParams).filter(([_, value]) => value !== undefined && value !== null)
-	) as Record<string, string | number | boolean>
+	// Filter out undefined values to keep query string clean; preserve arrays for repeated-key serialization
+	const cleanParams: Record<string, string | number | boolean | number[]> = {}
+	for (const [key, value] of Object.entries(transformedParams)) {
+		if (value === undefined || value === null) continue
+		cleanParams[key] = value as string | number | boolean | number[]
+	}
 
 	const result = await customFetch<PokemonListItemDtoPagedResult>(
 		`${environment.baseUrl}/pokemon`,
@@ -298,7 +300,9 @@ export async function downloadPokemonBackupFile(pokemonId: number): Promise<void
 	})
 
 	if (!response.ok) {
-		throw new Error(`Failed to download backup file for Pokémon ID ${pokemonId}: ${response.statusText}`)
+		throw new Error(
+			`Failed to download backup file for Pokémon ID ${pokemonId}: ${response.statusText}`
+		)
 	}
 
 	const blob = await response.blob()

@@ -2966,3 +2966,55 @@ html[data-theme='dark'] .pokemon-detail--home {
 		}
 	}
 }
+
+// ===================================
+// Personal notes editor (shared across themes)
+// ===================================
+
+.pokemon-detail__personal-notes {
+	padding: 16px;
+	margin-top: 4px;
+}
+
+.pokemon-detail__notes-textarea {
+	display: block;
+	width: 100%;
+	min-height: 72px;
+	margin-top: 8px;
+	padding: 0.65rem;
+	border: 1px solid var(--border-secondary);
+	border-radius: 8px;
+	background: var(--surface-secondary);
+	color: var(--text-primary);
+	font: inherit;
+	font-size: 0.88rem;
+	line-height: 1.5;
+	resize: vertical;
+
+	&::placeholder {
+		color: var(--text-tertiary);
+	}
+
+	&:focus {
+		outline: none;
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 2px var(--color-focus-ring, rgba(59, 130, 246, 0.18));
+	}
+}
+
+.pokemon-detail__notes-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+	min-height: 28px;
+}
+
+.pokemon-detail__notes-status {
+	font-size: 0.75rem;
+	color: var(--text-tertiary);
+
+	&--error {
+		color: var(--color-error-light, #ef4444);
+	}
+}
