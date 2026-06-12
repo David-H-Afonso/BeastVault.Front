@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
 import {
 	clearPokemonBox,
 	clearPokemonBoxSlot,
@@ -15,7 +14,6 @@ import {
 	downloadPokemonBackupFile,
 	downloadPokemonFile,
 	downloadPokemonFileFromDisk,
-	getPokemonById,
 	getPokemonMetadata,
 	getPokemonShowdownExport,
 	updatePokemon,
@@ -46,8 +44,6 @@ const FALLBACK_POKEBALLS: PokemonBall[] = Object.entries(PokemonBalls).map(([id,
 
 const Home = () => {
 	const { spriteType, viewMode, setViewMode, browseLayout, setBrowseLayout } = useUISettings()
-	const { pokemonId } = useParams<{ pokemonId?: string }>()
-	const navigate = useNavigate()
 	const dispatch = useAppDispatch()
 
 	const {
@@ -129,62 +125,6 @@ const Home = () => {
 	}, [])
 
 	useEffect(() => {
-		if (pokemonId) {
-			const id = Number(pokemonId)
-			const found = pokemon.find((p) => p.id === id)
-			if (found) {
-				setDetailPokemon(found)
-				return
-			}
-
-			getPokemonById(id)
-				.then((detail) => {
-					const stub: PokemonListItemDto = {
-						id: detail.id,
-						speciesId: detail.speciesId,
-						speciesName: detail.speciesName,
-						nickname: detail.nickname ?? undefined,
-						form: detail.form,
-						formName: detail.formName ?? undefined,
-						level: detail.level,
-						isShiny: detail.isShiny,
-						favorite: detail.favorite,
-						isEgg: detail.isEgg,
-						ballId: detail.ballId,
-						heldItemId: detail.heldItemId,
-						gender: detail.gender,
-						tags: [],
-						spriteKey: detail.spriteKey ?? '',
-						originGeneration: detail.originGeneration,
-						capturedGeneration: detail.originGeneration,
-						canGigantamax: detail.displayFormName?.toLowerCase().includes('gigantamax') ?? false,
-						hasMegaStone: detail.displayFormName?.toLowerCase().includes('mega') ?? false,
-						type1: detail.type1,
-						type2: detail.type2 ?? undefined,
-						ballName: detail.ballName,
-						ballSpriteUrl: detail.ballSpriteUrl,
-						sprites: {
-							default: `/sprites/pokemon/${detail.speciesId}.png`,
-							shiny: `/sprites/pokemon/shiny/${detail.speciesId}.png`,
-							official: `/sprites/pokemon/artwork/${detail.speciesId}.png`,
-							officialShiny: `/sprites/pokemon/artwork/shiny/${detail.speciesId}.png`,
-							home: `/sprites/pokemon/home/${detail.speciesId}.png`,
-							homeShiny: `/sprites/pokemon/home/shiny/${detail.speciesId}.png`,
-							showdown: `/sprites/pokemon/showdown/${detail.speciesId}.gif`,
-							showdownShiny: `/sprites/pokemon/showdown/shiny/${detail.speciesId}.gif`,
-							github: `/sprites/pokemon/github/${detail.speciesId}.png`,
-							githubShiny: `/sprites/pokemon/github/shiny/${detail.speciesId}.png`,
-						},
-					}
-					setDetailPokemon(stub)
-				})
-				.catch(() => setDetailPokemon(null))
-		} else {
-			setDetailPokemon(null)
-		}
-	}, [pokemonId, pokemon])
-
-	useEffect(() => {
 		if (shouldRefetchForPagination) {
 			fetchPokemon()
 			setShouldRefetchForPagination(false)
@@ -197,17 +137,13 @@ const Home = () => {
 		await refreshBoxes(activeBoxId)
 	}, [activeBoxId, fetchPokemon, loadTags, refreshBoxes])
 
-	const handlePokemonClick = useCallback(
-		(pokemon: PokemonListItemDto) => {
-			navigate(`/pokemon/${pokemon.id}`)
-		},
-		[navigate]
-	)
+	const handlePokemonClick = useCallback((clickedPokemon: PokemonListItemDto) => {
+		setDetailPokemon(clickedPokemon)
+	}, [])
 
 	const handleDetailClose = useCallback(() => {
 		setDetailPokemon(null)
-		navigate('/', { replace: true })
-	}, [navigate])
+	}, [])
 
 	const handleFiltersChange = async (filters: PokemonListFilterDto) => {
 		await applyFiltersAndFetch(filters)

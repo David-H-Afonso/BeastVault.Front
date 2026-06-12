@@ -42,10 +42,6 @@ export const router = createBrowserRouter([
 				path: 'dex/:speciesId',
 				element: <DexPage />,
 			},
-			{
-				path: 'pokemon/:pokemonId',
-				element: <App />,
-			},
 		],
 	},
 	{

@@ -107,17 +107,12 @@ export function PokemonCard({
 					</div>
 				</div>
 			) : (
-				<a
-					href={`/pokemon/${pokemon.id}`}
+				<div
 					className={getCardClassName()}
 					style={getCardStyle()}
-					onClick={(e) => {
-						if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button !== 1) {
-							e.preventDefault()
-							onClick?.(pokemon)
-						}
-					}}
-					tabIndex={0}>
+					onClick={() => onClick?.(pokemon)}
+					tabIndex={0}
+					role='button'>
 					<div className='cardHeader'>
 						<div className='cardActions'>
 							<button
@@ -319,7 +314,7 @@ export function PokemonCard({
 							</div>
 						</div>
 					</div>{' '}
-				</a>
+				</div>
 			)}
 		</>
 	)

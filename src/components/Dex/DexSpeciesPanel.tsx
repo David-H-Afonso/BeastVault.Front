@@ -681,7 +681,7 @@ export function DexSpeciesPanel({ detail, loading, onOwnedClick }: DexSpeciesPan
 										if (onOwnedClick) {
 											onOwnedClick(p)
 										} else {
-											navigate(`/pokemon/${p.id}`)
+											navigate('/')
 										}
 									}}>
 									{p.spriteUrl && (

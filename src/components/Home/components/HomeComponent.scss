@@ -654,18 +654,11 @@
 .browse-table__row {
 	display: grid;
 	grid-template-columns:
-		minmax(190px, 1.3fr) minmax(120px, 0.7fr) minmax(220px, 1.2fr) minmax(130px, 0.6fr)
+		32px minmax(190px, 1.3fr) minmax(120px, 0.7fr) minmax(220px, 1.2fr) minmax(130px, 0.6fr)
 		minmax(180px, 0.7fr);
 	gap: 0.75rem;
 	align-items: center;
 	padding: 0.65rem 0.85rem;
-}
-
-.browse-table--selection .browse-table__head,
-.browse-table--selection .browse-table__row {
-	grid-template-columns:
-		32px minmax(190px, 1.3fr) minmax(120px, 0.7fr) minmax(220px, 1.2fr) minmax(130px, 0.6fr)
-		minmax(180px, 0.7fr);
 }
 
 .browse-table__head {
@@ -1659,12 +1652,66 @@
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s ease;
 
 	input[type='checkbox'] {
 		width: 18px;
 		height: 18px;
 		accent-color: var(--color-primary);
 		cursor: pointer;
+	}
+
+	// Always visible in selection mode
+	&--visible {
+		opacity: 1;
+	}
+}
+
+// Show checkbox on row hover
+.browse-table__row:hover .browse-shell__checkbox {
+	opacity: 1;
+}
+
+// Keep visible when row is selected
+.browse-table__row--selected .browse-shell__checkbox {
+	opacity: 1;
+}
+
+.browse-table__row--selected {
+	background: rgba(24, 176, 173, 0.08);
+}
+
+// Select mode toggle button
+.browse-shell__select-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--border-secondary);
+	border-radius: 6px;
+	background: var(--surface-secondary);
+	color: var(--text-secondary);
+	padding: 0.4rem;
+	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		color 0.15s ease;
+	min-height: 38px;
+	min-width: 38px;
+
+	svg {
+		display: block;
+	}
+
+	&.is-active {
+		background: var(--color-primary);
+		color: #fff;
+		border-color: var(--color-primary);
+	}
+
+	&:hover:not(.is-active) {
+		color: var(--text-primary);
+		border-color: var(--color-primary);
 	}
 }
 
@@ -1675,32 +1722,44 @@
 
 .hub-card__select-check {
 	position: absolute;
-	top: 0.5rem;
-	left: 0.5rem;
+	top: 0.35rem;
+	left: 0.35rem;
 	z-index: 5;
 	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	line-height: 0;
 
 	input[type='checkbox'] {
-		width: 20px;
-		height: 20px;
+		width: 16px;
+		height: 16px;
 		accent-color: var(--color-primary);
 		cursor: pointer;
+		margin: 0;
+	}
+
+	// Always visible in selection mode
+	&--visible {
+		opacity: 1;
 	}
 }
 
+// Show checkbox on card hover
+.hub-card:hover .hub-card__select-check {
+	opacity: 1;
+}
+
+// Also keep visible when the card is selected
+.hub-card--selected .hub-card__select-check {
+	opacity: 1;
+}
+
 .bulk-action-bar {
-	position: sticky;
-	bottom: 0;
-	z-index: 20;
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.5rem;
-	padding: 0.75rem 1rem;
-	border-top: 1px solid var(--border-secondary);
-	border-radius: 16px 16px 0 0;
-	background: var(--surface-primary);
-	box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.18);
+	padding: 0.5rem;
 }
 
 .bulk-action-bar__count {
@@ -1922,7 +1981,7 @@
 
 	.browse-shell__command-bar {
 		display: grid;
-		grid-template-columns: minmax(260px, 1fr) auto auto minmax(150px, 190px);
+		grid-template-columns: minmax(260px, 1fr) auto auto minmax(150px, 190px) auto;
 		align-items: center;
 		gap: 0.55rem;
 		padding: 0.72rem;
@@ -2410,12 +2469,12 @@
 	}
 
 	.hub-card__select-check {
-		top: 0.58rem;
-		left: 0.58rem;
+		top: 0.35rem;
+		left: 0.35rem;
 
 		input[type='checkbox'] {
-			width: 22px;
-			height: 22px;
+			width: 16px;
+			height: 16px;
 		}
 	}
 
@@ -2490,9 +2549,6 @@
 
 	.bulk-action-bar {
 		border-color: var(--home-border);
-		border-radius: 8px 8px 0 0;
-		background: var(--home-panel);
-		box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.22);
 	}
 
 	.bulk-action-bar__btn {
@@ -2501,7 +2557,7 @@
 
 	@media (max-width: 1200px) {
 		.browse-shell__command-bar {
-			grid-template-columns: minmax(220px, 1fr) auto auto minmax(140px, 170px);
+			grid-template-columns: minmax(220px, 1fr) auto auto minmax(140px, 170px) auto;
 		}
 
 		.browse-shell__filter-dock--home .browse-shell__filters {
@@ -2538,7 +2594,7 @@
 		}
 
 		.browse-shell__command-bar {
-			grid-template-columns: minmax(0, 1fr) auto auto;
+			grid-template-columns: minmax(0, 1fr) auto auto auto;
 		}
 
 		.browse-shell__sort-select {

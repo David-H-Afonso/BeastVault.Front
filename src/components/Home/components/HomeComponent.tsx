@@ -109,6 +109,7 @@ function PokemonTable({
 	selectionMode,
 	selectedIds,
 	onToggleSelect,
+	onEnterSelectionMode,
 }: {
 	items: ProcessedPokemon[]
 	loading: boolean
@@ -118,15 +119,21 @@ function PokemonTable({
 	selectionMode: boolean
 	selectedIds: Set<number>
 	onToggleSelect: (id: number) => void
+	onEnterSelectionMode: () => void
 }) {
 	if (items.length === 0 && !loading) {
 		return <p className='browse-shell__empty'>No Pokémon match the current filters.</p>
 	}
 
+	const handleCheckboxChange = (id: number) => {
+		if (!selectionMode) onEnterSelectionMode()
+		onToggleSelect(id)
+	}
+
 	return (
-		<div className={`browse-table${selectionMode ? ' browse-table--selection' : ''}`}>
+		<div className={`browse-table browse-table--has-checkbox`}>
 			<div className='browse-table__head'>
-				{selectionMode && <span />}
+				<span />
 				<span>Pokémon</span>
 				<span>Types</span>
 				<span>Tags</span>
@@ -134,16 +141,17 @@ function PokemonTable({
 				<span>Actions</span>
 			</div>
 			{items.map(({ pokemon, sprite, type1, type2 }) => (
-				<div key={pokemon.id} className='browse-table__row'>
-					{selectionMode && (
-						<label className='browse-shell__checkbox'>
-							<input
-								type='checkbox'
-								checked={selectedIds.has(pokemon.id)}
-								onChange={() => onToggleSelect(pokemon.id)}
-							/>
-						</label>
-					)}
+				<div
+					key={pokemon.id}
+					className={`browse-table__row${selectedIds.has(pokemon.id) ? ' browse-table__row--selected' : ''}`}>
+					<label
+						className={`browse-shell__checkbox${selectionMode ? ' browse-shell__checkbox--visible' : ''}`}>
+						<input
+							type='checkbox'
+							checked={selectedIds.has(pokemon.id)}
+							onChange={() => handleCheckboxChange(pokemon.id)}
+						/>
+					</label>
 					<button
 						type='button'
 						className='browse-table__identity'
@@ -203,6 +211,7 @@ function PokemonHubGrid({
 	selectionMode,
 	selectedIds,
 	onToggleSelect,
+	onEnterSelectionMode,
 }: {
 	items: ProcessedPokemon[]
 	loading: boolean
@@ -211,9 +220,15 @@ function PokemonHubGrid({
 	selectionMode: boolean
 	selectedIds: Set<number>
 	onToggleSelect: (id: number) => void
+	onEnterSelectionMode: () => void
 }) {
 	if (items.length === 0 && !loading) {
 		return <p className='browse-shell__empty'>No Pokémon match the current filters.</p>
+	}
+
+	const handleCheckboxChange = (id: number) => {
+		if (!selectionMode) onEnterSelectionMode()
+		onToggleSelect(id)
 	}
 
 	return (
@@ -221,16 +236,15 @@ function PokemonHubGrid({
 			{items.map(({ pokemon, sprite, type1, type2 }) => (
 				<article
 					key={pokemon.id}
-					className={`hub-card${selectionMode && selectedIds.has(pokemon.id) ? ' hub-card--selected' : ''}`}>
-					{selectionMode && (
-						<label className='hub-card__select-check'>
-							<input
-								type='checkbox'
-								checked={selectedIds.has(pokemon.id)}
-								onChange={() => onToggleSelect(pokemon.id)}
-							/>
-						</label>
-					)}
+					className={`hub-card${selectedIds.has(pokemon.id) ? ' hub-card--selected' : ''}`}>
+					<label
+						className={`hub-card__select-check${selectionMode ? ' hub-card__select-check--visible' : ''}`}>
+						<input
+							type='checkbox'
+							checked={selectedIds.has(pokemon.id)}
+							onChange={() => handleCheckboxChange(pokemon.id)}
+						/>
+					</label>
 					<button
 						type='button'
 						className='hub-card__open'
@@ -606,6 +620,19 @@ const HomeComponent = ({
 						<option value='recent'>Recent</option>
 						<option value='favorites'>Favorites</option>
 					</select>
+					<button
+						type='button'
+						className={`browse-shell__select-toggle${selectionMode ? ' is-active' : ''}`}
+						onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
+						title={selectionMode ? 'Cancel selection' : 'Select Pokémon'}>
+						<svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor'>
+							{selectionMode ? (
+								<path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z' />
+							) : (
+								<path d='M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V5h14v14zM17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z' />
+							)}
+						</svg>
+					</button>
 				</div>
 
 				<div className='browse-shell__tag-bar'>
@@ -697,6 +724,55 @@ const HomeComponent = ({
 						Apply
 					</button>
 				</div>
+
+				{selectionMode && (
+					<div className='bulk-action-bar'>
+						<span className='bulk-action-bar__count'>{selectedIds.size} selected</span>
+						<button type='button' onClick={selectAllVisible} className='bulk-action-bar__btn'>
+							Select all
+						</button>
+						<button
+							type='button'
+							onClick={clearSelection}
+							className='bulk-action-bar__btn'
+							disabled={selectedIds.size === 0}>
+							Clear
+						</button>
+						<button
+							type='button'
+							onClick={() => setBulkAction('add')}
+							className='bulk-action-bar__btn bulk-action-bar__btn--primary'
+							disabled={selectedIds.size === 0}>
+							Add tags
+						</button>
+						<button
+							type='button'
+							onClick={() => setBulkAction('remove')}
+							className='bulk-action-bar__btn'
+							disabled={selectedIds.size === 0}>
+							Remove tags
+						</button>
+						<button
+							type='button'
+							onClick={() => setBulkAction('replace')}
+							className='bulk-action-bar__btn bulk-action-bar__btn--danger'
+							disabled={selectedIds.size === 0}>
+							Replace tags
+						</button>
+						<button
+							type='button'
+							onClick={() => {
+								for (const id of selectedIds) handleDownload(id)
+							}}
+							className='bulk-action-bar__btn'
+							disabled={selectedIds.size === 0}>
+							Download
+						</button>
+						<button type='button' onClick={exitSelectionMode} className='bulk-action-bar__btn'>
+							Cancel
+						</button>
+					</div>
+				)}
 			</section>
 		)
 	}
@@ -777,6 +853,7 @@ const HomeComponent = ({
 						selectionMode={selectionMode}
 						selectedIds={selectedIds}
 						onToggleSelect={toggleSelect}
+						onEnterSelectionMode={() => setSelectionMode(true)}
 					/>
 				) : (
 					<PokemonHubGrid
@@ -787,6 +864,7 @@ const HomeComponent = ({
 						selectionMode={selectionMode}
 						selectedIds={selectedIds}
 						onToggleSelect={toggleSelect}
+						onEnterSelectionMode={() => setSelectionMode(true)}
 					/>
 				)}
 			</section>
@@ -887,46 +965,6 @@ const HomeComponent = ({
 					onTagsUpdated={handleTagsUpdated}
 					onTagSystemChanged={handleTagSystemChanged}
 				/>
-			)}
-
-			{selectionMode && viewMode === 'browse' && (
-				<div className='bulk-action-bar'>
-					<span className='bulk-action-bar__count'>{selectedIds.size} selected</span>
-					<button type='button' onClick={selectAllVisible} className='bulk-action-bar__btn'>
-						Select all
-					</button>
-					<button
-						type='button'
-						onClick={clearSelection}
-						className='bulk-action-bar__btn'
-						disabled={selectedIds.size === 0}>
-						Clear
-					</button>
-					<button
-						type='button'
-						onClick={() => setBulkAction('add')}
-						className='bulk-action-bar__btn bulk-action-bar__btn--primary'
-						disabled={selectedIds.size === 0}>
-						Add tags
-					</button>
-					<button
-						type='button'
-						onClick={() => setBulkAction('remove')}
-						className='bulk-action-bar__btn'
-						disabled={selectedIds.size === 0}>
-						Remove tags
-					</button>
-					<button
-						type='button'
-						onClick={() => setBulkAction('replace')}
-						className='bulk-action-bar__btn bulk-action-bar__btn--danger'
-						disabled={selectedIds.size === 0}>
-						Replace tags
-					</button>
-					<button type='button' onClick={exitSelectionMode} className='bulk-action-bar__btn'>
-						Cancel
-					</button>
-				</div>
 			)}
 
 			{bulkAction && (
