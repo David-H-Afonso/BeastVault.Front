@@ -157,7 +157,7 @@ export const DexPage: React.FC = () => {
 	}
 
 	const handleViewOwnedPokemon = useCallback(
-		(p: DexOwnedPokemon) => {
+		(_p: DexOwnedPokemon) => {
 			navigate('/')
 		},
 		[navigate]
