@@ -179,46 +179,28 @@ export const DexPage: React.FC = () => {
 			panel={selectedSpeciesId !== null ? panelContent : null}
 			onClosePanel={handleCloseModal}>
 			<div className='dex-page dex-page--home'>
-				{/* Header */}
-				<div className='dex-page__header'>
-					<h1 className='dex-page__title'>Vault Pokédex</h1>
-					<p className='dex-page__subtitle'>
-						{total > 0 ? `${total} species — ` : ''}
-						Showing Pokémon registered in PokeAPI cache
-					</p>
-				</div>
-
-				{
-					<div className='dex-page__home-hero'>
-						<div className='dex-page__home-card dex-page__home-card--intro'>
-							<span className='dex-page__home-label'>National Pokédex</span>
-							<h2>{total} registered species</h2>
-							<p>
-								Browse your owned species in a HOME-inspired index with quick generation jumps and
-								detail sheets.
-							</p>
-						</div>
-						<div className='dex-page__home-card dex-page__home-card--generations'>
-							{GENERATIONS.slice(1).map((g) => (
-								<button
-									key={String(g.value)}
-									className={`dex-page__home-region${generation === g.value ? ' active' : ''}`}
-									onClick={() => handleGenerationChange(g.value)}>
-									<span>{g.label}</span>
-								</button>
-							))}
-						</div>
+				{/* Compact header with title + stats inline */}
+				<header className='dex-page__header'>
+					<div className='dex-page__header-left'>
+						<h1 className='dex-page__title'>Pokédex</h1>
+						{total > 0 && (
+							<span className='dex-page__count'>{total} species</span>
+						)}
 					</div>
-				}
+					<p className='dex-page__subtitle'>
+						Browse your owned species with quick generation jumps and detail sheets
+					</p>
+				</header>
 
-				{/* Filters */}
-				<div className='dex-page__filters'>
+				{/* Unified filter bar */}
+				<div className='dex-page__toolbar'>
 					<input
 						className='dex-page__search'
 						type='text'
-						placeholder='Search by name…'
+						placeholder='Search by name...'
 						value={searchInput}
 						onChange={handleSearchChange}
+						aria-label='Search species'
 					/>
 
 					<div className='dex-page__gen-filters'>
@@ -232,25 +214,27 @@ export const DexPage: React.FC = () => {
 						))}
 					</div>
 
-					<label className='dex-page__toggle'>
-						<input type='checkbox' checked={unlockedOnly} onChange={handleUnlockedToggle} />
-						<span>Owned only</span>
-					</label>
+					<div className='dex-page__toolbar-controls'>
+						<label className='dex-page__toggle'>
+							<input type='checkbox' checked={unlockedOnly} onChange={handleUnlockedToggle} />
+							<span>Owned only</span>
+						</label>
 
-					{gameOptions.length > 0 && (
-						<select
-							className='dex-page__game-select'
-							value={originGame ?? ''}
-							onChange={handleOriginGameChange}
-							title='Filter by origin game'>
-							<option value=''>All games</option>
-							{gameOptions.map((g) => (
-								<option key={g.id} value={g.id}>
-									{g.name}
-								</option>
-							))}
-						</select>
-					)}
+						{gameOptions.length > 0 && (
+							<select
+								className='dex-page__game-select'
+								value={originGame ?? ''}
+								onChange={handleOriginGameChange}
+								title='Filter by origin game'>
+								<option value=''>All games</option>
+								{gameOptions.map((g) => (
+									<option key={g.id} value={g.id}>
+										{g.name}
+									</option>
+								))}
+							</select>
+						)}
+					</div>
 				</div>
 
 				{/* Grid */}

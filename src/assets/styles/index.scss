@@ -40,5 +40,8 @@
 // 6. Detail shell and panels
 @use 'detail-shell' as *;
 
-// 7. Final responsive fixes that must win over legacy component blocks
+// 7. Shared component primitives (buttons, inputs, cards, badges)
+@use 'components' as *;
+
+// 8. Final responsive fixes that must win over legacy component blocks
 @use 'responsive-fixes' as *;

@@ -7,75 +7,96 @@
 }
 
 .settings-container {
-	max-width: 1000px;
+	max-width: 900px;
 	margin: 0 auto;
 }
 
 .settings-header {
-	text-align: center;
-	margin-bottom: 40px;
-	padding: 24px;
-	background: var(--overlay-light);
-	border: 1px solid var(--border-overlay-light);
-	border-radius: 12px;
+	margin-bottom: 2rem;
+	padding: 1.5rem;
+	background: var(--surface-primary);
+	border: 1px solid var(--border-secondary);
+	border-radius: var(--radius-lg);
+
+	@include mobile-only {
+		padding: 1.25rem;
+		margin-bottom: 1.25rem;
+	}
 }
 
 .settings-title {
 	color: var(--text-primary);
-	font-size: 1.75rem;
+	font-size: 1.5rem;
 	font-weight: 700;
-	margin: 0 0 12px 0;
+	margin: 0 0 0.5rem 0;
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	gap: 12px;
+	gap: 0.625rem;
+	letter-spacing: -0.01em;
+
+	svg {
+		color: var(--text-secondary);
+		flex-shrink: 0;
+	}
 
 	@include mobile-only {
-		font-size: 1.3rem;
-		gap: 6px;
+		font-size: 1.25rem;
 	}
 }
 
 .settings-description {
 	color: var(--text-secondary);
-	font-size: 1.1rem;
+	font-size: 0.9rem;
 	margin: 0;
-	opacity: 0.8;
+	line-height: 1.5;
 }
 
 .settings-content {
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
+	gap: 1.25rem;
+
+	@include mobile-only {
+		gap: 1rem;
+	}
 }
 
 .settings-section {
-	background: var(--overlay-light);
-	border: 1px solid var(--border-overlay-light);
-	border-radius: 12px;
-	padding: 24px;
-	transition: all 0.2s ease;
+	background: var(--surface-primary);
+	border: 1px solid var(--border-secondary);
+	border-radius: var(--radius-lg);
+	padding: 1.5rem;
+	transition:
+		border-color var(--transition-base),
+		box-shadow var(--transition-base);
 
 	&:hover {
-		border-color: var(--border-overlay-medium);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		border-color: var(--border-strong);
+	}
+
+	@include mobile-only {
+		padding: 1rem;
 	}
 }
 
 .section-title {
 	color: var(--text-primary);
-	font-size: 1.4rem;
-	font-weight: 600;
-	margin: 0 0 16px 0;
+	font-size: 1rem;
+	font-weight: 650;
+	margin: 0 0 1rem 0;
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding-bottom: 12px;
-	border-bottom: 1px solid var(--border-overlay-light);
+	gap: 0.5rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid var(--border-secondary);
+
+	svg {
+		color: var(--text-secondary);
+		flex-shrink: 0;
+	}
 }
 
 .section-content {
-	// Remove margin and padding from nested components
 	.ui-options-selector {
 		margin: 0;
 		background: transparent;
@@ -87,105 +108,65 @@
 
 .coming-soon {
 	text-align: center;
-	padding: 32px;
+	padding: 2rem;
 	color: var(--text-secondary);
 
 	p {
-		font-size: 1.1rem;
-		margin: 0 0 8px 0;
-		opacity: 0.8;
+		font-size: 0.95rem;
+		margin: 0 0 0.5rem 0;
 	}
 
 	small {
-		font-size: 0.9rem;
-		opacity: 0.6;
-	}
-}
-
-// Responsive design — mobile-first using mixins
-@include mobile-only {
-	.settings-page {
-		padding: var(--page-pad-y) var(--page-pad-x);
-	}
-
-	.settings-header {
-		padding: 16px;
-		margin-bottom: 20px;
-	}
-
-	.settings-description {
-		font-size: 0.95rem;
-	}
-
-	.settings-content {
-		gap: 16px;
-	}
-
-	.settings-section {
-		padding: 16px;
-	}
-
-	.section-title {
-		font-size: 1.1rem;
+		font-size: 0.85rem;
+		color: var(--text-muted);
 	}
 }
 
 .ui-options-selector {
-	background: var(--overlay-light);
-	border: 1px solid var(--border-overlay-light);
-	border-radius: 8px;
-	padding: 12px;
-	margin-bottom: 16px;
-
-	.selector-title {
-		color: var(--text-primary);
-		font-size: 0.9rem;
-		font-weight: 600;
-		margin: 0 0 12px 0;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 12px 0 0 12px;
-	}
-
 	.options-flex {
 		display: flex;
 		flex-direction: row;
-		gap: 16px;
+		gap: 1rem;
+		flex-wrap: wrap;
 
 		.option-group {
-			border: 1px solid var(--border-overlay-light);
-			border-radius: 8px;
-			padding: 12px;
+			flex: 1;
+			min-width: 200px;
+			border: 1px solid var(--border-secondary);
+			border-radius: var(--radius-md);
+			padding: 1rem;
+			background: var(--surface-secondary);
 
 			.option-label {
-				color: var(--text-primary);
-				font-size: 0.9rem;
+				display: block;
+				color: var(--text-secondary);
+				font-size: 0.8rem;
 				font-weight: 600;
-				margin: 0 0 8px 0;
-				display: flex;
-				align-items: center;
-				gap: 8px;
+				margin-bottom: 0.5rem;
+				text-transform: uppercase;
+				letter-spacing: 0.03em;
 			}
 
 			.option-select {
 				width: 100%;
-				padding: 0.5rem 0.75rem;
-				border: 1px solid var(--border-overlay-medium);
-				border-radius: 6px;
-				background: var(--overlay-light);
+				padding: 0.55rem 0.75rem;
+				border: 1px solid var(--border-secondary);
+				border-radius: var(--radius-sm);
+				background: var(--surface-primary);
 				color: var(--text-primary);
+				font-family: inherit;
 				font-size: 0.9rem;
 				cursor: pointer;
-				margin-bottom: 12px;
+				transition: border-color var(--transition-fast);
+				outline: none;
 
 				&:focus {
-					outline: 2px solid var(--color-focus-ring);
-					outline-offset: 2px;
+					border-color: var(--color-primary);
+					box-shadow: 0 0 0 3px var(--color-primary-bg);
 				}
 
 				option {
-					background: var(--bg-secondary);
+					background: var(--surface-primary);
 					color: var(--text-primary);
 				}
 			}
@@ -195,85 +176,99 @@
 
 // ── Box Icon Style toggle ──────────────────────────────────────────────
 .settings-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    cursor: pointer;
-    user-select: none;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+	user-select: none;
 
-    input[type='checkbox'] {
-        display: none;
-    }
+	input[type='checkbox'] {
+		display: none;
+	}
 
-    &__track {
-        position: relative;
-        width: 42px;
-        height: 24px;
-        border-radius: 12px;
-        background: var(--overlay-light);
-        border: 1px solid var(--border-overlay-medium);
-        transition: background 0.2s;
-        flex-shrink: 0;
+	&__track {
+		position: relative;
+		width: 40px;
+		height: 22px;
+		border-radius: var(--radius-full);
+		background: var(--surface-secondary);
+		border: 1px solid var(--border-secondary);
+		transition:
+			background var(--transition-base),
+			border-color var(--transition-base);
+		flex-shrink: 0;
 
-        &::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--text-secondary);
-            transition: left 0.2s, background 0.2s;
-        }
-    }
+		&::after {
+			content: '';
+			position: absolute;
+			top: 2px;
+			left: 2px;
+			width: 16px;
+			height: 16px;
+			border-radius: 50%;
+			background: var(--text-secondary);
+			transition:
+				left var(--transition-base),
+				background var(--transition-base);
+		}
+	}
 
-    input[type='checkbox']:checked + &__track {
-        background: var(--color-focus-ring, #7c6bff);
-        border-color: transparent;
+	input[type='checkbox']:checked + &__track {
+		background: var(--color-primary);
+		border-color: var(--color-primary);
 
-        &::after {
-            left: 21px;
-            background: #fff;
-        }
-    }
+		&::after {
+			left: 20px;
+			background: #fff;
+		}
+	}
 
-    &__label {
-        font-size: 0.85rem;
-        color: var(--text-primary);
-    }
+	&__label {
+		font-size: 0.85rem;
+		color: var(--text-primary);
+	}
 }
 
 // ── Box Icon preview ──────────────────────────────────────────────────
 .settings-box-icon-preview {
-    display: flex;
-    gap: 1rem;
+	display: flex;
+	gap: 0.75rem;
 
-    &__item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.4rem 0.6rem;
-        border-radius: 8px;
-        border: 2px solid var(--border-secondary);
-        opacity: 0.5;
-        transition: opacity 0.2s, border-color 0.2s;
+	&__item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.5rem 0.75rem;
+		border-radius: var(--radius-md);
+		border: 2px solid var(--border-secondary);
+		opacity: 0.5;
+		transition:
+			opacity var(--transition-base),
+			border-color var(--transition-base),
+			background var(--transition-base);
+		cursor: pointer;
 
-        img {
-            width: 68px;
-            height: 56px;
-            object-fit: contain;
-        }
+		img {
+			width: 64px;
+			height: 52px;
+			object-fit: contain;
+		}
 
-        small {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
+		small {
+			font-size: 0.7rem;
+			color: var(--text-secondary);
+			font-weight: 500;
+		}
 
-        &--active {
-            opacity: 1;
-            border-color: var(--color-focus-ring, #7c6bff);
-        }
-    }
+		&--active {
+			opacity: 1;
+			border-color: var(--color-primary);
+			background: var(--color-primary-bg);
+		}
+
+		&:hover:not(&--active) {
+			opacity: 0.75;
+		}
+	}
 }

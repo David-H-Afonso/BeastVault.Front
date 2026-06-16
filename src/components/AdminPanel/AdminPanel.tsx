@@ -718,15 +718,21 @@ const AdminPanel: React.FC = () => {
 																setRenameUsername(u.username)
 																setRenameMessage(null)
 															}}
-															title='Rename user'>
-															✏️
+															title='Rename user'
+															aria-label='Rename user'>
+															<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'/><path d='m15 5 4 4'/></svg>
 														</button>
 														<button
 															className='btn btn--small btn--secondary'
 															onClick={() => handleToggleRole(u)}
 															title={u.role === 'Admin' ? 'Remove admin' : 'Make admin'}
+															aria-label={u.role === 'Admin' ? 'Remove admin' : 'Make admin'}
 															disabled={u.id === user?.userId}>
-															{u.role === 'Admin' ? '👤' : '👑'}
+															{u.role === 'Admin' ? (
+																<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><line x1='17' x2='22' y1='11' y2='11'/></svg>
+															) : (
+																<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 11v3'/><path d='M22 17v.01'/></svg>
+															)}
 														</button>
 														<button
 															className='btn btn--small btn--secondary'
@@ -735,8 +741,9 @@ const AdminPanel: React.FC = () => {
 																setResetPassword('')
 																setResetMessage(null)
 															}}
-															title='Reset password'>
-															🔑
+															title='Reset password'
+															aria-label='Reset password'>
+															<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>
 														</button>
 														{!u.isDefault && u.id !== user?.userId && (
 															<>
@@ -757,8 +764,9 @@ const AdminPanel: React.FC = () => {
 																	<button
 																		className='btn btn--small btn--danger'
 																		onClick={() => setDeleteConfirmId(u.id)}
-																		title='Delete user'>
-																		🗑️
+																		title='Delete user'
+																		aria-label='Delete user'>
+																		<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M3 6h18'/><path d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6'/><path d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'/></svg>
 																	</button>
 																)}
 															</>
@@ -1169,7 +1177,7 @@ const AdminPanel: React.FC = () => {
 									{typeLoading
 										? 'Populating...'
 										: popStatus?.totalTypes === 18
-											? '✅ All Types Cached'
+											? 'All Types Cached'
 											: 'Populate Types Cache'}
 								</button>
 							</div>

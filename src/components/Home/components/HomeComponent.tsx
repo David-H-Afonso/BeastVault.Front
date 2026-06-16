@@ -874,36 +874,38 @@ const HomeComponent = ({
 	return (
 		<div className='app-container app-container--home'>
 			<header className='browse-shell__topbar'>
-				<div>
-					<h1>{viewMode === 'boxes' ? 'Boxes' : 'Collection'}</h1>
-				</div>
-				<nav className='browse-shell__view-switch'>
+				<h1>{viewMode === 'boxes' ? 'Boxes' : 'Collection'}</h1>
+				<nav className='browse-shell__view-switch' aria-label='View mode'>
 					<button
 						type='button'
 						className={viewMode === 'browse' ? 'is-active' : ''}
 						onClick={() => setViewMode('browse')}>
+						<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'><rect x='3' y='3' width='7' height='7'/><rect x='14' y='3' width='7' height='7'/><rect x='3' y='14' width='7' height='7'/><rect x='14' y='14' width='7' height='7'/></svg>
 						Collection
 					</button>
 					<button
 						type='button'
 						className={viewMode === 'boxes' ? 'is-active' : ''}
 						onClick={() => setViewMode('boxes')}>
+						<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'><path d='M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z'/><path d='m3.3 7 8.7 5 8.7-5'/><path d='M12 22V12'/></svg>
 						Boxes
 					</button>
 				</nav>
 				{viewMode !== 'boxes' && (
-					<div className='browse-shell__layout-switch'>
+					<div className='browse-shell__layout-switch' aria-label='Layout'>
 						<button
 							type='button'
 							className={browseLayout === 'list' ? 'is-active' : ''}
-							onClick={() => setBrowseLayout('list')}>
-							List
+							onClick={() => setBrowseLayout('list')}
+							aria-label='List view'>
+							<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><line x1='8' y1='6' x2='21' y2='6'/><line x1='8' y1='12' x2='21' y2='12'/><line x1='8' y1='18' x2='21' y2='18'/><line x1='3' y1='6' x2='3.01' y2='6'/><line x1='3' y1='12' x2='3.01' y2='12'/><line x1='3' y1='18' x2='3.01' y2='18'/></svg>
 						</button>
 						<button
 							type='button'
 							className={browseLayout === 'grid' ? 'is-active' : ''}
-							onClick={() => setBrowseLayout('grid')}>
-							Grid
+							onClick={() => setBrowseLayout('grid')}
+							aria-label='Grid view'>
+							<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><rect x='3' y='3' width='7' height='7'/><rect x='14' y='3' width='7' height='7'/><rect x='3' y='14' width='7' height='7'/><rect x='14' y='14' width='7' height='7'/></svg>
 						</button>
 					</div>
 				)}
