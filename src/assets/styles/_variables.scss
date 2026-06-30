@@ -362,6 +362,38 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--page-pad-y: 12px;
 	--panel-width: 520px;
 	--safe-bottom: env(safe-area-inset-bottom, 0px);
+
+	// ============ HEADER / NAV (dark defaults, themed in theme files) ============
+	--header-control-h: 34px;
+	--header-bg: #{rgba(18, 20, 24, 0.82)};
+	--header-border: #{rgba($color-white, 0.06)};
+
+	// Centered segmented navigation
+	--nav-segment-bg: #{rgba($color-white, 0.04)};
+	--nav-segment-border: #{rgba($color-white, 0.06)};
+	--nav-link: #{rgba($color-white, 0.56)};
+	--nav-link-hover: #{rgba($color-white, 0.92)};
+	--nav-link-hover-bg: #{rgba($color-white, 0.06)};
+	--nav-link-active: #{$blue-400};
+	--nav-link-active-bg: #{rgba($blue-500, 0.18)};
+
+	// Opaque popover surface (dropdowns / menus must not bleed page content)
+	--surface-popover: #{$surface-dark};
+	--surface-popover-border: #{rgba($color-white, 0.1)};
+
+	// Primary CTA (Import / Add) — AA-compliant white-on-green
+	--header-cta-bg: #047857;
+	--header-cta-bg-hover: #036747;
+	--header-cta-text: #ffffff;
+
+	// User / avatar menu
+	--header-avatar-bg: #{rgba($blue-500, 0.22)};
+	--header-avatar-text: #{$blue-200};
+	--danger-text: #{$red-400};
+
+	// Mobile bottom nav
+	--mobile-nav-bg: #{rgba(18, 20, 24, 0.92)};
+	--fab-ring: #{rgba(18, 20, 24, 0.92)};
 }
 
 // ================================

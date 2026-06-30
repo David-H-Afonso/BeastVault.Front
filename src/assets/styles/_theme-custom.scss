@@ -68,6 +68,32 @@
 	--shadow-xl: 0 22px 56px rgba(58, 123, 121, 0.14);
 	--shadow-2xl: 0 28px 68px rgba(58, 123, 121, 0.16);
 	--shadow-3xl: 0 32px 84px rgba(58, 123, 121, 0.18);
+
+	// ============ HEADER / NAV (home / light-looking theme) ============
+	--header-bg: rgba(255, 255, 255, 0.82);
+	--header-border: rgba(24, 176, 173, 0.14);
+
+	--nav-segment-bg: rgba(24, 176, 173, 0.07);
+	--nav-segment-border: rgba(24, 176, 173, 0.14);
+	--nav-link: rgba(40, 81, 90, 0.82);
+	--nav-link-hover: #28515a;
+	--nav-link-hover-bg: rgba(24, 176, 173, 0.1);
+	--nav-link-active: #0c6b6b;
+	--nav-link-active-bg: rgba(24, 176, 173, 0.16);
+
+	--surface-popover: #ffffff;
+	--surface-popover-border: rgba(24, 176, 173, 0.18);
+
+	--header-cta-bg: #0e7a4d;
+	--header-cta-bg-hover: #0b6740;
+	--header-cta-text: #ffffff;
+
+	--header-avatar-bg: rgba(24, 176, 173, 0.18);
+	--header-avatar-text: #0c6b6b;
+	--danger-text: #c0322b;
+
+	--mobile-nav-bg: rgba(245, 251, 245, 0.92);
+	--fab-ring: rgba(245, 251, 245, 0.92);
 }
 
 [data-theme='pokemon'] {
@@ -213,9 +239,11 @@
 // UTILIDADES PARA CAMBIO DE TEMAS
 // ================================
 
-// Transiciones suaves al cambiar temas
-* {
-	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+// Transiciones suaves al cambiar temas (respetando prefers-reduced-motion)
+@media (prefers-reduced-motion: no-preference) {
+	* {
+		transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+	}
 }
 
 // Clases helper para aplicar temas específicos (versión alternativa sin @extend)
