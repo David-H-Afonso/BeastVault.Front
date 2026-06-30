@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import type {
 	PokemonBoxDetailDto,
 	PokemonBoxSummaryDto,
@@ -94,7 +94,9 @@ const buildTagStyle = (tag: TagDto): React.CSSProperties => ({
 function TypeBadge({ type }: { type?: string }) {
 	if (!type) return null
 	return (
-		<span className='browse-shell__type' style={{ backgroundColor: getComputedTypeColor(type) }}>
+		<span
+			className='browse-shell__type'
+			style={{ '--chip-color': getComputedTypeColor(type) } as React.CSSProperties}>
 			{type}
 		</span>
 	)
@@ -262,32 +264,53 @@ function PokemonHubGrid({
 								<span className='browse-shell__sprite-fallback'>?</span>
 							)}
 						</div>
-						<h3>{pokemon.nickname || pokemon.speciesName}</h3>
-						<p>{pokemon.speciesName}</p>
-						<div className='browse-shell__types'>
-							<TypeBadge type={type1} />
-							<TypeBadge type={type2} />
+						<div className='hub-card__meta'>
+							<h3>{pokemon.nickname || pokemon.speciesName}</h3>
+							{pokemon.nickname && pokemon.nickname !== pokemon.speciesName && (
+								<p>{pokemon.speciesName}</p>
+							)}
+							<div className='browse-shell__types'>
+								<TypeBadge type={type1} />
+								<TypeBadge type={type2} />
+							</div>
 						</div>
-						<div className='hub-card__tag-dots'>
-							{pokemon.tags?.slice(0, 6).map((tag) => {
-								const imgUrl = resolveTagImg(tag.imagePath)
-								return (
-									<span
-										key={tag.id}
-										className='hub-card__tag-dot'
-										style={{ '--tag-color': tag.colorHex || '#facc15' } as React.CSSProperties}
-										title={tag.name}>
-										{imgUrl && <img src={imgUrl} alt={tag.name} />}
-									</span>
-								)
-							})}
-						</div>
+						{pokemon.tags && pokemon.tags.length > 0 && (
+							<div className='hub-card__tag-dots'>
+								{pokemon.tags.slice(0, 6).map((tag) => {
+									const imgUrl = resolveTagImg(tag.imagePath)
+									return (
+										<span
+											key={tag.id}
+											className='hub-card__tag-dot'
+											style={
+												{ '--tag-color': tag.colorHex || 'var(--accent-teal)' } as React.CSSProperties
+											}
+											title={tag.name}>
+											{imgUrl && <img src={imgUrl} alt={tag.name} />}
+										</span>
+									)
+								})}
+							</div>
+						)}
 					</button>
 					<button
 						type='button'
 						className='hub-card__tags'
 						disabled={selectionMode}
 						onClick={() => onManageTags(pokemon)}>
+						<svg
+							width='13'
+							height='13'
+							viewBox='0 0 24 24'
+							fill='none'
+							stroke='currentColor'
+							strokeWidth='2'
+							strokeLinecap='round'
+							strokeLinejoin='round'
+							aria-hidden='true'>
+							<path d='M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z' />
+							<line x1='7' y1='7' x2='7.01' y2='7' />
+						</svg>
 						Tags
 					</button>
 				</article>
@@ -570,41 +593,167 @@ const HomeComponent = ({
 		applyFilters({ activeTagIds: nextActive, excludedTagIds: nextExcluded, noTagsFilter: false })
 	}
 
+	// Filters popover open/close accessibility (outside click + Escape)
+	const filterPopRef = useRef<HTMLDivElement | null>(null)
+	useEffect(() => {
+		if (!isFilterDockOpen) return
+		const onPointer = (event: MouseEvent) => {
+			if (filterPopRef.current && !filterPopRef.current.contains(event.target as Node)) {
+				setFilterDockOpen(false)
+			}
+		}
+		const onKey = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') setFilterDockOpen(false)
+		}
+		document.addEventListener('mousedown', onPointer)
+		document.addEventListener('keydown', onKey)
+		return () => {
+			document.removeEventListener('mousedown', onPointer)
+			document.removeEventListener('keydown', onKey)
+		}
+	}, [isFilterDockOpen])
+
+	const filtersAreActive =
+		shinyFilter !== 'all' ||
+		pokeballId !== 'all' ||
+		generation !== 'all' ||
+		noTagsFilter ||
+		activeTagIds.size > 0 ||
+		excludedTagIds.size > 0
+
+	const clearAllFilters = () => {
+		setSearch('')
+		setActiveTagIds(new Set())
+		setExcludedTagIds(new Set())
+		setNoTagsFilter(false)
+		setGeneration('all')
+		setShinyFilter('all')
+		setPokeballId('all')
+		applyFilters({
+			search: '',
+			activeTagIds: new Set(),
+			excludedTagIds: new Set(),
+			noTagsFilter: false,
+			generation: 'all',
+			shinyFilter: 'all',
+			pokeballId: 'all',
+		})
+	}
+
 	const renderFilterDock = () => {
 		if (viewMode === 'boxes') return null
 
 		const selectedBall = pokeballs.find((ball) => String(ball.id) === pokeballId)
-		const activeFilterLabels = [
-			shinyFilter === 'shiny' ? 'Shiny only' : '',
-			shinyFilter === 'regular' ? 'Non-shiny' : '',
-			selectedBall ? selectedBall.name : '',
-		].filter((label): label is string => Boolean(label))
+
+		const activeChips: {
+			key: string
+			label: string
+			tone?: 'exclude'
+			onRemove: () => void
+		}[] = []
+		if (shinyFilter !== 'all') {
+			activeChips.push({
+				key: 'shiny',
+				label: shinyFilter === 'shiny' ? 'Shiny only' : 'Non-shiny',
+				onRemove: () => {
+					setShinyFilter('all')
+					applyFilters({ shinyFilter: 'all' })
+				},
+			})
+		}
+		if (pokeballId !== 'all' && selectedBall) {
+			activeChips.push({
+				key: 'ball',
+				label: selectedBall.name,
+				onRemove: () => {
+					setPokeballId('all')
+					applyFilters({ pokeballId: 'all' })
+				},
+			})
+		}
+		if (generation !== 'all') {
+			activeChips.push({
+				key: 'gen',
+				label: `Gen ${generation}`,
+				onRemove: () => {
+					setGeneration('all')
+					applyFilters({ generation: 'all' })
+				},
+			})
+		}
+		if (noTagsFilter) {
+			activeChips.push({
+				key: 'no-tags',
+				label: 'No tags',
+				onRemove: () => {
+					setNoTagsFilter(false)
+					applyFilters({ noTagsFilter: false })
+				},
+			})
+		}
+		for (const id of activeTagIds) {
+			const tag = availableTags.find((t) => String(t.id) === id)
+			activeChips.push({
+				key: `tag-${id}`,
+				label: tag?.name ?? `Tag ${id}`,
+				onRemove: () => {
+					const next = new Set(activeTagIds)
+					next.delete(id)
+					setActiveTagIds(next)
+					applyFilters({ activeTagIds: next })
+				},
+			})
+		}
+		for (const id of excludedTagIds) {
+			const tag = availableTags.find((t) => String(t.id) === id)
+			activeChips.push({
+				key: `exclude-${id}`,
+				label: tag?.name ?? `Tag ${id}`,
+				tone: 'exclude',
+				onRemove: () => {
+					const next = new Set(excludedTagIds)
+					next.delete(id)
+					setExcludedTagIds(next)
+					applyFilters({ excludedTagIds: next })
+				},
+			})
+		}
 
 		return (
 			<section className='browse-shell__filter-dock browse-shell__filter-dock--home'>
 				<div className='browse-shell__command-bar'>
-					<input
-						className='browse-shell__search-input'
-						value={search}
-						onChange={(event) => setSearch(event.target.value)}
-						onKeyDown={(event) => {
-							if (event.key === 'Enter') applyFilters({ search: event.currentTarget.value })
-						}}
-						placeholder='Search species, nickname, OT, move, item, tag...'
-						aria-label='Search Pokemon'
-					/>
-					<button
-						type='button'
-						className='browse-shell__search-submit'
-						onClick={() => applyFilters()}>
-						Search
-					</button>
-					<button
-						type='button'
-						className='browse-shell__filter-toggle'
-						onClick={() => setFilterDockOpen((open) => !open)}>
-						{isFilterDockOpen ? 'Hide filters' : 'Filters'}
-					</button>
+					<div className='browse-shell__search'>
+						<svg className='browse-shell__search-icon' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+							<circle cx='11' cy='11' r='8' />
+							<line x1='21' y1='21' x2='16.65' y2='16.65' />
+						</svg>
+						<input
+							className='browse-shell__search-input'
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+							onKeyDown={(event) => {
+								if (event.key === 'Enter') applyFilters({ search: event.currentTarget.value })
+							}}
+							placeholder='Search species, nickname, OT, move, item, tag…'
+							aria-label='Search Pokémon'
+						/>
+						{search && (
+							<button
+								type='button'
+								className='browse-shell__search-clear'
+								aria-label='Clear search'
+								onClick={() => {
+									setSearch('')
+									applyFilters({ search: '' })
+								}}>
+								<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.4' strokeLinecap='round' aria-hidden='true'>
+									<line x1='18' y1='6' x2='6' y2='18' />
+									<line x1='6' y1='6' x2='18' y2='18' />
+								</svg>
+							</button>
+						)}
+					</div>
+
 					<select
 						className='browse-shell__sort-select'
 						value={sortPreset}
@@ -613,19 +762,172 @@ const HomeComponent = ({
 							setSortPreset(value)
 							applyFilters({ sortPreset: value })
 						}}
-						aria-label='Sort Pokemon'>
+						aria-label='Sort Pokémon'>
 						<option value='smart'>Smart sort</option>
-						<option value='species'>Pokedex number</option>
+						<option value='species'>Pokédex number</option>
 						<option value='level'>Level</option>
 						<option value='recent'>Recent</option>
 						<option value='favorites'>Favorites</option>
 					</select>
+
+					<div className='browse-shell__filter-pop' ref={filterPopRef}>
+						<button
+							type='button'
+							className={`browse-shell__filter-toggle${filtersAreActive ? ' is-active' : ''}`}
+							aria-haspopup='dialog'
+							aria-expanded={isFilterDockOpen}
+							onClick={() => setFilterDockOpen((open) => !open)}>
+							<svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+								<polygon points='22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3' />
+							</svg>
+							<span>Filters</span>
+							{activeChips.length > 0 && (
+								<span className='browse-shell__filter-count'>{activeChips.length}</span>
+							)}
+						</button>
+						{isFilterDockOpen && (
+							<div className='browse-shell__filter-popover' role='dialog' aria-label='Filters'>
+								<div className='filter-pop__group'>
+									<span className='filter-pop__label'>Generation</span>
+									<div className='filter-pop__seg' role='group' aria-label='Generation'>
+										<button
+											type='button'
+											className={generation === 'all' ? 'is-active' : ''}
+											onClick={() => {
+												setGeneration('all')
+												applyFilters({ generation: 'all' })
+											}}>
+											All
+										</button>
+										{[1, 2, 3, 4, 5, 6, 7, 8, 9].map((gen) => (
+											<button
+												key={gen}
+												type='button'
+												className={generation === String(gen) ? 'is-active' : ''}
+												onClick={() => {
+													setGeneration(String(gen))
+													applyFilters({ generation: String(gen) })
+												}}>
+												{gen}
+											</button>
+										))}
+									</div>
+								</div>
+
+								<div className='filter-pop__group'>
+									<span className='filter-pop__label'>Shiny</span>
+									<div className='filter-pop__seg' role='group' aria-label='Shiny'>
+										{(
+											[
+												['all', 'All'],
+												['shiny', 'Shiny'],
+												['regular', 'Non-shiny'],
+											] as const
+										).map(([value, label]) => (
+											<button
+												key={value}
+												type='button'
+												className={shinyFilter === value ? 'is-active' : ''}
+												onClick={() => {
+													setShinyFilter(value)
+													applyFilters({ shinyFilter: value })
+												}}>
+												{label}
+											</button>
+										))}
+									</div>
+								</div>
+
+								{pokeballs.length > 0 && (
+									<div className='filter-pop__group'>
+										<span className='filter-pop__label'>Poké Ball</span>
+										<select
+											className='filter-pop__select'
+											value={pokeballId}
+											onChange={(event) => {
+												setPokeballId(event.target.value)
+												applyFilters({ pokeballId: event.target.value })
+											}}>
+											<option value='all'>All balls</option>
+											{pokeballs.map((ball) => (
+												<option key={ball.id} value={ball.id}>
+													{ball.name}
+												</option>
+											))}
+										</select>
+									</div>
+								)}
+
+								{availableTags.length > 0 && (
+									<div className='filter-pop__group'>
+										<span className='filter-pop__label'>
+											Tags <small>click: include → exclude → off</small>
+										</span>
+										<div className='filter-pop__tags'>
+											<button
+												type='button'
+												className={`filter-pop__tag${noTagsFilter ? ' is-include' : ''}`}
+												onClick={() => {
+													const next = !noTagsFilter
+													setNoTagsFilter(next)
+													if (next) {
+														setActiveTagIds(new Set())
+														setExcludedTagIds(new Set())
+													}
+													applyFilters({
+														noTagsFilter: next,
+														activeTagIds: new Set(),
+														excludedTagIds: new Set(),
+													})
+												}}>
+												No tags
+											</button>
+											{availableTags.map((tag) => {
+												const state = activeTagIds.has(String(tag.id))
+													? 'include'
+													: excludedTagIds.has(String(tag.id))
+														? 'exclude'
+														: ''
+												return (
+													<button
+														key={tag.id}
+														type='button'
+														className={`filter-pop__tag${state ? ` is-${state}` : ''}`}
+														onClick={() => handleTagClick(String(tag.id))}>
+														{tag.name}
+													</button>
+												)
+											})}
+										</div>
+									</div>
+								)}
+
+								<div className='filter-pop__footer'>
+									<button
+										type='button'
+										className='filter-pop__clear'
+										onClick={clearAllFilters}
+										disabled={!filtersAreActive}>
+										Clear all
+									</button>
+									<button
+										type='button'
+										className='filter-pop__done'
+										onClick={() => setFilterDockOpen(false)}>
+										Done
+									</button>
+								</div>
+							</div>
+						)}
+					</div>
+
 					<button
 						type='button'
 						className={`browse-shell__select-toggle${selectionMode ? ' is-active' : ''}`}
 						onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
+						aria-pressed={selectionMode}
 						title={selectionMode ? 'Cancel selection' : 'Select Pokémon'}>
-						<svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor'>
+						<svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
 							{selectionMode ? (
 								<path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z' />
 							) : (
@@ -635,94 +937,29 @@ const HomeComponent = ({
 					</button>
 				</div>
 
-				<div className='browse-shell__tag-bar'>
-					<span className='browse-shell__tag-bar__count'>{totalPokemon} Pokémon</span>
-					{activeFilterLabels.map((label) => (
-						<span key={label} className='browse-shell__filter-chip'>
-							{label}
-						</span>
-					))}
-					<button
-						type='button'
-						className={noTagsFilter ? 'is-active' : ''}
-						onClick={() => {
-							const next = !noTagsFilter
-							setNoTagsFilter(next)
-							if (next) {
-								setActiveTagIds(new Set())
-								setExcludedTagIds(new Set())
-							}
-							applyFilters({
-								noTagsFilter: next,
-								activeTagIds: new Set(),
-								excludedTagIds: new Set(),
-							})
-						}}>
-						No tags
-					</button>
-					{availableTags.map((tag) => (
+				<div className='browse-shell__active-bar'>
+					<span className='browse-shell__active-bar__count'>{totalPokemon} Pokémon</span>
+					{activeChips.map((chip) => (
 						<button
-							key={tag.id}
+							key={chip.key}
 							type='button'
-							className={
-								activeTagIds.has(String(tag.id))
-									? 'is-active'
-									: excludedTagIds.has(String(tag.id))
-										? 'is-excluded'
-										: ''
-							}
-							onClick={() => handleTagClick(String(tag.id))}>
-							{tag.name}
+							className={`browse-shell__active-chip${chip.tone === 'exclude' ? ' is-exclude' : ''}`}
+							onClick={chip.onRemove}
+							aria-label={`Remove filter ${chip.label}`}>
+							<span className='browse-shell__active-chip__label'>
+								{chip.tone === 'exclude' ? `Not: ${chip.label}` : chip.label}
+							</span>
+							<svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.6' strokeLinecap='round' aria-hidden='true'>
+								<line x1='18' y1='6' x2='6' y2='18' />
+								<line x1='6' y1='6' x2='18' y2='18' />
+							</svg>
 						</button>
 					))}
-				</div>
-
-				<div
-					className={`browse-shell__filters${
-						!isFilterDockOpen ? ' browse-shell__filters--collapsed' : ''
-					}`}>
-					<select
-						value={generation}
-						onChange={(event) => {
-							setGeneration(event.target.value)
-							applyFilters({ generation: event.target.value })
-						}}>
-						<option value='all'>All gens</option>
-						{[1, 2, 3, 4, 5, 6, 7, 8, 9].map((gen) => (
-							<option key={gen} value={gen}>
-								Gen {gen}
-							</option>
-						))}
-					</select>
-					<select
-						value={shinyFilter}
-						onChange={(event) => {
-							const value = event.target.value as 'all' | 'shiny' | 'regular'
-							setShinyFilter(value)
-							applyFilters({ shinyFilter: value })
-						}}>
-						<option value='all'>All (shiny)</option>
-						<option value='shiny'>Shiny only</option>
-						<option value='regular'>Non-shiny</option>
-					</select>
-					{pokeballs.length > 0 && (
-						<select
-							value={pokeballId}
-							onChange={(event) => {
-								setPokeballId(event.target.value)
-								applyFilters({ pokeballId: event.target.value })
-							}}>
-							<option value='all'>All balls</option>
-							{pokeballs.map((ball) => (
-								<option key={ball.id} value={ball.id}>
-									{ball.name}
-								</option>
-							))}
-						</select>
+					{filtersAreActive && (
+						<button type='button' className='browse-shell__clear-all' onClick={clearAllFilters}>
+							Clear all
+						</button>
 					)}
-					<button type='button' onClick={() => applyFilters()}>
-						Apply
-					</button>
 				</div>
 
 				{selectionMode && (

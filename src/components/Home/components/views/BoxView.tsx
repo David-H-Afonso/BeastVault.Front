@@ -287,10 +287,24 @@ function SortableBoxItem({
 				</button>
 				<button
 					type='button'
-					className='box-organizer__box-chevron'
+					className='box-organizer__box-edit'
 					onClick={onToggle}
-					title={isExpanded ? 'Collapse' : 'Expand'}>
-					{isExpanded ? '▲' : '▼'}
+					aria-expanded={isExpanded}
+					aria-label={isExpanded ? 'Cancel rename' : `Rename ${box.name}`}
+					title={isExpanded ? 'Cancel rename' : 'Rename box'}>
+					<svg
+						width='13'
+						height='13'
+						viewBox='0 0 24 24'
+						fill='none'
+						stroke='currentColor'
+						strokeWidth='2'
+						strokeLinecap='round'
+						strokeLinejoin='round'
+						aria-hidden='true'>
+						<path d='M12 20h9' />
+						<path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z' />
+					</svg>
 				</button>
 			</div>
 			{isExpanded && (
@@ -340,6 +354,7 @@ export const BoxView = ({
 	const [poolLoading, setPoolLoading] = useState(false)
 	const [expandedBoxId, setExpandedBoxId] = useState<number | null>(null)
 	const [editName, setEditName] = useState('')
+	const [boxListCollapsed, setBoxListCollapsed] = useState(false)
 	const [showUnboxedOnly, setShowUnboxedOnly] = useState(false)
 	const [isClearingBox, setIsClearingBox] = useState(false)
 	const [isAddingAll, setIsAddingAll] = useState(false)
@@ -527,10 +542,34 @@ export const BoxView = ({
 		<div className='box-organizer'>
 			<DndContext sensors={sortSensors} onDragEnd={handleSidebarDragEnd}>
 				<SortableContext items={boxes.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-					<aside className='box-organizer__sidebar'>
+					<aside
+						className={`box-organizer__sidebar${boxListCollapsed ? ' box-organizer__sidebar--collapsed' : ''}`}>
 						<div className='box-organizer__sidebar-header'>
-							<span>Boxes</span>
-							<button type='button' onClick={onCreateBox}>
+							<button
+								type='button'
+								className='box-organizer__sidebar-collapse'
+								aria-expanded={!boxListCollapsed}
+								aria-label={boxListCollapsed ? 'Expand box list' : 'Collapse box list'}
+								onClick={() => setBoxListCollapsed((v) => !v)}>
+								<svg
+									width='16'
+									height='16'
+									viewBox='0 0 24 24'
+									fill='none'
+									stroke='currentColor'
+									strokeWidth='2.4'
+									strokeLinecap='round'
+									strokeLinejoin='round'
+									aria-hidden='true'>
+									<polyline points='6 9 12 15 18 9' />
+								</svg>
+							</button>
+							<span className='box-organizer__sidebar-title'>Boxes</span>
+							<span className='box-organizer__sidebar-count'>{boxes.length}</span>
+							<button
+								type='button'
+								className='box-organizer__add-box'
+								onClick={onCreateBox}>
 								+ Box
 							</button>
 						</div>
