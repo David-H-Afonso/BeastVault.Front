@@ -25,10 +25,7 @@
 // 1. Variables base (deben ir primero)
 @use 'variables' as *;
 
-// 2. Tema claro
-@use 'theme-light' as *;
-
-// 3. Temas personalizados (Pokemon, Water, Fire, etc.)
+// 2. Temas personalizados (home — sólo paleta)
 @use 'theme-custom' as *;
 
 // 4. Sistema de temas principal (incluye clases utilitarias)

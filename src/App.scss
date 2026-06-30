@@ -45,7 +45,8 @@ body {
 	font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	font-size: 16px;
 	line-height: 1.5;
-	background-color: var(--bg-primary);
+	background: var(--bg-app);
+	background-attachment: fixed;
 	color: var(--text-primary);
 	overflow-x: hidden;
 	min-height: 100dvh;
@@ -56,14 +57,13 @@ body {
 	width: 100%;
 	margin: 0;
 	padding: 0;
-	background-color: var(--bg-primary);
 	min-height: 100dvh;
 }
 
 // ── Selection colors ──────────────────────────────────────────────────────────
 
 ::selection {
-	background: rgba(59, 130, 246, 0.25);
+	background: var(--color-focus-ring);
 	color: var(--text-primary);
 }
 
@@ -100,31 +100,22 @@ body {
 	scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
-// ── HOME theme background ─────────────────────────────────────────────────────
-
-[data-theme='home'] body,
-[data-theme='home'] #root {
-	background:
-		radial-gradient(circle at top left, rgba(255, 255, 255, 0.88), transparent 34%),
-		radial-gradient(circle at top right, rgba(171, 236, 221, 0.54), transparent 28%),
-		radial-gradient(circle at bottom right, rgba(219, 200, 245, 0.46), transparent 24%),
-		linear-gradient(180deg, #edf8e5 0%, #daf4de 48%, #ecf7ec 100%);
-}
+// ── HOME theme accents (background lives in the --bg-app token) ────────────────
 
 [data-theme='home'] {
 	::selection {
-		background: rgba(24, 176, 173, 0.2);
+		background: rgba(20, 168, 166, 0.2);
 	}
 
 	::-webkit-scrollbar-thumb {
-		background: rgba(24, 176, 173, 0.18);
+		background: rgba(20, 168, 166, 0.18);
 
 		&:hover {
-			background: rgba(24, 176, 173, 0.3);
+			background: rgba(20, 168, 166, 0.3);
 		}
 	}
 
 	* {
-		scrollbar-color: rgba(24, 176, 173, 0.18) transparent;
+		scrollbar-color: rgba(20, 168, 166, 0.18) transparent;
 	}
 }

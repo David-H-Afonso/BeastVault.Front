@@ -6,6 +6,8 @@
  * Incluye tema oscuro por defecto y preparado para tema claro y personalizados
  */
 
+@use 'sass:color';
+
 // ================================
 // COLORES BASE - PALETA PRINCIPAL
 // ================================
@@ -251,9 +253,13 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--bg-surface-alt: #{$surface-alt};
 	--bg-accent: #{$accent-dark};
 
+	// Page background (themeable: solid in dark, gradient in home — colour only, same element)
+	--bg-app: #1e2227;
+
 	// ============ SURFACE COLORS (card/panel backgrounds) ============
 	--surface-primary: #{$surface-dark}; // #1e2329
 	--surface-secondary: #{$surface-alt}; // #243142
+	--surface-hover: #2a3748; // raised hover surface
 
 	// ============ CARD BACKGROUND COLORS ============
 	--card-background-color: var(--bg-primary);
@@ -262,7 +268,7 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--text-primary: #{rgba($color-white, $alpha-87)};
 	--text-secondary: #{rgba($color-white, $alpha-75)};
 	--text-tertiary: #{rgba($color-white, $alpha-60)};
-	--text-muted: #{rgba($color-white, $alpha-50)};
+	--text-muted: #{rgba($color-white, 0.66)}; // raised for AA on dark surfaces
 	--text-disabled: #{rgba($color-white, $alpha-40)};
 	--text-inverse: #{$color-black};
 
@@ -298,11 +304,24 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--color-info-bg: #{rgba($blue-500, $alpha-20)};
 	--color-info-border: #{rgba($blue-500, $alpha-40)};
 
-	// ============ INTERACTIVE COLORS ============
-	--color-primary: #{$blue-500};
-	--color-primary-hover: #{$blue-600};
-	--color-primary-active: #{$blue-700};
-	--color-primary-bg: #{rgba($blue-500, $alpha-20)};
+	// ============ BRAND & ACCENT (Pokémon HOME) ============
+	// Green is the brand colour (CTAs, primary fills, selected, focus).
+	--brand: #22b14b; // vivid HOME green: identity, indicators, focus glow, non-text accents
+	--brand-strong: #0e7a4d; // AA-safe green for white-text fills
+	--brand-hover: #0b6740;
+	--brand-active: #095636;
+	--brand-tint: #{rgba(#22b14b, 0.18)};
+	// Teal is the HOME signature secondary accent (active indicators, links-as-action)
+	--accent-teal: #2bb6b3;
+	--accent-teal-strong: #18a6a4;
+	--accent-teal-tint: #{rgba(#2bb6b3, 0.16)};
+	--info: #{$blue-500}; // informational links/text only
+
+	// ============ INTERACTIVE COLORS (brand-driven) ============
+	--color-primary: var(--brand-strong);
+	--color-primary-hover: var(--brand-hover);
+	--color-primary-active: var(--brand-active);
+	--color-primary-bg: var(--brand-tint);
 
 	--color-secondary: #{$gray-600};
 	--color-secondary-hover: #{$gray-500};
@@ -310,8 +329,14 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 
 	// ============ SPECIAL COLORS ============
 	--color-shiny: #{rgba(255, 215, 0, $alpha-20)}; // Dorado para shiny
-	--color-focus: #{$blue-500};
-	--color-focus-ring: #{rgba($blue-500, $alpha-20)};
+	--color-focus: var(--brand);
+	--color-focus-ring: #{rgba(#22b14b, 0.30)};
+
+	// ============ TYPE / TAG CHIP SYSTEM (tint bg + readable text + saturated dot) ============
+	--chip-bg-amt: 22%; // amount of type hue mixed into the chip background
+	--chip-border-amt: 36%;
+	--chip-text-amt: 60%; // amount of type hue mixed into the text anchor
+	--chip-text-anchor: #ffffff; // dark theme: lighten the hue for readable text
 
 	// ============ GRADIENTS ============
 	--gradient-primary: linear-gradient(135deg, #{$slate-800} 0%, #{$slate-700} 100%);
@@ -374,21 +399,21 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 	--nav-link: #{rgba($color-white, 0.56)};
 	--nav-link-hover: #{rgba($color-white, 0.92)};
 	--nav-link-hover-bg: #{rgba($color-white, 0.06)};
-	--nav-link-active: #{$blue-400};
-	--nav-link-active-bg: #{rgba($blue-500, 0.18)};
+	--nav-link-active: var(--accent-teal);
+	--nav-link-active-bg: var(--accent-teal-tint);
 
 	// Opaque popover surface (dropdowns / menus must not bleed page content)
 	--surface-popover: #{$surface-dark};
 	--surface-popover-border: #{rgba($color-white, 0.1)};
 
-	// Primary CTA (Import / Add) — AA-compliant white-on-green
-	--header-cta-bg: #047857;
-	--header-cta-bg-hover: #036747;
+	// Primary CTA (Import / Add) — AA-compliant white-on-green brand
+	--header-cta-bg: var(--brand-strong);
+	--header-cta-bg-hover: var(--brand-hover);
 	--header-cta-text: #ffffff;
 
 	// User / avatar menu
-	--header-avatar-bg: #{rgba($blue-500, 0.22)};
-	--header-avatar-text: #{$blue-200};
+	--header-avatar-bg: var(--accent-teal-tint);
+	--header-avatar-text: #9fe5e3;
 	--danger-text: #{$red-400};
 
 	// Mobile bottom nav
@@ -419,7 +444,7 @@ $drop-shadow-react: drop-shadow(0 0 2em #61dafbaa);
 		@if $hover-color {
 			color: $hover-color;
 		} @else {
-			color: lighten($base-color, 10%);
+			color: color.scale($base-color, $lightness: 12%);
 		}
 	}
 

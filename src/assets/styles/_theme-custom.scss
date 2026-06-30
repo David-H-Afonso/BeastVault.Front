@@ -8,50 +8,73 @@
 @use 'variables' as *;
 
 // ================================
-// TEMA POKEMON (Inspirado en los juegos)
+// TEMA HOME (Pokémon HOME — solo paleta de color + sombra)
 // ================================
 
 [data-theme='home'] {
-	--bg-primary: #e8f6e2;
-	--bg-secondary: rgba(255, 255, 255, 0.72);
-	--bg-tertiary: #dff5ef;
-	--bg-surface: rgba(255, 255, 255, 0.9);
-	--bg-surface-alt: rgba(255, 255, 255, 0.76);
-	--bg-accent: #21b6b1;
+	// Page background: lime → mint gradient (colour only, same element as dark)
+	--bg-app:
+		radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 60%),
+		linear-gradient(180deg, #dceeb4 0%, #c8efd8 48%, #e9f7ec 100%);
 
-	--surface-primary: rgba(255, 255, 255, 0.92);
-	--surface-secondary: rgba(255, 255, 255, 0.74);
+	--bg-primary: #eef7e8;
+	--bg-secondary: #ffffff;
+	--bg-tertiary: #e2f0ea;
+	--bg-surface: #fbfdf8;
+	--bg-surface-alt: #eef6f1;
+	--bg-accent: #14a8a6;
 
-	--text-primary: #28515a;
-	--text-secondary: rgba(40, 81, 90, 0.78);
-	--text-tertiary: rgba(40, 81, 90, 0.56);
-	--text-muted: rgba(40, 81, 90, 0.44);
+	--surface-primary: #fbfdf8; // cream near-white card/panel
+	--surface-secondary: #eef6f1; // pale teal band
+	--surface-hover: #e4f1ec;
+
+	--text-primary: #233a3c;
+	--text-secondary: #3f524f;
+	--text-tertiary: #566966;
+	--text-muted: #5e726f; // solid slate → AA on cream
 	--text-inverse: #ffffff;
 
-	--border-primary: rgba(42, 136, 142, 0.22);
+	--border-primary: rgba(42, 136, 142, 0.3);
 	--border-secondary: rgba(42, 136, 142, 0.18);
-	--border-light: rgba(255, 255, 255, 0.65);
-	--border-medium: rgba(52, 148, 148, 0.24);
-	--border-strong: rgba(42, 136, 142, 0.42);
+	--border-light: rgba(42, 136, 142, 0.12);
+	--border-medium: rgba(42, 136, 142, 0.22);
+	--border-strong: rgba(42, 136, 142, 0.4);
 
-	--color-primary: #18b0ad;
-	--color-primary-hover: #159997;
-	--color-primary-active: #0f7f7f;
-	--color-primary-bg: rgba(24, 176, 173, 0.16);
+	// Brand stays green; teal is the HOME signature accent
+	--brand: #1fae4e;
+	--brand-strong: #0e7a4d;
+	--brand-hover: #0c6b42;
+	--brand-active: #0a5c39;
+	--brand-tint: rgba(31, 174, 78, 0.16);
+	--accent-teal: #14a8a6;
+	--accent-teal-strong: #0f8f8d;
+	--accent-teal-tint: rgba(20, 168, 166, 0.16);
+	--info: #2f7fd1;
+
+	--color-primary: var(--brand-strong);
+	--color-primary-hover: var(--brand-hover);
+	--color-primary-active: var(--brand-active);
+	--color-primary-bg: var(--brand-tint);
 	--color-secondary: #8bcfd0;
-	--color-success: #22b36f;
+	--color-success: #1f9d63;
 	--color-success-light: #1fbb84;
 	--color-success-dark: #118857;
 	--color-success-bg: rgba(34, 179, 111, 0.12);
 	--color-success-border: rgba(34, 179, 111, 0.24);
 	--color-error-bg: rgba(220, 90, 90, 0.12);
 	--color-error-border: rgba(220, 90, 90, 0.24);
-	--color-warning: #f4b400;
-	--color-warning-light: #ffd258;
-	--color-info: #59a7ff;
-	--color-info-bg: rgba(89, 167, 255, 0.16);
-	--color-focus: #18b0ad;
-	--color-focus-ring: rgba(24, 176, 173, 0.18);
+	--color-warning: #c98a00;
+	--color-warning-light: #f4b400;
+	--color-info: #2f7fd1;
+	--color-info-bg: rgba(47, 127, 209, 0.14);
+	--color-focus: var(--brand);
+	--color-focus-ring: rgba(31, 174, 78, 0.3);
+
+	// Chip system: darken hue for readable text on light tint
+	--chip-bg-amt: 16%;
+	--chip-border-amt: 34%;
+	--chip-text-amt: 62%;
+	--chip-text-anchor: #14302e;
 
 	--gradient-primary: linear-gradient(135deg, #e8f6e2 0%, #cff2cf 38%, #daf3ef 72%, #e2d3f7 100%);
 	--gradient-secondary: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(222, 245, 238, 0.82) 55%, rgba(228, 216, 246, 0.8) 100%);
@@ -62,177 +85,38 @@
 	--overlay-heavy: rgba(40, 81, 90, 0.18);
 	--overlay-backdrop: rgba(68, 80, 93, 0.26);
 
-	--shadow-sm: 0 6px 16px rgba(58, 123, 121, 0.08);
-	--shadow-md: 0 10px 28px rgba(58, 123, 121, 0.1);
-	--shadow-lg: 0 18px 44px rgba(58, 123, 121, 0.12);
-	--shadow-xl: 0 22px 56px rgba(58, 123, 121, 0.14);
-	--shadow-2xl: 0 28px 68px rgba(58, 123, 121, 0.16);
-	--shadow-3xl: 0 32px 84px rgba(58, 123, 121, 0.18);
+	--shadow-sm: 0 1px 2px rgba(20, 120, 110, 0.1);
+	--shadow-md: 0 6px 16px rgba(20, 120, 110, 0.12);
+	--shadow-lg: 0 16px 36px rgba(20, 120, 110, 0.16);
+	--shadow-xl: 0 22px 56px rgba(20, 120, 110, 0.18);
+	--shadow-2xl: 0 28px 68px rgba(20, 120, 110, 0.2);
+	--shadow-3xl: 0 32px 84px rgba(20, 120, 110, 0.22);
 
 	// ============ HEADER / NAV (home / light-looking theme) ============
 	--header-bg: rgba(255, 255, 255, 0.82);
-	--header-border: rgba(24, 176, 173, 0.14);
+	--header-border: rgba(20, 168, 166, 0.16);
 
-	--nav-segment-bg: rgba(24, 176, 173, 0.07);
-	--nav-segment-border: rgba(24, 176, 173, 0.14);
+	--nav-segment-bg: rgba(20, 168, 166, 0.07);
+	--nav-segment-border: rgba(20, 168, 166, 0.14);
 	--nav-link: rgba(40, 81, 90, 0.82);
 	--nav-link-hover: #28515a;
-	--nav-link-hover-bg: rgba(24, 176, 173, 0.1);
-	--nav-link-active: #0c6b6b;
-	--nav-link-active-bg: rgba(24, 176, 173, 0.16);
+	--nav-link-hover-bg: rgba(20, 168, 166, 0.1);
+	--nav-link-active: var(--accent-teal);
+	--nav-link-active-bg: var(--accent-teal-tint);
 
 	--surface-popover: #ffffff;
-	--surface-popover-border: rgba(24, 176, 173, 0.18);
+	--surface-popover-border: rgba(20, 168, 166, 0.18);
 
-	--header-cta-bg: #0e7a4d;
-	--header-cta-bg-hover: #0b6740;
+	--header-cta-bg: var(--brand-strong);
+	--header-cta-bg-hover: var(--brand-hover);
 	--header-cta-text: #ffffff;
 
-	--header-avatar-bg: rgba(24, 176, 173, 0.18);
+	--header-avatar-bg: var(--accent-teal-tint);
 	--header-avatar-text: #0c6b6b;
 	--danger-text: #c0322b;
 
 	--mobile-nav-bg: rgba(245, 251, 245, 0.92);
 	--fab-ring: rgba(245, 251, 245, 0.92);
-}
-
-[data-theme='pokemon'] {
-	// Colores base inspirados en los juegos de Pokemon
-	--bg-primary: #1a1a2e;
-	--bg-secondary: #16213e;
-	--bg-tertiary: #0f3460;
-	--bg-surface: #16213e;
-	--bg-surface-alt: #1a1a2e;
-	--bg-accent: #533483;
-
-	--text-primary: #{rgba($color-white, $alpha-95)};
-	--text-secondary: #{rgba($color-white, $alpha-80)};
-	--text-tertiary: #{rgba($color-white, $alpha-70)};
-
-	--border-primary: #533483;
-	--border-secondary: #0f3460;
-
-	--color-primary: #ffcb05; // Amarillo Pokemon
-	--color-primary-hover: #e6b800;
-	--color-primary-active: #cc9900;
-
-	--gradient-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-	--gradient-secondary: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
-}
-
-// ================================
-// TEMA AGUA (Inspirado en tipo Water)
-// ================================
-
-[data-theme='water'] {
-	--bg-primary: #0c1445;
-	--bg-secondary: #1e3a5f;
-	--bg-tertiary: #2d5aa0;
-	--bg-surface: #1e3a5f;
-	--bg-surface-alt: #0c1445;
-	--bg-accent: #3b82f6;
-
-	--text-primary: #{rgba($color-white, $alpha-95)};
-	--text-secondary: #{rgba($color-white, $alpha-80)};
-
-	--color-primary: #6890f0; // Color tipo Water
-	--color-primary-hover: #5a7ee6;
-	--color-primary-active: #4c6bdc;
-
-	--gradient-primary: linear-gradient(135deg, #0c1445 0%, #1e3a5f 100%);
-	--gradient-secondary: linear-gradient(135deg, #1e3a5f 0%, #2d5aa0 100%);
-}
-
-// ================================
-// TEMA FUEGO (Inspirado en tipo Fire)
-// ================================
-
-[data-theme='fire'] {
-	--bg-primary: #2d0a00;
-	--bg-secondary: #4a1700;
-	--bg-tertiary: #661f00;
-	--bg-surface: #4a1700;
-	--bg-surface-alt: #2d0a00;
-	--bg-accent: #cc4400;
-
-	--text-primary: #{rgba($color-white, $alpha-95)};
-	--text-secondary: #{rgba($color-white, $alpha-80)};
-
-	--color-primary: #f08030; // Color tipo Fire
-	--color-primary-hover: #e6732b;
-	--color-primary-active: #dc6626;
-
-	--gradient-primary: linear-gradient(135deg, #2d0a00 0%, #4a1700 100%);
-	--gradient-secondary: linear-gradient(135deg, #4a1700 0%, #661f00 100%);
-}
-
-// ================================
-// TEMA HIERBA (Inspirado en tipo Grass)
-// ================================
-
-[data-theme='grass'] {
-	--bg-primary: #0d2818;
-	--bg-secondary: #1a4c32;
-	--bg-tertiary: #267d39;
-	--bg-surface: #1a4c32;
-	--bg-surface-alt: #0d2818;
-	--bg-accent: #059669;
-
-	--text-primary: #{rgba($color-white, $alpha-95)};
-	--text-secondary: #{rgba($color-white, $alpha-80)};
-
-	--color-primary: #78c850; // Color tipo Grass
-	--color-primary-hover: #6bb846;
-	--color-primary-active: #5ea83c;
-
-	--gradient-primary: linear-gradient(135deg, #0d2818 0%, #1a4c32 100%);
-	--gradient-secondary: linear-gradient(135deg, #1a4c32 0%, #267d39 100%);
-}
-
-// ================================
-// TEMA ELÉCTRICO (Inspirado en tipo Electric)
-// ================================
-
-[data-theme='electric'] {
-	--bg-primary: #1a1400;
-	--bg-secondary: #332800;
-	--bg-tertiary: #4d3c00;
-	--bg-surface: #332800;
-	--bg-surface-alt: #1a1400;
-	--bg-accent: #b8860b;
-
-	--text-primary: #{rgba($color-white, $alpha-95)};
-	--text-secondary: #{rgba($color-white, $alpha-80)};
-
-	--color-primary: #f8d030; // Color tipo Electric
-	--color-primary-hover: #f4c52c;
-	--color-primary-active: #f0ba28;
-
-	--gradient-primary: linear-gradient(135deg, #1a1400 0%, #332800 100%);
-	--gradient-secondary: linear-gradient(135deg, #332800 0%, #4d3c00 100%);
-}
-
-// ================================
-// TEMA PSÍQUICO (Inspirado en tipo Psychic)
-// ================================
-
-[data-theme='psychic'] {
-	--bg-primary: #2d0a2d;
-	--bg-secondary: #4a1749;
-	--bg-tertiary: #662d66;
-	--bg-surface: #4a1749;
-	--bg-surface-alt: #2d0a2d;
-	--bg-accent: #9333ea;
-
-	--text-primary: #{rgba($color-white, $alpha-95)};
-	--text-secondary: #{rgba($color-white, $alpha-80)};
-
-	--color-primary: #f85888; // Color tipo Psychic
-	--color-primary-hover: #f54c7d;
-	--color-primary-active: #f24072;
-
-	--gradient-primary: linear-gradient(135deg, #2d0a2d 0%, #4a1749 100%);
-	--gradient-secondary: linear-gradient(135deg, #4a1749 0%, #662d66 100%);
 }
 
 // ================================
@@ -244,26 +128,4 @@
 	* {
 		transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 	}
-}
-
-// Clases helper para aplicar temas específicos (versión alternativa sin @extend)
-// Nota: En versiones futuras se puede usar @extend cuando se resuelvan los problemas de dependencias
-.theme-water {
-	@extend [data-theme='water'];
-}
-
-.theme-fire {
-	@extend [data-theme='fire'];
-}
-
-.theme-grass {
-	@extend [data-theme='grass'];
-}
-
-.theme-electric {
-	@extend [data-theme='electric'];
-}
-
-.theme-psychic {
-	@extend [data-theme='psychic'];
 }

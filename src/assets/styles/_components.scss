@@ -311,7 +311,7 @@
 
 	&--primary {
 		background: var(--color-primary-bg);
-		color: var(--color-primary);
+		color: var(--brand);
 	}
 
 	&--success {
@@ -332,6 +332,44 @@
 	&--neutral {
 		background: rgba(255, 255, 255, 0.08);
 		color: var(--text-secondary);
+	}
+}
+
+// ================================
+// TYPE / TAG CHIP (tint bg + readable text + saturated dot)
+// ================================
+//
+// Usage: <span class="type-chip" style="--chip-color: var(--type-fire)">Fire</span>
+// The chip derives an accessible tint + text from a single hue per theme, so it
+// reads well in both dark and home (light) without per-type hardcoding.
+
+.type-chip {
+	--_c: var(--chip-color, var(--type-default));
+	display: inline-flex;
+	align-items: center;
+	gap: 0.32em;
+	padding: 0.16rem 0.5rem 0.16rem 0.42rem;
+	border-radius: var(--radius-full);
+	font-size: 0.7rem;
+	font-weight: 650;
+	line-height: 1.35;
+	white-space: nowrap;
+	background: color-mix(in srgb, var(--_c) var(--chip-bg-amt), transparent);
+	border: 1px solid color-mix(in srgb, var(--_c) var(--chip-border-amt), transparent);
+	color: color-mix(in srgb, var(--_c) var(--chip-text-amt), var(--chip-text-anchor));
+
+	&::before {
+		content: '';
+		width: 0.5em;
+		height: 0.5em;
+		border-radius: 50%;
+		background: var(--_c);
+		flex-shrink: 0;
+	}
+
+	// Compact variant without the dot (e.g. dense rows)
+	&--bare::before {
+		display: none;
 	}
 }
 
