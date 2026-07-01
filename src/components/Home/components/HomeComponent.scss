@@ -2048,6 +2048,38 @@
 	gap: 0.5rem;
 }
 
+.bulk-tag-selector__create {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+
+	input {
+		flex: 1 1 auto;
+		min-width: 0;
+		height: 36px;
+		padding: 0 0.65rem;
+		border: 1px solid var(--home-border, rgba(148, 163, 184, 0.3));
+		border-radius: 8px;
+		background: var(--home-panel-alt, rgba(15, 23, 42, 0.4));
+		color: var(--text-primary);
+		font: inherit;
+		font-size: 0.85rem;
+		outline: none;
+
+		&:focus {
+			border-color: var(--color-primary);
+			box-shadow: 0 0 0 3px var(--color-primary-bg, rgba(45, 111, 114, 0.25));
+		}
+	}
+}
+
+.bulk-tag-selector__error {
+	margin: 0 0 0.6rem;
+	color: var(--color-error-light, #ef4444);
+	font-size: 0.78rem;
+	font-weight: 600;
+}
+
 @media (max-width: 640px) {
 	.bulk-action-bar {
 		flex-direction: column;
@@ -3198,6 +3230,17 @@
 			min-height: 32px;
 			font-size: 0.78rem;
 			flex: 1 1 100%;
+		}
+
+		// On phones the command bar wraps and the Filters button sits near the
+		// left edge. The popover was anchored with right:0 relative to that small
+		// button, so it expanded off the left of the viewport. Re-anchor it to the
+		// button's left and clamp the width so it always stays on screen.
+		.browse-shell__filter-popover {
+			right: auto;
+			left: 0;
+			width: min(340px, calc(100vw - 2rem));
+			max-height: min(72vh, 520px);
 		}
 
 		.browse-shell__select-toggle {

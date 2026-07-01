@@ -406,6 +406,17 @@ export interface TagDto {
 }
 
 /**
+ * Per-tag match counts for the current search/filters.
+ * `total` is the number of Pokémon matching the non-tag filters (search,
+ * generation, shiny, ball...) ignoring tag selection; `counts` maps a tag id
+ * to how many of those matches carry that tag.
+ */
+export interface TagFacetCountsDto {
+	total: number
+	counts: Record<number, number>
+}
+
+/**
  * DTO para crear un nuevo tag
  */
 export interface CreateTagDto {

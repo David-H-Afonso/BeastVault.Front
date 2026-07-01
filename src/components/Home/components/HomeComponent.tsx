@@ -14,8 +14,11 @@ import { ConfirmDialog } from '@/ConfirmDialog'
 import { Pagination } from '@/components/elements'
 import { TagManager } from '@/components/elements/TagManager/TagManager'
 import { getComputedTypeColor } from '@/utils/typeColors'
+import { resolveTagDisplayCount, resolveAllPokemonCount } from '@/utils/tagCounts'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { environment } from '@/environments'
 import { BoxView } from './views/BoxView'
+import { BulkTagSelector } from './BulkTagSelector'
 import './HomeComponent.scss'
 
 interface ProcessedPokemon {
@@ -32,6 +35,8 @@ interface HomeComponentProps {
 	error: string | null
 	currentFilters: PokemonListFilterDto
 	availableTags: TagDto[]
+	tagCounts: Record<number, number> | null
+	tagTotal: number | null
 	pokeballs: PokemonBall[]
 	viewMode: ViewMode
 	setViewMode: (mode: ViewMode) => void
@@ -61,6 +66,7 @@ interface HomeComponentProps {
 	handleTagManagerClose: () => void
 	handleTagSystemChanged: () => void
 	handleCreateTagGroup: () => void
+	onCreateTag: (name: string) => Promise<TagDto>
 	itemsPerPage: number
 	onItemsPerPageChange: (itemsPerPage: number) => void
 	totalPages: number
@@ -84,12 +90,6 @@ function resolveTagImg(imagePath: string | null | undefined): string | null {
 		? `${environment.baseUrl}${normalized}`
 		: `${environment.baseUrl}/${normalized}`
 }
-
-const buildTagStyle = (tag: TagDto): React.CSSProperties => ({
-	borderColor: tag.colorHex || 'rgba(250, 204, 21, 0.45)',
-	backgroundColor: tag.colorHex ? `${tag.colorHex}22` : 'rgba(250, 204, 21, 0.1)',
-	color: tag.colorHex || 'var(--tag-chip-text, #f9d84a)',
-})
 
 function TypeBadge({ type }: { type?: string }) {
 	if (!type) return null
@@ -319,65 +319,6 @@ function PokemonHubGrid({
 	)
 }
 
-function BulkTagSelector({
-	tags,
-	loading,
-	onSubmit,
-	onCancel,
-	actionLabel,
-}: {
-	tags: TagDto[]
-	loading: boolean
-	onSubmit: (tagIds: number[]) => void
-	onCancel: () => void
-	actionLabel: string
-}) {
-	const [selected, setSelected] = useState<Set<number>>(new Set())
-
-	const toggle = (id: number) => {
-		setSelected((prev) => {
-			const next = new Set(prev)
-			if (next.has(id)) next.delete(id)
-			else next.add(id)
-			return next
-		})
-	}
-
-	return (
-		<div className='bulk-tag-selector'>
-			<div className='bulk-tag-selector__list'>
-				{tags.map((tag) => (
-					<button
-						key={tag.id}
-						type='button'
-						className={`bulk-tag-selector__chip${selected.has(tag.id) ? ' bulk-tag-selector__chip--active' : ''}`}
-						style={buildTagStyle(tag)}
-						onClick={() => toggle(tag.id)}>
-						{tag.name}
-					</button>
-				))}
-				{tags.length === 0 && (
-					<p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>No tags available</p>
-				)}
-			</div>
-			<div className='bulk-tag-selector__actions'>
-				<button
-					type='button'
-					className='action-btn'
-					disabled={selected.size === 0 || loading}
-					onClick={() => onSubmit(Array.from(selected))}>
-					{loading
-						? 'Working…'
-						: `${actionLabel} ${selected.size} tag${selected.size !== 1 ? 's' : ''}`}
-				</button>
-				<button type='button' className='action-btn' onClick={onCancel}>
-					Cancel
-				</button>
-			</div>
-		</div>
-	)
-}
-
 const HomeComponent = ({
 	processedPokemon,
 	totalPokemon,
@@ -385,6 +326,8 @@ const HomeComponent = ({
 	error,
 	currentFilters,
 	availableTags,
+	tagCounts,
+	tagTotal,
 	pokeballs,
 	viewMode,
 	setViewMode,
@@ -414,6 +357,7 @@ const HomeComponent = ({
 	handleTagManagerClose,
 	handleTagSystemChanged,
 	handleCreateTagGroup,
+	onCreateTag,
 	itemsPerPage,
 	onItemsPerPageChange,
 	totalPages,
@@ -593,6 +537,12 @@ const HomeComponent = ({
 		applyFilters({ activeTagIds: nextActive, excludedTagIds: nextExcluded, noTagsFilter: false })
 	}
 
+	// Apply the search as the user types, with a pause, so it also works on
+	// mobile where there is no Enter key. The timer resets on every keystroke.
+	const debouncedApplySearch = useDebouncedCallback((value: string) => {
+		applyFilters({ search: value })
+	}, 1500)
+
 	// Filters popover open/close accessibility (outside click + Escape)
 	const filterPopRef = useRef<HTMLDivElement | null>(null)
 	useEffect(() => {
@@ -730,9 +680,23 @@ const HomeComponent = ({
 						<input
 							className='browse-shell__search-input'
 							value={search}
-							onChange={(event) => setSearch(event.target.value)}
+							onChange={(event) => {
+								const value = event.target.value
+								setSearch(value)
+								debouncedApplySearch(value)
+							}}
 							onKeyDown={(event) => {
-								if (event.key === 'Enter') applyFilters({ search: event.currentTarget.value })
+								if (event.key === 'Enter') {
+									debouncedApplySearch.cancel()
+									applyFilters({ search: event.currentTarget.value })
+								}
+							}}
+							onBlur={(event) => {
+								// Commit the pending search when focus leaves (mobile has no Enter).
+								if (debouncedApplySearch.pending()) {
+									debouncedApplySearch.cancel()
+									applyFilters({ search: event.currentTarget.value })
+								}
 							}}
 							placeholder='Search species, nickname, OT, move, item, tag…'
 							aria-label='Search Pokémon'
@@ -743,6 +707,7 @@ const HomeComponent = ({
 								className='browse-shell__search-clear'
 								aria-label='Clear search'
 								onClick={() => {
+									debouncedApplySearch.cancel()
 									setSearch('')
 									applyFilters({ search: '' })
 								}}>
@@ -1026,7 +991,7 @@ const HomeComponent = ({
 					applyFilters({ activeTagIds: new Set(), excludedTagIds: new Set(), noTagsFilter: false })
 				}}>
 				<span>All Pokémon</span>
-				<strong>{totalPokemon}</strong>
+				<strong>{resolveAllPokemonCount(tagTotal, totalPokemon)}</strong>
 			</button>
 			{availableTags.map((tag) => (
 				<button
@@ -1066,7 +1031,7 @@ const HomeComponent = ({
 						}
 					}}>
 					<span>{tag.name}</span>
-					<strong>{tag.pokemonCount}</strong>
+					<strong>{resolveTagDisplayCount(tag, tagCounts)}</strong>
 					{tag.description && <small>{tag.description}</small>}
 				</button>
 			))}
@@ -1239,6 +1204,8 @@ const HomeComponent = ({
 							actionLabel={
 								bulkAction === 'add' ? 'Add' : bulkAction === 'remove' ? 'Remove' : 'Replace'
 							}
+							onCreateTag={onCreateTag}
+							allowCreate={bulkAction !== 'remove'}
 						/>
 					</div>
 				</div>

@@ -5,7 +5,7 @@ import type {
 	PokemonDetailDto,
 	UpdatePokemonDto,
 } from '../models/Pokemon'
-import type { ImportResultDto } from '../models/api/types'
+import type { ImportResultDto, TagFacetCountsDto } from '../models/api/types'
 import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
@@ -150,6 +150,41 @@ export async function getPokemonList(
 	)
 
 	return result
+}
+
+/**
+ * Fetches per-tag match counts for the current search/filters so the tag tabs
+ * can stay in sync with the active search. The backend ignores the tag
+ * include/exclude selection when computing these counts.
+ *
+ * @param params Same filter params used for the list (Skip/Take are required by the API)
+ * @returns Promise resolving to the total and a tagId→count map
+ */
+export async function getTagFacetCounts(
+	params: PokemonListFilterDto
+): Promise<TagFacetCountsDto> {
+	const transformedParams = { ...params }
+
+	if (transformedParams.SortBy !== undefined) {
+		transformedParams.SortBy = mapSortByToBackend(transformedParams.SortBy as any) as any
+	}
+
+	if (transformedParams.ThenSortBy !== undefined) {
+		transformedParams.ThenSortBy = mapSortByToBackend(transformedParams.ThenSortBy as any) as any
+	}
+
+	const cleanParams: Record<string, string | number | boolean | number[]> = {}
+	for (const [key, value] of Object.entries(transformedParams)) {
+		if (value === undefined || value === null) continue
+		cleanParams[key] = value as string | number | boolean | number[]
+	}
+
+	return customFetch<TagFacetCountsDto>(`${environment.baseUrl}/pokemon/tag-counts`, {
+		params: cleanParams,
+		headers: {
+			Accept: 'application/json',
+		},
+	})
 }
 
 /**

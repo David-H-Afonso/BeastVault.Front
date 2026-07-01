@@ -16,6 +16,7 @@ import {
 	downloadPokemonFileFromDisk,
 	getPokemonMetadata,
 	getPokemonShowdownExport,
+	getTagFacetCounts,
 	updatePokemon,
 } from '@/services/Pokemon'
 import { createTag, getAllTags, bulkUpdateTags } from '@/services/Tags'
@@ -63,6 +64,8 @@ const Home = () => {
 	const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
 	const [shouldRefetchForPagination, setShouldRefetchForPagination] = useState(false)
 	const [availableTags, setAvailableTags] = useState<TagDto[]>([])
+	const [tagCounts, setTagCounts] = useState<Record<number, number> | null>(null)
+	const [tagTotal, setTagTotal] = useState<number | null>(null)
 	const [tagManagerOpen, setTagManagerOpen] = useState(false)
 	const [selectedPokemonForTags, setSelectedPokemonForTags] = useState<PokemonListItemDto | null>(
 		null
@@ -82,6 +85,16 @@ const Home = () => {
 			setAvailableTags(tags)
 		} catch (err) {
 			console.error('Failed to load tags:', err)
+		}
+	}, [])
+
+	const loadTagCounts = useCallback(async (filters: PokemonListFilterDto) => {
+		try {
+			const result = await getTagFacetCounts(filters)
+			setTagCounts(result.counts ?? {})
+			setTagTotal(result.total)
+		} catch (err) {
+			console.error('Failed to load tag counts:', err)
 		}
 	}, [])
 
@@ -118,6 +131,7 @@ const Home = () => {
 	useEffect(() => {
 		fetchPokemon()
 		loadTags()
+		loadTagCounts(currentFilters)
 		refreshBoxes()
 		getPokemonMetadata()
 			.then((meta) => setPokeballs(meta.pokeballs?.length ? meta.pokeballs : FALLBACK_POKEBALLS))
@@ -134,8 +148,9 @@ const Home = () => {
 	const refreshCollection = useCallback(async () => {
 		await fetchPokemon()
 		await loadTags()
+		await loadTagCounts(currentFilters)
 		await refreshBoxes(activeBoxId)
-	}, [activeBoxId, fetchPokemon, loadTags, refreshBoxes])
+	}, [activeBoxId, fetchPokemon, loadTags, loadTagCounts, refreshBoxes, currentFilters])
 
 	const handlePokemonClick = useCallback((clickedPokemon: PokemonListItemDto) => {
 		setDetailPokemon(clickedPokemon)
@@ -147,6 +162,7 @@ const Home = () => {
 
 	const handleFiltersChange = async (filters: PokemonListFilterDto) => {
 		await applyFiltersAndFetch(filters)
+		loadTagCounts(filters)
 	}
 
 	const handleDownload = useCallback(async (id: number) => {
@@ -262,16 +278,18 @@ const Home = () => {
 				current?.id === targetPokemonId ? { ...current, tags: newTags } : current
 			)
 			await loadTags()
+			await loadTagCounts(currentFilters)
 			await refreshBoxes(activeBoxId)
 		},
-		[activeBoxId, loadTags, refreshBoxes, updatePokemonTagsById]
+		[activeBoxId, loadTags, loadTagCounts, refreshBoxes, updatePokemonTagsById, currentFilters]
 	)
 
 	const handleTagSystemChanged = useCallback(async () => {
 		await loadTags()
 		await fetchPokemon()
+		await loadTagCounts(currentFilters)
 		await refreshBoxes(activeBoxId)
-	}, [activeBoxId, fetchPokemon, loadTags, refreshBoxes])
+	}, [activeBoxId, fetchPokemon, loadTags, loadTagCounts, refreshBoxes, currentFilters])
 
 	const handleTagManagerClose = useCallback(() => {
 		setTagManagerOpen(false)
@@ -285,6 +303,16 @@ const Home = () => {
 		await createTag({ name: name.trim() })
 		await handleTagSystemChanged()
 	}, [handleTagSystemChanged])
+
+	const handleCreateTag = useCallback(
+		async (name: string): Promise<TagDto> => {
+			const created = await createTag({ name: name.trim() })
+			await loadTags()
+			await loadTagCounts(currentFilters)
+			return created
+		},
+		[loadTags, loadTagCounts, currentFilters]
+	)
 
 	const handleBulkTagUpdate = useCallback(
 		async (
@@ -431,6 +459,8 @@ const Home = () => {
 				error={error}
 				currentFilters={currentFilters}
 				availableTags={availableTags}
+				tagCounts={tagCounts}
+				tagTotal={tagTotal}
 				pokeballs={pokeballs}
 				viewMode={viewMode}
 				setViewMode={setViewMode}
@@ -460,6 +490,7 @@ const Home = () => {
 				handleTagManagerClose={handleTagManagerClose}
 				handleTagSystemChanged={handleTagSystemChanged}
 				handleCreateTagGroup={handleCreateTagGroup}
+				onCreateTag={handleCreateTag}
 				itemsPerPage={itemsPerPage}
 				onItemsPerPageChange={onItemsPerPageChange}
 				totalPages={totalPages}
