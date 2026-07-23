@@ -12,7 +12,7 @@ export default defineConfig({
 			include: '**/*.svg?react',
 		}),
 	],
-	base: './',
+	base: '/',
 	resolve: {
 		alias: {
 			'@': '/src',
