@@ -7,11 +7,21 @@ import Login from '@/components/Login/Login'
 import { AppLayout } from './layouts/AppLayout'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { DexPage } from '@/components/Dex/DexPage'
+import PokemonDeepLink from '@/components/PokemonDeepLink/PokemonDeepLink'
+import HouseholdAuthorization from '@/components/HouseholdAuthorization/HouseholdAuthorization'
 
 export const router = createBrowserRouter([
 	{
 		path: '/login',
 		element: <Login />,
+	},
+	{
+		path: '/integrations/household/authorize',
+		element: (
+			<ProtectedRoute>
+				<HouseholdAuthorization />
+			</ProtectedRoute>
+		),
 	},
 	{
 		path: '/',
@@ -41,6 +51,10 @@ export const router = createBrowserRouter([
 			{
 				path: 'dex/:speciesId',
 				element: <DexPage />,
+			},
+			{
+				path: 'pokemon/:id',
+				element: <PokemonDeepLink />,
 			},
 		],
 	},

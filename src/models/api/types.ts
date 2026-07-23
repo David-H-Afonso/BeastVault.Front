@@ -416,6 +416,28 @@ export interface TagFacetCountsDto {
 	counts: Record<number, number>
 }
 
+export interface PokemonSummaryDto {
+	counts: {
+		total: number
+		favorites: number
+		shiny: number
+		eggs: number
+	}
+	recentImports: {
+		pokemonId: number
+		speciesId: number
+		speciesName: string
+		nickname?: string | null
+		importedAt: string
+		fileName: string
+	}[]
+	tags: {
+		id: number
+		name: string
+		pokemonCount: number
+	}[]
+}
+
 /**
  * DTO para crear un nuevo tag
  */

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import './Login.scss'
 
 const Login: React.FC = () => {
 	const navigate = useNavigate()
+	const location = useLocation()
 	const { login, register, isAuthenticated, loading, error, clearError } = useAuth()
 
 	const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -15,9 +16,15 @@ const Login: React.FC = () => {
 
 	useEffect(() => {
 		if (isAuthenticated) {
-			navigate('/', { replace: true })
+			const from = location.state?.from as
+				| { pathname?: string; search?: string; hash?: string }
+				| undefined
+			const destination = from?.pathname?.startsWith('/')
+				? `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`
+				: '/'
+			navigate(destination, { replace: true })
 		}
-	}, [isAuthenticated, navigate])
+	}, [isAuthenticated, location.state, navigate])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()

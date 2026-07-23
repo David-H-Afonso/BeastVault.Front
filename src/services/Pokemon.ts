@@ -5,7 +5,7 @@ import type {
 	PokemonDetailDto,
 	UpdatePokemonDto,
 } from '../models/Pokemon'
-import type { ImportResultDto, TagFacetCountsDto } from '../models/api/types'
+import type { ImportResultDto, PokemonSummaryDto, TagFacetCountsDto } from '../models/api/types'
 import { mapSortByToBackend } from '../models/Pokemon'
 import { customFetch } from '../utils'
 import { environment } from '../environments'
@@ -80,6 +80,12 @@ export async function importPokemonFiles(files: File[]): Promise<ImportResultDto
  */
 export async function getPokemonById(id: number): Promise<PokemonDetailDto> {
 	return customFetch<PokemonDetailDto>(`${environment.baseUrl}/pokemon/${id}`, {
+		headers: { Accept: 'application/json' },
+	})
+}
+
+export async function getPokemonSummary(): Promise<PokemonSummaryDto> {
+	return customFetch<PokemonSummaryDto>(`${environment.baseUrl}/pokemon/summary`, {
 		headers: { Accept: 'application/json' },
 	})
 }
