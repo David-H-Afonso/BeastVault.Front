@@ -11,7 +11,7 @@ describe('parseHouseholdAuthorization', () => {
 			state: 'opaque-state',
 			code_challenge: challenge,
 			code_challenge_method: 'S256',
-			scope: 'pokemon.notes.write profile.read pokemon.read',
+			scope: 'pokemon.notes.write pokemon.download profile.read pokemon.read',
 		}).toString()
 
 		const parsed = parseHouseholdAuthorization(`?${search}`)
@@ -23,7 +23,7 @@ describe('parseHouseholdAuthorization', () => {
 			state: 'opaque-state',
 			codeChallenge: challenge,
 			codeChallengeMethod: 'S256',
-			scopes: ['profile.read', 'pokemon.read', 'pokemon.notes.write'],
+			scopes: ['profile.read', 'pokemon.read', 'pokemon.download', 'pokemon.notes.write'],
 		})
 	})
 

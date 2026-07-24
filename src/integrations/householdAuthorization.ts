@@ -1,6 +1,7 @@
 export const HOUSEHOLD_SCOPES = [
 	'profile.read',
 	'pokemon.read',
+	'pokemon.download',
 	'pokemon.favorite.write',
 	'pokemon.notes.write',
 ] as const
@@ -32,6 +33,10 @@ export const HOUSEHOLD_SCOPE_LABELS: Record<HouseholdScope, { title: string; des
 	'pokemon.read': {
 		title: 'View your Pokémon collection',
 		description: 'Read a limited set of collection, list, and Pokémon detail fields.',
+	},
+	'pokemon.download': {
+		title: 'Download your Pokémon files',
+		description: 'Download the original file for a Pokémon in your collection.',
 	},
 	'pokemon.favorite.write': {
 		title: 'Change favorites',
