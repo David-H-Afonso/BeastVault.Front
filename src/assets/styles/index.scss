@@ -42,3 +42,9 @@
 
 // 8. Final responsive fixes that must win over legacy component blocks
 @use 'responsive-fixes' as *;
+
+@font-face {
+	font-family: 'Pokemon GBA';
+	src: url('/fonts/pokemon-gba.otf') format('opentype');
+	font-display: swap;
+}

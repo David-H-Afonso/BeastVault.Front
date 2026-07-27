@@ -778,6 +778,13 @@
 		color: var(--text-secondary);
 		font-size: 0.72rem;
 	}
+
+	strong {
+		font-family: 'Pokemon GBA', sans-serif;
+		font-weight: 400;
+		letter-spacing: 0.02em;
+		text-shadow: 4px 3px 0 #7a7a7a;
+	}
 }
 
 .browse-table__origin {
@@ -826,6 +833,15 @@
 	font-weight: 900;
 	text-transform: capitalize;
 	line-height: 1;
+}
+
+.browse-shell__type {
+	background: #b8b8b8 !important;
+	border: 1px solid #7a7a7a;
+	font-family: 'Pokemon GBA', sans-serif;
+	font-weight: 400;
+	letter-spacing: 0.03em;
+	text-shadow: 4px 3px 0 #7a7a7a;
 }
 
 .browse-shell__tag {
@@ -900,6 +916,10 @@
 
 .hub-card h3 {
 	font-size: 1rem;
+	font-family: 'Pokemon GBA', sans-serif;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+	text-shadow: 4px 3px 0 #7a7a7a;
 }
 
 .hub-card p {
@@ -2227,8 +2247,13 @@
 		}
 
 		&:focus {
+			border-color: var(--home-border);
+			box-shadow: none;
+		}
+
+		&:focus-visible {
 			border-color: var(--color-primary);
-			box-shadow: 0 0 0 3px var(--color-primary-bg);
+			box-shadow: var(--focus-ring);
 		}
 	}
 
