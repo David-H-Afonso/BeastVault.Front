@@ -36,3 +36,9 @@ export * from './ThemeService'
 
 // Export Auth service functions
 export * from './Auth'
+
+// Export save-file manager service
+export * from './SaveFiles'
+
+// Export physical TCG collection service
+export * from './TcgCollection'

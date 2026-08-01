@@ -7,6 +7,7 @@ import {
 import { SPRITE_TYPE_CONFIG } from '@/models/enums/SpriteTypes'
 import type { SpriteTypeName } from '@/models/enums/SpriteTypes'
 import type { FC } from 'react'
+import { TcgApiKeySettings } from './TcgApiKeySettings'
 
 interface Props {
 	spriteURL: (isShiny: boolean) => string
@@ -85,6 +86,8 @@ const SettingComponent: FC<Props> = (props) => {
 				</section>
 
 				<div className='settings-content'>
+					<TcgApiKeySettings />
+
 					{/* Display Options */}
 					<section className='settings-section'>
 						<h2 className='section-title'>

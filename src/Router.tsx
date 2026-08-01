@@ -9,6 +9,8 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { DexPage } from '@/components/Dex/DexPage'
 import PokemonDeepLink from '@/components/PokemonDeepLink/PokemonDeepLink'
 import HouseholdAuthorization from '@/components/HouseholdAuthorization/HouseholdAuthorization'
+import SavesPage from '@/components/Saves/SavesPage'
+import { CardsPage } from '@/components/Cards/CardsPage'
 
 export const router = createBrowserRouter([
 	{
@@ -55,6 +57,14 @@ export const router = createBrowserRouter([
 			{
 				path: 'pokemon/:id',
 				element: <PokemonDeepLink />,
+			},
+			{
+				path: 'saves',
+				element: <SavesPage />,
+			},
+			{
+				path: 'cards',
+				element: <CardsPage />,
 			},
 		],
 	},

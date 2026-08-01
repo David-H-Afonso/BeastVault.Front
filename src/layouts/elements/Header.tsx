@@ -9,8 +9,8 @@ import { useAuth } from '@/hooks/useAuth'
 const NAV_ITEMS: { to: string; label: string; exact?: boolean }[] = [
 	{ to: '/', label: 'Home', exact: true },
 	{ to: '/dex', label: 'Pokédex' },
-	{ to: '/settings', label: 'Settings', exact: true },
-	{ to: '/admin', label: 'Account', exact: true },
+	{ to: '/saves', label: 'Saves', exact: true },
+	{ to: '/cards', label: 'Cards', exact: true },
 ]
 
 export const Header: React.FC = () => {
@@ -72,7 +72,7 @@ export const Header: React.FC = () => {
 									to={item.to}
 									className={`app-header__link${active ? ' is-active' : ''}`}
 									aria-current={active ? 'page' : undefined}>
-									{item.to === '/admin' ? accountLabel : item.label}
+									{item.label}
 								</Link>
 							)
 						})}
@@ -122,6 +122,17 @@ export const Header: React.FC = () => {
 											</span>
 										</div>
 										<ThemeSelector />
+										<Link
+											to='/settings'
+											role='menuitem'
+											className='app-header__user-action'
+											onClick={() => setUserMenuOpen(false)}>
+											<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+												<circle cx='12' cy='12' r='3' />
+												<path d='M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12' />
+											</svg>
+											Settings
+										</Link>
 										<Link
 											to='/admin'
 											role='menuitem'
@@ -199,27 +210,29 @@ export const Header: React.FC = () => {
 				</button>
 
 				<Link
-					to='/settings'
-					className={`mobile-nav__item${isActive('/settings', true) ? ' is-active' : ''}`}
-					aria-label='Settings'
-					aria-current={isActive('/settings', true) ? 'page' : undefined}>
+					to='/saves'
+					className={`mobile-nav__item${isActive('/saves', true) ? ' is-active' : ''}`}
+					aria-label='Saves'
+					aria-current={isActive('/saves', true) ? 'page' : undefined}>
 					<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
-						<circle cx='12' cy='12' r='3' />
-						<path d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z' />
+						<path d='M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z' />
+						<path d='M17 21v-8H7v8' />
+						<path d='M7 3v5h8' />
 					</svg>
-					<span>Settings</span>
+					<span>Saves</span>
 				</Link>
 
 				<Link
-					to='/admin'
-					className={`mobile-nav__item${isActive('/admin', true) ? ' is-active' : ''}`}
-					aria-label={accountLabel}
-					aria-current={isActive('/admin', true) ? 'page' : undefined}>
+					to='/cards'
+					className={`mobile-nav__item${isActive('/cards', true) ? ' is-active' : ''}`}
+					aria-label='Cards'
+					aria-current={isActive('/cards', true) ? 'page' : undefined}>
 					<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
-						<path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' />
-						<circle cx='12' cy='7' r='4' />
+						<rect x='3' y='4' width='16' height='16' rx='2' />
+						<path d='M7 8h8M7 12h8M7 16h5' />
+						<path d='M19 8h2v12a2 2 0 0 1-2 2H7v-2' />
 					</svg>
-					<span>{accountLabel}</span>
+					<span>Cards</span>
 				</Link>
 			</nav>
 		</>
