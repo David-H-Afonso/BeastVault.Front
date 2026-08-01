@@ -38,13 +38,16 @@ describe('SaveFiles service', () => {
 	it('sends typed JSON bodies for notes and selected previews', async () => {
 		customFetchMock.mockResolvedValue(undefined)
 
-		await updateSaveFile(4, { notes: 'Living dex run' })
+		await updateSaveFile(4, { title: 'Emerald living dex', notes: 'Living dex run' })
 		await importSavePokemon(4, [12, 18])
 
 		expect(customFetchMock).toHaveBeenNthCalledWith(
 			1,
 			expect.stringMatching(/\/saves\/4$/),
-			expect.objectContaining({ method: 'PATCH', body: { notes: 'Living dex run' } })
+			expect.objectContaining({
+				method: 'PATCH',
+				body: { title: 'Emerald living dex', notes: 'Living dex run' },
+			})
 		)
 		expect(customFetchMock).toHaveBeenNthCalledWith(
 			2,

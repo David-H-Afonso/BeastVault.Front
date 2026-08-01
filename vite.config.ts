@@ -33,24 +33,8 @@ export default defineConfig({
 		sourcemap: false,
 		rollupOptions: {
 			output: {
-				manualChunks(id) {
-					if (id.includes('node_modules')) {
-						if (
-							id.includes('react-router') ||
-							id.includes('react-dom') ||
-							id.includes('/react/') ||
-							id.includes('scheduler')
-						) {
-							return 'vendor-react'
-						}
-						if (id.includes('@reduxjs') || id.includes('react-redux') || id.includes('redux')) {
-							return 'vendor-redux'
-						}
-						if (id.includes('@dnd-kit')) {
-							return 'vendor-dnd'
-						}
-						return 'vendor'
-					}
+				manualChunks: {
+					vendor: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', '@reduxjs/toolkit', 'react', 'react-dom', 'react-redux', 'react-router-dom', 'redux-persist'],
 				},
 			},
 		},

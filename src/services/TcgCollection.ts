@@ -38,6 +38,9 @@ export interface TcgCardDto {
 	prices: TcgPriceDto
 	owned: TcgOwnedEntryDto[]
 	totalOwned: number
+	detailedAt: string | null
+	priceCheckedAt: string | null
+	lastRefreshError: string | null
 }
 
 export interface TcgCardPageDto {
@@ -53,7 +56,9 @@ export interface TcgSetDto {
 	providerSetId: string
 	name: string
 	nameEn: string | null
+	seriesId: string | null
 	series: string | null
+	officialCode: string | null
 	printedTotal: number
 	total: number
 	releaseDate: string | null
@@ -79,11 +84,49 @@ export interface UserCardDto {
 	totalValueUsd: number | null
 }
 
+export interface TcgCollectionEntryDto {
+	id: number
+	variant: string
+	condition: string
+	language: string
+	quantity: number
+	notes: string | null
+	addedAt: string
+	updatedAt: string
+	unitValueEur: number | null
+	unitValueUsd: number | null
+	totalValueEur: number | null
+	totalValueUsd: number | null
+}
+
+export interface TcgCollectionGroupDto {
+	card: TcgCardDto
+	entries: TcgCollectionEntryDto[]
+	totalCopies: number
+	totalValueEur: number | null
+	totalValueUsd: number | null
+	updatedAt: string
+}
+
 export interface TcgCollectionPageDto {
-	items: UserCardDto[]
+	items: TcgCollectionGroupDto[]
 	page: number
 	pageSize: number
 	totalCount: number
+}
+
+export interface TcgCardRefreshResultDto {
+	cardId: number
+	success: boolean
+	error: string | null
+	card: TcgCardDto | null
+}
+
+export interface TcgCardBatchRefreshDto {
+	items: TcgCardRefreshResultDto[]
+	requested: number
+	processed: number
+	truncated: boolean
 }
 
 export interface TcgMissingSpeciesDto {
@@ -245,9 +288,34 @@ export function getTcgCollectionStats(): Promise<TcgCollectionStatsDto> {
 	return customFetch<TcgCollectionStatsDto>(tcgUrl('/tcg/collection/stats'), { headers })
 }
 
-export function refreshTcgCard(id: number): Promise<TcgCardDto> {
-	return customFetch<TcgCardDto>(tcgUrl(`/tcg/cards/${id}/refresh`), {
+export function refreshTcgCard(id: number): Promise<TcgCardRefreshResultDto> {
+	return customFetch<TcgCardRefreshResultDto>(tcgUrl(`/tcg/cards/${id}/refresh`), {
 		method: 'POST',
+		headers,
+	})
+}
+
+export function refreshTcgCards(
+	request: { cardIds?: number[]; ownedOnly: boolean }
+): Promise<TcgCardBatchRefreshDto> {
+	return customFetch<TcgCardBatchRefreshDto>(tcgUrl('/tcg/cards/refresh'), {
+		method: 'POST',
+		body: request,
+		headers,
+	})
+}
+
+export async function deleteTcgCollectionCard(cardId: number): Promise<void> {
+	await customFetch<void>(tcgUrl(`/tcg/collection/cards/${cardId}`), {
+		method: 'DELETE',
+		headers,
+	})
+}
+
+export async function deleteTcgCollectionCards(cardIds: number[]): Promise<void> {
+	await customFetch<void>(tcgUrl('/tcg/collection/cards'), {
+		method: 'DELETE',
+		body: { cardIds },
 		headers,
 	})
 }

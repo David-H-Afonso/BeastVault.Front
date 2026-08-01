@@ -297,6 +297,25 @@
 		&.is-configured { border-color: var(--color-success-border); background: var(--color-success-bg); color: var(--color-success-light); }
 	}
 
+	&__guide {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.5rem;
+		margin-top: 0.85rem;
+		padding: 0.65rem;
+		border: 1px solid var(--border-secondary);
+		border-radius: var(--radius-lg);
+		background: var(--surface-secondary);
+
+		> div { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: start; gap: 0.4rem; }
+		> div > span { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: var(--color-primary-bg); color: var(--color-primary); font-size: 0.65rem; font-weight: 800; }
+		p { margin: 0; color: var(--text-muted); font-size: 0.66rem; line-height: 1.4; }
+		p strong { display: block; margin-bottom: 0.08rem; color: var(--text-primary); font-size: 0.69rem; }
+		> a { grid-column: 1 / -1; display: inline-flex; width: fit-content; align-items: center; gap: 0.25rem; margin-top: 0.1rem; color: var(--accent-teal); font-size: 0.7rem; font-weight: 750; text-decoration: none; }
+		> a:hover { text-decoration: underline; }
+		> a:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+	}
+
 	&__configured {
 		display: flex;
 		align-items: center;
@@ -352,6 +371,8 @@
 
 	@include mobile-only {
 		&__copy, &__form { flex-direction: column; align-items: stretch; }
+		&__guide { grid-template-columns: 1fr; }
+		&__guide > a { grid-column: 1; }
 		&__configured { align-items: flex-start; flex-wrap: wrap; }
 		&__configured small { width: 100%; margin-left: 0; }
 		&__actions button { flex: 1; }

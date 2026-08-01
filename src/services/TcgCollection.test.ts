@@ -6,10 +6,14 @@ vi.mock('@/utils', () => ({ customFetch: customFetchMock }))
 
 import {
 	addTcgCollectionEntry,
+	deleteTcgCollectionCard,
+	deleteTcgCollectionCards,
 	deleteTcgCollectionEntry,
 	getTcgCollection,
 	getTcgSetCards,
 	searchTcgCards,
+	refreshTcgCard,
+	refreshTcgCards,
 	updateTcgApiKey,
 	updateTcgCollectionEntry,
 } from './TcgCollection'
@@ -74,6 +78,8 @@ describe('TcgCollection service', () => {
 
 	it('uses the authenticated delete and API-key contracts', async () => {
 		await deleteTcgCollectionEntry(19)
+		await deleteTcgCollectionCard(42)
+		await deleteTcgCollectionCards([42, 77])
 		await updateTcgApiKey('tcg-secret')
 		await updateTcgApiKey(null)
 
@@ -84,13 +90,45 @@ describe('TcgCollection service', () => {
 		)
 		expect(customFetchMock).toHaveBeenNthCalledWith(
 			2,
+			expect.stringMatching(/\/tcg\/collection\/cards\/42$/),
+			expect.objectContaining({ method: 'DELETE' })
+		)
+		expect(customFetchMock).toHaveBeenNthCalledWith(
+			3,
+			expect.stringMatching(/\/tcg\/collection\/cards$/),
+			expect.objectContaining({ method: 'DELETE', body: { cardIds: [42, 77] } })
+		)
+		expect(customFetchMock).toHaveBeenNthCalledWith(
+			4,
 			expect.stringMatching(/\/auth\/preferences\/tcg-api-key$/),
 			expect.objectContaining({ method: 'PATCH', body: { apiKey: 'tcg-secret' } })
 		)
 		expect(customFetchMock).toHaveBeenNthCalledWith(
-			3,
+			5,
 			expect.stringMatching(/\/auth\/preferences\/tcg-api-key$/),
 			expect.objectContaining({ method: 'PATCH', body: { apiKey: null } })
+		)
+	})
+
+	it('uses bounded card refresh endpoints and typed response contracts', async () => {
+		await refreshTcgCard(42)
+		await refreshTcgCards({ cardIds: [42, 77], ownedOnly: false })
+		await refreshTcgCards({ ownedOnly: true })
+
+		expect(customFetchMock).toHaveBeenNthCalledWith(
+			1,
+			expect.stringMatching(/\/tcg\/cards\/42\/refresh$/),
+			expect.objectContaining({ method: 'POST' })
+		)
+		expect(customFetchMock).toHaveBeenNthCalledWith(
+			2,
+			expect.stringMatching(/\/tcg\/cards\/refresh$/),
+			expect.objectContaining({ method: 'POST', body: { cardIds: [42, 77], ownedOnly: false } })
+		)
+		expect(customFetchMock).toHaveBeenNthCalledWith(
+			3,
+			expect.stringMatching(/\/tcg\/cards\/refresh$/),
+			expect.objectContaining({ method: 'POST', body: { ownedOnly: true } })
 		)
 	})
 })

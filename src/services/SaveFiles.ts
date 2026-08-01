@@ -4,6 +4,8 @@ import { getAuthToken } from '@/utils/authToken'
 
 export interface SaveFileSummaryDto {
 	id: number
+	title: string | null
+	displayTitle: string
 	originalFileName: string
 	format: string
 	size: number
@@ -14,10 +16,12 @@ export interface SaveFileSummaryDto {
 	importedAt: string
 	notes: string | null
 	trainerName: string
+	trainerGender: number
 	trainerId: number
 	secretId: number
 	playTime: string
 	badgeCount: number | null
+	badgeTotal: number | null
 	dexSeen: number
 	dexCaught: number
 	partyCount: number
@@ -92,6 +96,7 @@ export interface SavePokemonImportResultDto {
 }
 
 export interface UpdateSaveFileRequest {
+	title: string | null
 	notes: string | null
 }
 

@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom'
 import {
 	addTcgCollectionEntry,
+	deleteTcgCollectionCards,
 	deleteTcgCollectionEntry,
 	getTcgCard,
 	getTcgCollection,
@@ -17,11 +18,14 @@ import {
 	getTcgSetCards,
 	getTcgSets,
 	refreshTcgCard,
+	refreshTcgCards,
 	searchTcgCards,
 	updateTcgCollectionEntry,
 	type TcgCardDto,
 	type TcgCardPageDto,
 	type TcgCollectionPageDto,
+	type TcgCollectionEntryDto,
+	type TcgCollectionGroupDto,
 	type TcgCollectionStatsDto,
 	type TcgDexProgressDto,
 	type TcgSetDto,
@@ -72,6 +76,30 @@ const formatDate = (value: string | null) => {
 		: new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
 }
 
+const formatCollectorReference = (card: TcgCardDto, sets: TcgSetDto[]) => {
+	const set = sets.find((item) => item.id === card.setId)
+	const code = set?.officialCode?.trim()
+	const printedTotal = set?.printedTotal
+	const rawNumber = card.number.trim()
+	const number = printedTotal && !rawNumber.includes('/') ? `${rawNumber}/${printedTotal}` : rawNumber
+	return code ? `${code} ${number}` : `#${number}`
+}
+
+const toCollectionEntry = (entry: UserCardDto): TcgCollectionEntryDto => ({
+	id: entry.id,
+	variant: entry.variant,
+	condition: entry.condition,
+	language: entry.language,
+	quantity: entry.quantity,
+	notes: entry.notes,
+	addedAt: entry.addedAt,
+	updatedAt: entry.addedAt,
+	unitValueEur: entry.unitValueEur,
+	unitValueUsd: entry.unitValueUsd,
+	totalValueEur: entry.totalValueEur,
+	totalValueUsd: entry.totalValueUsd,
+})
+
 const clampPercent = (value: number) => Math.min(100, Math.max(0, value))
 
 function TcgIcon({ name }: { name: 'dashboard' | 'search' | 'sets' | 'collection' | 'cards' }) {
@@ -115,12 +143,28 @@ function TcgState({
 }
 
 function CardArtwork({ card, large = false }: { card: TcgCardDto; large?: boolean }) {
-	const [failed, setFailed] = useState(false)
-	const source = large ? card.imageLarge ?? card.imageSmall : card.imageSmall ?? card.imageLarge
-	if (!source || failed) {
+	const candidates = useMemo(
+		() => Array.from(new Set(
+			(large ? [card.imageLarge, card.imageSmall] : [card.imageSmall, card.imageLarge])
+				.filter((source): source is string => Boolean(source))
+		)),
+		[card.id, card.imageLarge, card.imageSmall, large]
+	)
+	const candidateKey = candidates.join('|')
+	const [candidateIndex, setCandidateIndex] = useState(0)
+	useEffect(() => setCandidateIndex(0), [card.id, candidateKey])
+	const source = candidates[candidateIndex]
+	if (!source) {
 		return <div className='tcg-artwork tcg-artwork--empty' aria-label={`No image available for ${card.name}`}><TcgIcon name='cards' /><span>{card.name}</span></div>
 	}
-	return <img className='tcg-artwork' src={source} alt={card.name} loading='lazy' referrerPolicy='no-referrer' onError={() => setFailed(true)} />
+	return <img className='tcg-artwork' src={source} alt={card.name} width='245' height='342' loading='lazy' decoding='async' referrerPolicy='no-referrer' onError={() => setCandidateIndex((index) => index + 1)} />
+}
+
+function SafeImage({ src, alt = '', className }: { src: string | null; alt?: string; className?: string }) {
+	const [failed, setFailed] = useState(false)
+	useEffect(() => setFailed(false), [src])
+	if (!src || failed) return null
+	return <img src={src} alt={alt} className={className} loading='lazy' decoding='async' onError={() => setFailed(true)} />
 }
 
 function TcgCardGrid({
@@ -128,12 +172,14 @@ function TcgCardGrid({
 	onOpen,
 	onQuickAdd,
 	quickAddingId,
+	sets,
 	setChecklist = false,
 }: {
 	cards: TcgCardDto[]
 	onOpen: (card: TcgCardDto) => void
 	onQuickAdd?: (card: TcgCardDto) => void
 	quickAddingId?: number | null
+	sets: TcgSetDto[]
 	setChecklist?: boolean
 }) {
 	return (
@@ -150,7 +196,7 @@ function TcgCardGrid({
 						<div className='tcg-card__copy'>
 							<strong title={card.name}>{card.name}</strong>
 							<span>{card.setName}</span>
-							<small>#{card.number}{card.rarity ? ` · ${card.rarity}` : ''}</small>
+							<small>{formatCollectorReference(card, sets)}{card.rarity ? ` · ${card.rarity}` : ''}</small>
 						</div>
 					</button>
 					<div className='tcg-card__footer'>
@@ -295,15 +341,21 @@ function DashboardView({
 function CardDetailModal({
 	card,
 	loading,
+	collectionGroup,
 	onClose,
 	onCardChange,
 	onAdded,
+	onEntrySaved,
+	onEntryDelete,
 }: {
 	card: TcgCardDto
 	loading: boolean
+	collectionGroup?: TcgCollectionGroupDto | null
 	onClose: () => void
 	onCardChange: (card: TcgCardDto) => void
 	onAdded: (entry: UserCardDto) => void
+	onEntrySaved?: (entry: UserCardDto) => void
+	onEntryDelete?: (entry: TcgCollectionEntryDto, card: TcgCardDto) => void
 }) {
 	const defaultVariant = card.variants[0] || 'Normal'
 	const [variantChoice, setVariantChoice] = useState(defaultVariant)
@@ -317,6 +369,7 @@ function CardDetailModal({
 	const [refreshing, setRefreshing] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const closeButtonRef = useRef<HTMLButtonElement | null>(null)
+	const dialogRef = useRef<HTMLElement | null>(null)
 	const selectedVariant = variantChoice === '__custom' ? customVariant.trim() : variantChoice
 	const selectedEur = card.prices.variantEur?.[selectedVariant] ?? card.prices.eur
 	const selectedUsd = card.prices.variantUsd?.[selectedVariant] ?? card.prices.usd
@@ -333,7 +386,21 @@ function CardDetailModal({
 
 	useEffect(() => {
 		const previousFocus = document.activeElement as HTMLElement | null
-		const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') onClose()
+			if (event.key !== 'Tab' || !dialogRef.current) return
+			const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'))
+			if (focusable.length === 0) return
+			const first = focusable[0]
+			const last = focusable[focusable.length - 1]
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault()
+				last.focus()
+			} else if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault()
+				first.focus()
+			}
+		}
 		document.addEventListener('keydown', onKeyDown)
 		document.body.style.overflow = 'hidden'
 		closeButtonRef.current?.focus()
@@ -371,7 +438,9 @@ function CardDetailModal({
 		setRefreshing(true)
 		setError(null)
 		try {
-			onCardChange(await refreshTcgCard(card.id))
+			const result = await refreshTcgCard(card.id)
+			if (!result.success || !result.card) throw new Error(result.error || 'Price refresh failed.')
+			onCardChange(result.card)
 		} catch (requestError) {
 			setError(errorText(requestError, 'Price refresh is temporarily unavailable.'))
 		} finally {
@@ -381,7 +450,7 @@ function CardDetailModal({
 
 	return createPortal(
 		<div className='tcg-detail-overlay' onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-			<section className='tcg-detail' role='dialog' aria-modal='true' aria-labelledby='tcg-card-title'>
+			<section ref={dialogRef} className='tcg-detail' role='dialog' aria-modal='true' aria-labelledby='tcg-card-title'>
 				<header className='tcg-detail__header'>
 					<div><span className='tcg-eyebrow'>{card.setName} · #{card.number}</span><h2 id='tcg-card-title'>{card.name}</h2>{card.nameEn && card.nameEn !== card.name && <p>{card.nameEn}</p>}</div>
 					<button ref={closeButtonRef} type='button' className='tcg-detail__close' onClick={onClose} aria-label='Close card details'>×</button>
@@ -398,9 +467,11 @@ function CardDetailModal({
 							<small className='tcg-prices__updated'>Updated {formatDate(card.prices.updatedAt)}</small>
 						</section>
 
-						<section className='tcg-owned-combinations'>
-							<h3>Already in your vault <span>{card.totalOwned} total</span></h3>
-							{card.owned.length === 0 ? <p>No physical copies recorded yet.</p> : <ul>{card.owned.map((entry) => <li key={entry.id}><strong>{entry.quantity}× {entry.variant}</strong><span>{entry.condition} · {entry.language}</span>{entry.notes && <small>{entry.notes}</small>}</li>)}</ul>}
+						<section className={`tcg-owned-combinations${collectionGroup ? ' tcg-owned-combinations--editable' : ''}`}>
+							<h3>Your physical copies <span>{collectionGroup?.totalCopies ?? card.totalOwned} total</span></h3>
+							{collectionGroup && onEntrySaved && onEntryDelete ? (
+				collectionGroup.entries.length === 0 ? <p>No physical copies recorded yet.</p> : <div className='tcg-owned-combinations__entries'>{collectionGroup.entries.map((entry) => <CollectionEntryEditor entry={entry} key={entry.id} onSaved={onEntrySaved} onDelete={(item) => onEntryDelete(item, card)} />)}</div>
+							) : card.owned.length === 0 ? <p>No physical copies recorded yet.</p> : <ul>{card.owned.map((entry) => <li key={entry.id}><strong>{entry.quantity}× {entry.variant}</strong><span>{entry.condition} · {entry.language}</span>{entry.notes && <small>{entry.notes}</small>}</li>)}</ul>}
 						</section>
 
 						<form className='tcg-add-form' onSubmit={handleSubmit}>
@@ -431,9 +502,9 @@ function CollectionEntryEditor({
 	onSaved,
 	onDelete,
 }: {
-	entry: UserCardDto
+	entry: TcgCollectionEntryDto
 	onSaved: (entry: UserCardDto) => void
-	onDelete: (entry: UserCardDto) => void
+	onDelete: (entry: TcgCollectionEntryDto) => void
 }) {
 	const [editing, setEditing] = useState(false)
 	const [variant, setVariant] = useState(entry.variant)
@@ -486,7 +557,7 @@ function CollectionEntryEditor({
 	)
 }
 
-function DeleteEntryDialog({ entry, deleting, onCancel, onConfirm }: { entry: UserCardDto; deleting: boolean; onCancel: () => void; onConfirm: () => void }) {
+function DeleteEntryDialog({ entry, card, deleting, onCancel, onConfirm }: { entry: TcgCollectionEntryDto; card: TcgCardDto; deleting: boolean; onCancel: () => void; onConfirm: () => void }) {
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onCancel()
 		document.addEventListener('keydown', onKey)
@@ -496,8 +567,91 @@ function DeleteEntryDialog({ entry, deleting, onCancel, onConfirm }: { entry: Us
 		<div className='tcg-confirm-overlay' onMouseDown={(event) => event.target === event.currentTarget && onCancel()}>
 			<section className='tcg-confirm' role='alertdialog' aria-modal='true' aria-labelledby='tcg-delete-title'>
 				<span className='tcg-confirm__mark' aria-hidden='true'>!</span><h2 id='tcg-delete-title'>Remove this physical entry?</h2>
-				<p>{entry.quantity}× {entry.card.name} · {entry.variant} · {entry.condition} · {entry.language}</p>
+				<p>{entry.quantity}× {card.name} · {entry.variant} · {entry.condition} · {entry.language}</p>
 				<div><button type='button' className='tcg-button tcg-button--secondary' onClick={onCancel} disabled={deleting}>Cancel</button><button type='button' className='tcg-button tcg-button--danger' onClick={onConfirm} disabled={deleting}>{deleting ? 'Removing…' : 'Remove entry'}</button></div>
+			</section>
+		</div>, document.body
+	)
+}
+
+function CollectionCard({
+	group,
+	sets,
+	selected,
+	onOpen,
+	onSelectedChange,
+}: {
+	group: TcgCollectionGroupDto
+	sets: TcgSetDto[]
+	selected: boolean
+	onOpen: () => void
+	onSelectedChange: (selected: boolean) => void
+}) {
+	const conditions = Array.from(new Set(group.entries.map((entry) => entry.condition)))
+	const languages = Array.from(new Set(group.entries.map((entry) => entry.language)))
+	const checkedAt = group.card.priceCheckedAt ?? group.card.prices.updatedAt
+	return (
+		<article className={`tcg-collection-card${selected ? ' is-selected' : ''}`}>
+			<label className='tcg-collection-card__select' onClick={(event) => event.stopPropagation()}>
+				<input type='checkbox' checked={selected} onChange={(event) => onSelectedChange(event.target.checked)} aria-label={`Select ${group.card.name}`} />
+				<span aria-hidden='true'>✓</span>
+			</label>
+			<button type='button' className='tcg-collection-card__main' onClick={onOpen} aria-label={`Edit ${group.card.name} collection entries`}>
+				<div className='tcg-collection-card__art'>
+					<CardArtwork card={group.card} />
+					<span className='tcg-collection-card__copies'>{group.totalCopies}×</span>
+				</div>
+				<div className='tcg-collection-card__body'>
+					<strong title={group.card.name}>{group.card.name}</strong>
+					<span>{group.card.setName}</span>
+					<small>{formatCollectorReference(group.card, sets)}</small>
+					<div className='tcg-collection-card__chips' aria-label={`Conditions: ${conditions.join(', ')}. Languages: ${languages.join(', ')}`}>
+						{conditions.slice(0, 2).map((condition) => <b key={`condition-${condition}`}>{condition}</b>)}
+						{conditions.length > 2 && <b>+{conditions.length - 2}</b>}
+						{languages.slice(0, 2).map((language) => <i key={`language-${language}`}>{language}</i>)}
+						{languages.length > 2 && <i>+{languages.length - 2}</i>}
+					</div>
+				</div>
+				<footer className='tcg-collection-card__footer'>
+					<span><strong>{formatMoney(group.totalValueEur, 'EUR')}</strong><small>{formatMoney(group.totalValueUsd, 'USD')}</small></span>
+					<span className={group.card.lastRefreshError ? 'has-error' : ''} title={group.card.lastRefreshError || undefined}>{group.card.lastRefreshError ? 'Price check failed' : checkedAt ? `Checked ${formatDate(checkedAt)}` : 'Price not checked'}</span>
+				</footer>
+			</button>
+		</article>
+	)
+}
+
+function CollectionBulkBar({ count, busy, onRefresh, onDelete, onClear }: { count: number; busy: boolean; onRefresh: () => void; onDelete: () => void; onClear: () => void }) {
+	if (count === 0) return null
+	return (
+		<div className='tcg-bulk-bar' role='region' aria-label='Selected card actions'>
+			<strong>{count} selected</strong>
+			<div>
+				<button type='button' className='tcg-button tcg-button--secondary' onClick={onRefresh} disabled={busy}>Refresh prices</button>
+				<button type='button' className='tcg-button tcg-button--danger' onClick={onDelete} disabled={busy}>Delete</button>
+				<button type='button' className='tcg-bulk-bar__clear' onClick={onClear} disabled={busy} aria-label='Clear card selection'>×</button>
+			</div>
+		</div>
+	)
+}
+
+function BulkDeleteDialog({ groups, deleting, onCancel, onConfirm }: { groups: TcgCollectionGroupDto[]; deleting: boolean; onCancel: () => void; onConfirm: () => void }) {
+	const cancelRef = useRef<HTMLButtonElement | null>(null)
+	const copies = groups.reduce((total, group) => total + group.totalCopies, 0)
+	const entries = groups.reduce((total, group) => total + group.entries.length, 0)
+	useEffect(() => {
+		cancelRef.current?.focus()
+		const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onCancel()
+		document.addEventListener('keydown', onKey)
+		return () => document.removeEventListener('keydown', onKey)
+	}, [onCancel])
+	return createPortal(
+		<div className='tcg-confirm-overlay'>
+			<section className='tcg-confirm' role='alertdialog' aria-modal='true' aria-labelledby='tcg-bulk-delete-title' aria-describedby='tcg-bulk-delete-copy'>
+				<span className='tcg-confirm__mark' aria-hidden='true'>!</span>
+				<h2 id='tcg-bulk-delete-title'>Delete selected cards?</h2>
+				<p id='tcg-bulk-delete-copy'>This removes {groups.length} card {groups.length === 1 ? 'print' : 'prints'}, {entries} physical {entries === 1 ? 'entry' : 'entries'}, and {copies} total {copies === 1 ? 'copy' : 'copies'} from your collection.</p>
+				<div><button ref={cancelRef} type='button' className='tcg-button tcg-button--secondary' onClick={onCancel} disabled={deleting}>Cancel</button><button type='button' className='tcg-button tcg-button--danger' onClick={onConfirm} disabled={deleting}>{deleting ? 'Deleting…' : 'Delete selected'}</button></div>
 			</section>
 		</div>, document.body
 	)
@@ -512,7 +666,9 @@ export function CardsPage() {
 	const [statsLoading, setStatsLoading] = useState(false)
 	const [statsError, setStatsError] = useState<string | null>(null)
 	const [notice, setNotice] = useState<Notice | null>(null)
-	const [dataVersion, setDataVersion] = useState(0)
+	const [retryVersion, setRetryVersion] = useState(0)
+	const [collectionVersion, setCollectionVersion] = useState(0)
+	const [statsVersion, setStatsVersion] = useState(0)
 
 	const [searchDraft, setSearchDraft] = useState<SearchFilters>({ query: '', setId: '', number: '', speciesId: '' })
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({ query: '', setId: '', number: '', speciesId: '' })
@@ -535,10 +691,14 @@ export function CardsPage() {
 	const [collectionPage, setCollectionPage] = useState(1)
 	const [collectionLoading, setCollectionLoading] = useState(false)
 	const [collectionError, setCollectionError] = useState<string | null>(null)
-	const [deleteEntry, setDeleteEntry] = useState<UserCardDto | null>(null)
+	const [deleteEntry, setDeleteEntry] = useState<{ entry: TcgCollectionEntryDto; card: TcgCardDto } | null>(null)
 	const [deletingEntry, setDeletingEntry] = useState(false)
+	const [selectedCardIds, setSelectedCardIds] = useState<Set<number>>(new Set())
+	const [bulkAction, setBulkAction] = useState<'refresh' | 'delete' | 'refresh-all' | null>(null)
+	const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
 	const [selectedCard, setSelectedCard] = useState<TcgCardDto | null>(null)
+	const [editorCardId, setEditorCardId] = useState<number | null>(null)
 	const [detailLoading, setDetailLoading] = useState(false)
 	const requestRef = useRef({ search: 0, set: 0, collection: 0 })
 
@@ -568,8 +728,8 @@ export function CardsPage() {
 		}
 	}, [])
 
-	useEffect(() => { loadSets() }, [loadSets, dataVersion])
-	useEffect(() => { if (view === 'dashboard') loadStats() }, [view, loadStats, dataVersion])
+	useEffect(() => { loadSets() }, [loadSets])
+	useEffect(() => { if (view === 'dashboard') loadStats() }, [view, loadStats, statsVersion])
 
 	useEffect(() => {
 		if (view !== 'search') return
@@ -590,7 +750,7 @@ export function CardsPage() {
 		}).finally(() => {
 			if (requestRef.current.search === requestId) setSearchLoading(false)
 		})
-	}, [view, searchFilters, searchPage, dataVersion])
+	}, [view, searchFilters, searchPage, retryVersion])
 
 	useEffect(() => {
 		if (view !== 'sets' || !selectedSetProviderId) return
@@ -604,7 +764,7 @@ export function CardsPage() {
 		}).finally(() => {
 			if (requestRef.current.set === requestId) setSetCardsLoading(false)
 		})
-	}, [view, selectedSetProviderId, setPage, dataVersion])
+	}, [view, selectedSetProviderId, setPage, retryVersion])
 
 	useEffect(() => {
 		if (view !== 'collection') return
@@ -625,23 +785,16 @@ export function CardsPage() {
 		}).finally(() => {
 			if (requestRef.current.collection === requestId) setCollectionLoading(false)
 		})
-	}, [view, collectionFilters, collectionPage, dataVersion])
+	}, [view, collectionFilters, collectionPage, collectionVersion, retryVersion])
 
 	const filteredSets = useMemo(() => {
 		const query = setQuery.trim().toLocaleLowerCase()
-		return query ? sets.filter((set) => `${set.name} ${set.nameEn ?? ''} ${set.series ?? ''}`.toLocaleLowerCase().includes(query)) : sets
+		return query ? sets.filter((set) => `${set.name} ${set.nameEn ?? ''} ${set.series ?? ''} ${set.officialCode ?? ''} ${set.providerSetId}`.toLocaleLowerCase().includes(query)) : sets
 	}, [setQuery, sets])
 	const selectedSet = sets.find((set) => set.providerSetId === selectedSetProviderId) ?? null
 
-	const collectionGroups = useMemo(() => {
-		const groups = new Map<number, { card: TcgCardDto; entries: UserCardDto[] }>()
-		for (const entry of collectionResult.items) {
-			const current = groups.get(entry.card.id)
-			if (current) current.entries.push(entry)
-			else groups.set(entry.card.id, { card: entry.card, entries: [entry] })
-		}
-		return Array.from(groups.values())
-	}, [collectionResult.items])
+	const selectedGroups = useMemo(() => collectionResult.items.filter((group) => selectedCardIds.has(group.card.id)), [collectionResult.items, selectedCardIds])
+	const selectedCollectionGroup = editorCardId === null ? null : collectionResult.items.find((group) => group.card.id === editorCardId) ?? null
 
 	const submitSearch = (event: FormEvent) => {
 		event.preventDefault()
@@ -656,6 +809,7 @@ export function CardsPage() {
 	}
 
 	const openCard = useCallback(async (card: TcgCardDto) => {
+		setEditorCardId(null)
 		setSelectedCard(card)
 		setDetailLoading(true)
 		try {
@@ -665,6 +819,26 @@ export function CardsPage() {
 		} finally {
 			setDetailLoading(false)
 		}
+	}, [])
+
+	const openCollectionCard = useCallback(async (group: TcgCollectionGroupDto) => {
+		setEditorCardId(group.card.id)
+		setSelectedCard(group.card)
+		setDetailLoading(true)
+		try {
+			setSelectedCard(await getTcgCard(group.card.id))
+		} catch {
+			// The grouped collection payload remains editable if a detail refresh fails.
+		} finally {
+			setDetailLoading(false)
+		}
+	}, [])
+
+	const replaceCardEverywhere = useCallback((card: TcgCardDto) => {
+		setSearchResult((current) => ({ ...current, items: current.items.map((item) => item.id === card.id ? card : item) }))
+		setSetResult((current) => ({ ...current, items: current.items.map((item) => item.id === card.id ? card : item) }))
+		setCollectionResult((current) => ({ ...current, items: current.items.map((group) => group.card.id === card.id ? { ...group, card } : group) }))
+		setSelectedCard((current) => current?.id === card.id ? card : current)
 	}, [])
 
 	const openMissingSpecies = (speciesId: number) => {
@@ -683,7 +857,9 @@ export function CardsPage() {
 
 	const handleAdded = (entry: UserCardDto) => {
 		setNotice({ type: 'success', text: `${entry.quantity}× ${entry.card.name} is now in your physical collection.` })
-		setDataVersion((value) => value + 1)
+		replaceCardEverywhere(entry.card)
+		setCollectionVersion((value) => value + 1)
+		setStatsVersion((value) => value + 1)
 	}
 
 	const quickAdd = async (card: TcgCardDto) => {
@@ -692,7 +868,8 @@ export function CardsPage() {
 		try {
 			const entry = await addTcgCollectionEntry({ cardId: card.id, variant: card.variants[0] || 'Normal', condition: 'NM', language: 'ES', quantity: 1, notes: null })
 			setNotice({ type: 'success', text: `Added 1× ${entry.card.name} · ${entry.variant} · NM · ES.` })
-			setDataVersion((value) => value + 1)
+			replaceCardEverywhere(entry.card)
+			setStatsVersion((value) => value + 1)
 		} catch (error) {
 			setNotice({ type: 'error', text: errorText(error, 'Could not add this card.') })
 		} finally {
@@ -701,24 +878,108 @@ export function CardsPage() {
 	}
 
 	const updateCollectionItem = (updated: UserCardDto) => {
-		setCollectionResult((current) => ({ ...current, items: current.items.map((entry) => entry.id === updated.id ? updated : entry) }))
+		setCollectionResult((current) => ({
+			...current,
+			items: current.items.map((group) => group.card.id !== updated.card.id ? group : {
+				...group,
+				card: updated.card,
+				entries: group.entries.map((entry) => entry.id === updated.id ? toCollectionEntry(updated) : entry),
+			}),
+		}))
+		setSelectedCard(updated.card)
 		setNotice({ type: 'success', text: `${updated.card.name} entry updated.` })
-		setDataVersion((value) => value + 1)
+		setCollectionVersion((value) => value + 1)
+		setStatsVersion((value) => value + 1)
 	}
 
 	const confirmDelete = async () => {
 		if (!deleteEntry) return
 		setDeletingEntry(true)
 		try {
-			await deleteTcgCollectionEntry(deleteEntry.id)
-			setCollectionResult((current) => ({ ...current, items: current.items.filter((entry) => entry.id !== deleteEntry.id), totalCount: Math.max(0, current.totalCount - 1) }))
+			await deleteTcgCollectionEntry(deleteEntry.entry.id)
+			setCollectionResult((current) => ({
+				...current,
+				items: current.items.map((group) => group.card.id !== deleteEntry.card.id ? group : { ...group, entries: group.entries.filter((entry) => entry.id !== deleteEntry.entry.id), totalCopies: Math.max(0, group.totalCopies - deleteEntry.entry.quantity) }).filter((group) => group.entries.length > 0),
+				totalCount: deleteEntry.entry.quantity === deleteEntry.card.totalOwned ? Math.max(0, current.totalCount - 1) : current.totalCount,
+			}))
 			setNotice({ type: 'success', text: `${deleteEntry.card.name} entry removed.` })
 			setDeleteEntry(null)
-			setDataVersion((value) => value + 1)
+			setCollectionVersion((value) => value + 1)
+			setStatsVersion((value) => value + 1)
 		} catch (error) {
 			setNotice({ type: 'error', text: errorText(error, 'Could not remove this entry.') })
 		} finally {
 			setDeletingEntry(false)
+		}
+	}
+
+	const setCardSelected = (cardId: number, selected: boolean) => {
+		setSelectedCardIds((current) => {
+			const next = new Set(current)
+			if (selected) next.add(cardId)
+			else next.delete(cardId)
+			return next
+		})
+	}
+
+	const refreshSelectedCards = async () => {
+		const requestedIds = Array.from(selectedCardIds)
+		if (requestedIds.length === 0) return
+		setBulkAction('refresh')
+		setNotice(null)
+		try {
+			const result = await refreshTcgCards({ cardIds: requestedIds, ownedOnly: false })
+			result.items.forEach((item) => { if (item.success && item.card) replaceCardEverywhere(item.card) })
+			const failedIds = new Set(requestedIds)
+			result.items.forEach((item) => { if (item.success) failedIds.delete(item.cardId) })
+			setSelectedCardIds(failedIds)
+			setCollectionVersion((value) => value + 1)
+			const failures = failedIds.size
+			setNotice({
+				type: failures > 0 || result.truncated ? 'error' : 'success',
+				text: failures > 0 || result.truncated
+					? `${result.items.filter((item) => item.success).length} refreshed. ${failures} still selected; retry them or check your API key and provider status.${result.truncated ? ' The server limited this batch.' : ''}`
+					: `${result.processed} card prices refreshed.`,
+			})
+		} catch (error) {
+			setNotice({ type: 'error', text: `${errorText(error, 'Could not refresh selected prices.')} Your selection was kept so you can retry.` })
+		} finally {
+			setBulkAction(null)
+		}
+	}
+
+	const refreshOwnedCollection = async () => {
+		setBulkAction('refresh-all')
+		setNotice(null)
+		try {
+			const result = await refreshTcgCards({ ownedOnly: true })
+			result.items.forEach((item) => { if (item.success && item.card) replaceCardEverywhere(item.card) })
+			setCollectionVersion((value) => value + 1)
+			const failures = result.items.filter((item) => !item.success).length
+			setNotice({ type: failures || result.truncated ? 'error' : 'success', text: failures || result.truncated ? `${result.processed - failures} prices refreshed; ${failures} failed.${result.truncated ? ' The server limited this batch; run it again to continue.' : ' Check Settings if supported market coverage is unavailable.'}` : `${result.processed} owned card prices refreshed.` })
+		} catch (error) {
+			setNotice({ type: 'error', text: errorText(error, 'Could not refresh owned card prices. Check your connection and try again.') })
+		} finally {
+			setBulkAction(null)
+		}
+	}
+
+	const confirmBulkDelete = async () => {
+		const ids = Array.from(selectedCardIds)
+		if (ids.length === 0) return
+		setBulkAction('delete')
+		setNotice(null)
+		try {
+			await deleteTcgCollectionCards(ids)
+			setCollectionResult((current) => ({ ...current, items: current.items.filter((group) => !selectedCardIds.has(group.card.id)), totalCount: Math.max(0, current.totalCount - ids.length) }))
+			setSelectedCardIds(new Set())
+			setBulkDeleteOpen(false)
+			setStatsVersion((value) => value + 1)
+			setNotice({ type: 'success', text: `${ids.length} selected card ${ids.length === 1 ? 'print was' : 'prints were'} removed from your collection.` })
+		} catch (error) {
+			setNotice({ type: 'error', text: `${errorText(error, 'Could not delete selected cards.')} Your selection was kept so you can retry.` })
+		} finally {
+			setBulkAction(null)
 		}
 	}
 
@@ -740,20 +1001,20 @@ export function CardsPage() {
 
 			{notice && <div className={`tcg-notice tcg-notice--${notice.type}`} role={notice.type === 'error' ? 'alert' : 'status'}><span>{notice.text}</span><button type='button' onClick={() => setNotice(null)} aria-label='Dismiss notice'>×</button></div>}
 
-			<main className='tcg-page__content'>
+			<div className='tcg-page__content'>
 				{view === 'dashboard' && <DashboardView stats={stats} loading={statsLoading} error={statsError} onRetry={loadStats} onMissingSpecies={openMissingSpecies} onSet={openSet} onOpenCard={openCard} />}
 
 				{view === 'search' && (
 					<section className='tcg-catalog-view'>
 						<div className='tcg-view-heading'><div><span className='tcg-eyebrow'>Global catalog</span><h2>Find a card</h2><p>Search Spanish or English names, then narrow the exact print.</p></div>{searchResult.totalCount !== null && <span>{searchResult.totalCount.toLocaleString()} results</span>}</div>
 						<form className='tcg-toolbar' onSubmit={submitSearch}>
-							<label className='tcg-field tcg-field--search'><span>Name</span><input type='search' value={searchDraft.query} onChange={(event) => setSearchDraft((current) => ({ ...current, query: event.target.value }))} placeholder='Pikachu, Charizard…' /></label>
+							<label className='tcg-field tcg-field--search'><span>Name or collector reference</span><input type='search' value={searchDraft.query} onChange={(event) => setSearchDraft((current) => ({ ...current, query: event.target.value }))} placeholder='Mewtwo, SVP 216, SSP 132/191…' /></label>
 							<label className='tcg-field'><span>Set</span><select value={searchDraft.setId} onChange={(event) => setSearchDraft((current) => ({ ...current, setId: event.target.value }))}><option value=''>All sets</option>{sets.map((set) => <option value={set.id} key={set.id}>{set.name}</option>)}</select></label>
-							<label className='tcg-field tcg-field--compact'><span>Number</span><input value={searchDraft.number} onChange={(event) => setSearchDraft((current) => ({ ...current, number: event.target.value }))} placeholder='025' /></label>
+							<label className='tcg-field tcg-field--compact'><span>Collector number</span><input value={searchDraft.number} onChange={(event) => setSearchDraft((current) => ({ ...current, number: event.target.value }))} placeholder='216 or 132/191' /></label>
 							<label className='tcg-field tcg-field--compact'><span>National Dex</span><input type='number' min='1' value={searchDraft.speciesId} onChange={(event) => setSearchDraft((current) => ({ ...current, speciesId: event.target.value }))} placeholder='25' /></label>
 							<button type='submit' className='tcg-button tcg-button--primary'><TcgIcon name='search' /> Search</button>
 						</form>
-						{searchError ? <TcgState title='The card catalog is not responding' message='TCGdex may be experiencing an outage. Wait a moment and retry; existing collection data is unaffected.' action={{ label: 'Retry search', onClick: () => setDataVersion((value) => value + 1) }} /> : searchLoading ? <TcgState busy title='Searching the catalog' message='Matching cards and current ownership…' /> : searchResult.items.length === 0 ? <TcgState title='No matching cards' message='Try a broader name, remove a set filter, or check the collector number.' /> : <><TcgCardGrid cards={searchResult.items} onOpen={openCard} /><Pagination page={searchResult.page} hasMore={searchResult.hasMore} totalCount={searchResult.totalCount} pageSize={searchResult.pageSize} onChange={setSearchPage} /></>}
+						{searchError ? <TcgState title='The card catalog is not responding' message='TCGdex may be experiencing an outage. Wait a moment and retry; existing collection data is unaffected.' action={{ label: 'Retry search', onClick: () => setRetryVersion((value) => value + 1) }} /> : searchLoading ? <TcgState busy title='Searching the catalog' message='Matching cards and current ownership…' /> : searchResult.items.length === 0 ? <TcgState title='No matching cards' message='Try a broader name, remove a set filter, or check the collector number.' /> : <><TcgCardGrid cards={searchResult.items} sets={sets} onOpen={openCard} /><Pagination page={searchResult.page} hasMore={searchResult.hasMore} totalCount={searchResult.totalCount} pageSize={searchResult.pageSize} onChange={setSearchPage} /></>}
 					</section>
 				)}
 
@@ -762,35 +1023,37 @@ export function CardsPage() {
 						<aside className='tcg-set-picker'>
 							<div className='tcg-set-picker__header'><span className='tcg-eyebrow'>Catalog</span><h2>Sets</h2><input type='search' value={setQuery} onChange={(event) => setSetQuery(event.target.value)} placeholder='Search sets…' aria-label='Search card sets' /></div>
 							{setsLoading ? <p className='tcg-set-picker__state'>Loading sets…</p> : setsError ? <div className='tcg-set-picker__state'><p>Set catalog unavailable.</p><button type='button' onClick={loadSets}>Retry</button></div> : filteredSets.length === 0 ? <p className='tcg-set-picker__state'>No sets match “{setQuery}”.</p> : (
-								<div className='tcg-set-picker__list'>{filteredSets.map((set) => <button type='button' key={set.id} className={selectedSetProviderId === set.providerSetId ? 'is-active' : ''} onClick={() => { setSelectedSetProviderId(set.providerSetId); setSetPage(1) }}><span className='tcg-set-picker__symbol'>{set.symbolUrl ? <img src={set.symbolUrl} alt='' loading='lazy' /> : <TcgIcon name='cards' />}</span><span><strong>{set.name}</strong><small>{set.series || `${set.total} cards`}</small><ProgressBar value={set.completionPercent} label={set.name} /></span><b>{Math.round(set.completionPercent)}%</b></button>)}</div>
+								<div className='tcg-set-picker__list'>{filteredSets.map((set) => <button type='button' key={set.id} className={selectedSetProviderId === set.providerSetId ? 'is-active' : ''} onClick={() => { setSelectedSetProviderId(set.providerSetId); setSetPage(1) }}><span className='tcg-set-picker__symbol'>{set.symbolUrl ? <SafeImage src={set.symbolUrl} /> : <TcgIcon name='cards' />}</span><span><strong>{set.name}</strong><small>{set.series || `${set.total} cards`}</small><ProgressBar value={set.completionPercent} label={set.name} /></span><b>{Math.round(set.completionPercent)}%</b></button>)}</div>
 							)}
 						</aside>
 						<div className='tcg-set-content'>
-							{selectedSet ? <header className='tcg-set-content__header'><div className='tcg-set-content__identity'>{selectedSet.logoUrl && <img src={selectedSet.logoUrl} alt='' />}<div><span className='tcg-eyebrow'>{selectedSet.series || 'Pokémon TCG set'}</span><h2>{selectedSet.name}</h2><p>{selectedSet.releaseDate ? `Released ${formatDate(selectedSet.releaseDate)} · ` : ''}{selectedSet.printedTotal} printed · {selectedSet.total} cataloged</p></div></div><div className='tcg-set-content__progress'><strong>{selectedSet.ownedUniqueCards} / {selectedSet.total}</strong><span>unique owned · {selectedSet.ownedCopies} copies</span><ProgressBar value={selectedSet.completionPercent} label={selectedSet.name} /></div></header> : <TcgState title='Choose a set' message='Select a set to open its full printable checklist.' />}
-							{selectedSet && (setCardsError ? <TcgState title='This set is temporarily unavailable' message='The provider did not return its card list. Your tracked cards remain safe.' action={{ label: 'Retry set', onClick: () => setDataVersion((value) => value + 1) }} /> : setCardsLoading ? <TcgState busy title='Opening the checklist' message={`Loading ${selectedSet.name}…`} /> : setResult.items.length === 0 ? <TcgState title='No cards cached for this set' message='The catalog may still be syncing from TCGdex. Retry shortly or choose another set.' action={{ label: 'Retry catalog', onClick: () => setDataVersion((value) => value + 1) }} /> : <><div className='tcg-set-content__hint'><span>✓ Owned cards show their total quantity.</span><span>Quick +1 uses the first provider variant, NM condition, and ES language.</span></div><TcgCardGrid cards={setResult.items} onOpen={openCard} onQuickAdd={quickAdd} quickAddingId={quickAddingId} setChecklist /><Pagination page={setResult.page} hasMore={setResult.hasMore} totalCount={setResult.totalCount} pageSize={setResult.pageSize} onChange={setSetPage} /></>)}
+							{selectedSet ? <header className='tcg-set-content__header'><div className='tcg-set-content__identity'>{selectedSet.logoUrl && <SafeImage src={selectedSet.logoUrl} />}<div><span className='tcg-eyebrow'>{selectedSet.series || 'Pokémon TCG set'}</span><h2>{selectedSet.name}</h2><p>{selectedSet.releaseDate ? `Released ${formatDate(selectedSet.releaseDate)} · ` : ''}{selectedSet.printedTotal} printed · {selectedSet.total} cataloged</p></div></div><div className='tcg-set-content__progress'><strong>{selectedSet.ownedUniqueCards} / {selectedSet.total}</strong><span>unique owned · {selectedSet.ownedCopies} copies</span><ProgressBar value={selectedSet.completionPercent} label={selectedSet.name} /></div></header> : <TcgState title='Choose a set' message='Select a set to open its full printable checklist.' />}
+							{selectedSet && (setCardsError ? <TcgState title='This set is temporarily unavailable' message='The provider did not return its card list. Your tracked cards remain safe.' action={{ label: 'Retry set', onClick: () => setRetryVersion((value) => value + 1) }} /> : setCardsLoading ? <TcgState busy title='Opening the checklist' message={`Loading ${selectedSet.name}…`} /> : setResult.items.length === 0 ? <TcgState title='No cards cached for this set' message='The catalog may still be syncing from TCGdex. Retry shortly or choose another set.' action={{ label: 'Retry catalog', onClick: () => setRetryVersion((value) => value + 1) }} /> : <><div className='tcg-set-content__hint'><span>✓ Owned cards show their total quantity.</span><span>Quick +1 uses the first provider variant, NM condition, and ES language.</span></div><TcgCardGrid cards={setResult.items} sets={sets} onOpen={openCard} onQuickAdd={quickAdd} quickAddingId={quickAddingId} setChecklist /><Pagination page={setResult.page} hasMore={setResult.hasMore} totalCount={setResult.totalCount} pageSize={setResult.pageSize} onChange={setSetPage} /></>)}
 						</div>
 					</section>
 				)}
 
 				{view === 'collection' && (
 					<section className='tcg-collection-view'>
-						<div className='tcg-view-heading'><div><span className='tcg-eyebrow'>Your physical inventory</span><h2>Collection</h2><p>Every variant, condition, language, and quantity as a distinct entry.</p></div><span>{collectionResult.totalCount.toLocaleString()} entries</span></div>
+						<div className='tcg-view-heading tcg-view-heading--collection'><div><span className='tcg-eyebrow'>Your physical inventory</span><h2>Binder grid</h2><p>One card print per slot. Open a card to edit its variants, condition, language, and quantities.</p></div><div className='tcg-collection-heading__actions'><span>{collectionResult.totalCount.toLocaleString()} unique prints</span><button type='button' className='tcg-button tcg-button--secondary' onClick={refreshOwnedCollection} disabled={bulkAction !== null || collectionResult.totalCount === 0}>{bulkAction === 'refresh-all' ? 'Refreshing owned…' : 'Refresh owned prices'}</button></div></div>
 						<form className='tcg-toolbar tcg-toolbar--collection' onSubmit={submitCollectionFilters}>
-							<label className='tcg-field tcg-field--search'><span>Search</span><input type='search' value={collectionDraft.query} onChange={(event) => setCollectionDraft((current) => ({ ...current, query: event.target.value }))} placeholder='Card name…' /></label>
+							<label className='tcg-field tcg-field--search'><span>Name or number</span><input type='search' value={collectionDraft.query} onChange={(event) => setCollectionDraft((current) => ({ ...current, query: event.target.value }))} placeholder='Card name or collector number…' /></label>
 							<label className='tcg-field'><span>Set</span><select value={collectionDraft.setId} onChange={(event) => setCollectionDraft((current) => ({ ...current, setId: event.target.value }))}><option value=''>All sets</option>{sets.map((set) => <option value={set.id} key={set.id}>{set.name}</option>)}</select></label>
 							<label className='tcg-field'><span>Language</span><select value={collectionDraft.language} onChange={(event) => setCollectionDraft((current) => ({ ...current, language: event.target.value }))}><option value=''>All languages</option>{LANGUAGES.map((item) => <option key={item}>{item}</option>)}</select></label>
 							<label className='tcg-field'><span>Condition</span><select value={collectionDraft.condition} onChange={(event) => setCollectionDraft((current) => ({ ...current, condition: event.target.value }))}><option value=''>All conditions</option>{CONDITIONS.map((item) => <option key={item}>{item}</option>)}</select></label>
 							<button type='submit' className='tcg-button tcg-button--primary'>Apply filters</button>
 						</form>
-						{collectionError ? <TcgState title='Your collection could not be loaded' message='The BeastVault API may be temporarily unavailable. No local changes were made.' action={{ label: 'Try again', onClick: () => setDataVersion((value) => value + 1) }} /> : collectionLoading ? <TcgState busy title='Organizing your cards' message='Grouping physical entries by print…' /> : collectionGroups.length === 0 ? <TcgState title='No physical entries found' message={collectionResult.totalCount === 0 ? 'Start in Search or Sets, open a card, and add your first physical copy.' : 'No entries match these filters. Clear one or more filters and try again.'} action={collectionResult.totalCount === 0 ? { label: 'Search cards', onClick: () => setView('search') } : undefined} /> : <><div className='tcg-collection-list'>{collectionGroups.map((group) => <article className='tcg-collection-group' key={group.card.id}><button type='button' className='tcg-collection-group__card' onClick={() => openCard(group.card)}><span className='tcg-collection-group__image'><CardArtwork card={group.card} /></span><span><strong>{group.card.name}</strong><small>{group.card.setName} · #{group.card.number}</small><b>{group.entries.reduce((total, entry) => total + entry.quantity, 0)} copies · {group.entries.length} {group.entries.length === 1 ? 'entry' : 'entries'}</b></span></button><div className='tcg-collection-group__entries'>{group.entries.map((entry) => <CollectionEntryEditor entry={entry} key={entry.id} onSaved={updateCollectionItem} onDelete={setDeleteEntry} />)}</div></article>)}</div><Pagination page={collectionResult.page} hasMore={collectionResult.page * collectionResult.pageSize < collectionResult.totalCount} totalCount={collectionResult.totalCount} pageSize={collectionResult.pageSize} onChange={setCollectionPage} /></>}
+						{collectionError ? <TcgState title='Your collection could not be loaded' message='The BeastVault API may be temporarily unavailable. No local changes were made.' action={{ label: 'Try again', onClick: () => setRetryVersion((value) => value + 1) }} /> : collectionLoading ? <TcgState busy title='Organizing your binder' message='Grouping physical entries by card print…' /> : collectionResult.items.length === 0 ? <TcgState title='No physical cards found' message={collectionResult.totalCount === 0 ? 'Start in Search or Sets, open a card, and add your first physical copy.' : 'No cards match these filters. Clear one or more filters and try again.'} action={collectionResult.totalCount === 0 ? { label: 'Search cards', onClick: () => setView('search') } : undefined} /> : <><div className='tcg-collection-grid'>{collectionResult.items.map((group) => <CollectionCard key={group.card.id} group={group} sets={sets} selected={selectedCardIds.has(group.card.id)} onOpen={() => openCollectionCard(group)} onSelectedChange={(selected) => setCardSelected(group.card.id, selected)} />)}</div><Pagination page={collectionResult.page} hasMore={collectionResult.page * collectionResult.pageSize < collectionResult.totalCount} totalCount={collectionResult.totalCount} pageSize={collectionResult.pageSize} onChange={(page) => { setSelectedCardIds(new Set()); setCollectionPage(page) }} /></>}
+						<CollectionBulkBar count={selectedCardIds.size} busy={bulkAction !== null} onRefresh={refreshSelectedCards} onDelete={() => setBulkDeleteOpen(true)} onClear={() => setSelectedCardIds(new Set())} />
 					</section>
 				)}
-			</main>
+			</div>
 
 			<footer className='tcg-footer'>Card data and images are provided by TCGdex. Market references may link to Cardmarket and TCGplayer. BeastVault is an independent collection tool and is not affiliated with, endorsed, or sponsored by The Pokémon Company, Nintendo, Creatures, Game Freak, Cardmarket, or TCGplayer.</footer>
 
-			{selectedCard && <CardDetailModal card={selectedCard} loading={detailLoading} onClose={() => setSelectedCard(null)} onCardChange={setSelectedCard} onAdded={handleAdded} />}
-			{deleteEntry && <DeleteEntryDialog entry={deleteEntry} deleting={deletingEntry} onCancel={() => setDeleteEntry(null)} onConfirm={confirmDelete} />}
+			{selectedCard && <CardDetailModal card={selectedCard} loading={detailLoading} collectionGroup={selectedCollectionGroup} onClose={() => { setSelectedCard(null); setEditorCardId(null) }} onCardChange={replaceCardEverywhere} onAdded={handleAdded} onEntrySaved={selectedCollectionGroup ? updateCollectionItem : undefined} onEntryDelete={selectedCollectionGroup ? (entry, card) => setDeleteEntry({ entry, card }) : undefined} />}
+			{deleteEntry && <DeleteEntryDialog entry={deleteEntry.entry} card={deleteEntry.card} deleting={deletingEntry} onCancel={() => setDeleteEntry(null)} onConfirm={confirmDelete} />}
+			{bulkDeleteOpen && <BulkDeleteDialog groups={selectedGroups} deleting={bulkAction === 'delete'} onCancel={() => setBulkDeleteOpen(false)} onConfirm={confirmBulkDelete} />}
 		</div>
 	)
 }

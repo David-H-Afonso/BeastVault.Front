@@ -75,6 +75,9 @@ export function SavesPage() {
 	const [importing, setImporting] = useState(false)
 	const [notes, setNotes] = useState('')
 	const [savingNotes, setSavingNotes] = useState(false)
+	const [titleDraft, setTitleDraft] = useState('')
+	const [editingTitle, setEditingTitle] = useState(false)
+	const [savingTitle, setSavingTitle] = useState(false)
 	const [downloading, setDownloading] = useState(false)
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [deleting, setDeleting] = useState(false)
@@ -109,6 +112,8 @@ export function SavesPage() {
 			if (requestId !== detailRequestRef.current) return
 			setDetail(result)
 			setNotes(result.summary.notes ?? '')
+			setTitleDraft(result.summary.title ?? '')
+			setEditingTitle(false)
 		} catch (error) {
 			if (requestId !== detailRequestRef.current) return
 			setDetail(null)
@@ -180,7 +185,7 @@ export function SavesPage() {
 		setNotice(null)
 		const nextNotes = notes.trim() || null
 		try {
-			await updateSaveFile(detail.summary.id, { notes: nextNotes })
+			await updateSaveFile(detail.summary.id, { title: detail.summary.title, notes: nextNotes })
 			setDetail((current) =>
 				current ? { ...current, summary: { ...current.summary, notes: nextNotes } } : current
 			)
@@ -198,6 +203,26 @@ export function SavesPage() {
 			})
 		} finally {
 			setSavingNotes(false)
+		}
+	}
+
+	const handleSaveTitle = async () => {
+		if (!detail || savingTitle) return
+		setSavingTitle(true)
+		setNotice(null)
+		const nextTitle = titleDraft.trim() || null
+		try {
+			await updateSaveFile(detail.summary.id, { title: nextTitle, notes: detail.summary.notes })
+			const displayTitle = nextTitle ?? detail.summary.gameName
+			setDetail((current) => current ? { ...current, summary: { ...current.summary, title: nextTitle, displayTitle } } : current)
+			setSaves((current) => current.map((save) => save.id === detail.summary.id ? { ...save, title: nextTitle, displayTitle } : save))
+			setTitleDraft(nextTitle ?? '')
+			setEditingTitle(false)
+			setNotice({ type: 'success', text: 'Save title updated.' })
+		} catch (error) {
+			setNotice({ type: 'error', text: error instanceof Error ? error.message : 'Could not update the save title.' })
+		} finally {
+			setSavingTitle(false)
 		}
 	}
 
@@ -304,7 +329,7 @@ export function SavesPage() {
 	const notesDirty = (detail?.summary.notes ?? '') !== (notes.trim() || '')
 
 	return (
-		<main className='saves-page'>
+		<div className='saves-page'>
 			<header className='saves-page__header'>
 				<div>
 					<div className='saves-page__eyebrow'>Save-file manager</div>
@@ -420,6 +445,13 @@ export function SavesPage() {
 								detail={detail}
 								downloading={downloading}
 								deleting={deleting}
+								titleDraft={titleDraft}
+								editingTitle={editingTitle}
+								savingTitle={savingTitle}
+								onTitleChange={setTitleDraft}
+								onTitleEdit={() => setEditingTitle(true)}
+								onTitleCancel={() => { setTitleDraft(detail.summary.title ?? ''); setEditingTitle(false) }}
+								onTitleSave={handleSaveTitle}
 								onDownload={handleDownload}
 								onDelete={() => setDeleteOpen(true)}
 							/>
@@ -485,7 +517,7 @@ export function SavesPage() {
 				onCancel={() => setDeleteOpen(false)}
 				onConfirm={handleDelete}
 			/>
-		</main>
+		</div>
 	)
 }
 
@@ -504,6 +536,39 @@ function UploadResults({ results }: { results: SaveFileUploadResultDto[] }) {
 				</li>
 			))}
 		</ul>
+	)
+}
+
+function TrainerAvatar({ name, gender, compact = false }: { name: string; gender: number; compact?: boolean }) {
+	const initial = name.trim().charAt(0).toUpperCase() || '?'
+	const style = gender === 1 ? 'female' : gender === 0 ? 'male' : 'neutral'
+	return (
+		<span className={`trainer-avatar trainer-avatar--${style}${compact ? ' trainer-avatar--compact' : ''}`} aria-label={`${name || 'Unknown trainer'} ${style} trainer avatar`} role='img'>
+			<svg className='trainer-avatar__sprite' viewBox='0 0 64 76' aria-hidden='true'>
+				<path className='trainer-avatar__body' d='M11 74c1-17 9-25 21-25s20 8 21 25H11Z' />
+				<path className='trainer-avatar__neck' d='M27 45h10v10H27z' />
+				<circle className='trainer-avatar__face' cx='32' cy='29' r='16' />
+				<path className={`trainer-avatar__hair trainer-avatar__hair--${style}`} d={style === 'female' ? 'M16 30c-2-15 5-24 17-24 13 0 18 10 15 27l-6-5-2-10c-7 5-14 7-23 6l-1 10-3-4Z' : 'M16 27C15 13 21 6 32 6c12 0 18 8 16 22l-7-7c-6 2-13 1-20-2l-5 8Z'} />
+				<path className='trainer-avatar__visor' d='M23 30h7M34 30h7M30 30h4' />
+				<path className='trainer-avatar__scarf' d='m22 50 10 8 10-8 5 7-15 10-15-10 5-7Z' />
+			</svg>
+			<span className='sr-only'>{initial}</span>
+		</span>
+	)
+}
+
+function BadgeRack({ earned, total }: { earned: number | null; total: number | null }) {
+	if (earned === null || total === null || total < 1) return <div className='trainer-badges'><span>League badges</span><p>Badge data is not available for this save format.</p></div>
+	return (
+		<div className='trainer-badges'>
+			<div><span>League badges</span><strong>{earned} of {total}</strong></div>
+			<ul aria-label={`${earned} of ${total} badges earned`}>
+				{Array.from({ length: total }, (_, index) => <li className={index < earned ? 'is-earned' : ''} key={index}>
+					<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M7 3h10v6c0 3-2 5-5 6-3-1-5-3-5-6V3Zm-3 1h3v5c0 1-1 2-3 1V4Zm16 0h-3v5c0 1 1 2 3 1V4ZM9 15h6v5H9z' /></svg>
+					<span className='sr-only'>Badge {index + 1}: {index < earned ? 'earned' : 'not earned'}</span>
+				</li>)}
+			</ul>
+		</div>
 	)
 }
 
@@ -528,15 +593,16 @@ function SaveSummaryCard({
 					{save.checksumsValid ? '✓ Verified' : '! Checksum issue'}
 				</span>
 			</div>
-			<strong className='save-summary__game'>{save.gameName}</strong>
+			<strong className='save-summary__game'>{save.displayTitle}</strong>
+			{save.title && <span className='save-summary__game-name'>{save.gameName}</span>}
 			<span className='save-summary__filename' title={save.originalFileName}>{save.originalFileName}</span>
 			<div className='save-summary__trainer'>
-				<span className='save-summary__avatar' aria-hidden='true'>{save.trainerName.charAt(0).toUpperCase() || '?'}</span>
+				<TrainerAvatar name={save.trainerName} gender={save.trainerGender} compact />
 				<span><small>Trainer</small><strong>{save.trainerName || 'Unknown'}</strong></span>
 				<span className='save-summary__playtime'><small>Play time</small><strong>{save.playTime}</strong></span>
 			</div>
 			<div className='save-summary__metrics'>
-				<span><strong>{save.badgeCount ?? '—'}</strong><small>Badges</small></span>
+				<span><strong>{save.badgeCount === null ? '—' : `${save.badgeCount}/${save.badgeTotal ?? '?'}`}</strong><small>Badges</small></span>
 				<span><strong>{save.dexCaught}/{save.dexSeen}</strong><small>Dex</small></span>
 				<span><strong>{save.partyCount}</strong><small>Party</small></span>
 				<span><strong>{save.storedPokemonCount}</strong><small>Stored</small></span>
@@ -553,12 +619,26 @@ function SaveDetailHeader({
 	detail,
 	downloading,
 	deleting,
+	titleDraft,
+	editingTitle,
+	savingTitle,
+	onTitleChange,
+	onTitleEdit,
+	onTitleCancel,
+	onTitleSave,
 	onDownload,
 	onDelete,
 }: {
 	detail: SaveFileDetailDto
 	downloading: boolean
 	deleting: boolean
+	titleDraft: string
+	editingTitle: boolean
+	savingTitle: boolean
+	onTitleChange: (value: string) => void
+	onTitleEdit: () => void
+	onTitleCancel: () => void
+	onTitleSave: () => void
 	onDownload: () => void
 	onDelete: () => void
 }) {
@@ -569,7 +649,15 @@ function SaveDetailHeader({
 				<div className='save-detail__game-mark' aria-hidden='true'>G{summary.generation}</div>
 				<div>
 					<div className='save-detail__kicker'>{summary.saveType} · {summary.format}</div>
-					<h2>{summary.gameName}</h2>
+					{editingTitle ? (
+						<form className='save-detail__title-form' onSubmit={(event) => { event.preventDefault(); onTitleSave() }}>
+							<label className='sr-only' htmlFor='save-title'>Save title</label>
+							<input id='save-title' value={titleDraft} onChange={(event) => onTitleChange(event.target.value)} maxLength={120} autoFocus placeholder={summary.gameName} />
+							<button type='button' onClick={onTitleCancel} disabled={savingTitle}>Cancel</button>
+							<button type='submit' className='is-primary' disabled={savingTitle}>{savingTitle ? 'Saving…' : 'Save'}</button>
+						</form>
+					) : <div className='save-detail__title'><h2>{summary.displayTitle}</h2><button type='button' onClick={onTitleEdit} aria-label='Edit save title'>Edit title</button></div>}
+					{summary.title && <span className='save-detail__game-name'>{summary.gameName}</span>}
 					<p>{summary.originalFileName} · {formatBytes(summary.size)}</p>
 				</div>
 			</div>
@@ -610,28 +698,31 @@ function TrainerTab({
 }) {
 	const { trainer, summary } = detail
 	const fields = [
-		['Trainer name', trainer.trainerName || 'Unknown'],
 		['Trainer ID', String(trainer.trainerId).padStart(5, '0')],
 		['Secret ID', String(trainer.secretId).padStart(5, '0')],
 		['Gender', getGenderLabel(trainer.gender)],
 		['Language', trainer.language || 'Unknown'],
 		['Money', new Intl.NumberFormat().format(trainer.money)],
 		['Play time', trainer.playTime],
-		['Badges', trainer.badgeCount === null ? 'Not available' : String(trainer.badgeCount)],
 	]
 
 	return (
 		<div className='trainer-tab'>
-			<section className='trainer-tab__section'>
+			<section className='trainer-tab__section trainer-dossier'>
 				<div className='save-section-heading'>
-					<div><span>Profile</span><h3>Trainer information</h3></div>
+					<div><span>Trainer dossier</span><h3>Identity & progress</h3></div>
 					<small>Imported {formatDate(summary.importedAt)}</small>
+				</div>
+				<div className='trainer-dossier__identity'>
+					<TrainerAvatar name={trainer.trainerName} gender={trainer.gender} />
+					<div><span>{summary.gameName}</span><h4>{trainer.trainerName || 'Unknown trainer'}</h4><p>{getGenderLabel(trainer.gender)} · {trainer.language || 'Unknown language'} · {trainer.playTime} played</p></div>
 				</div>
 				<dl className='trainer-facts'>
 					{fields.map(([label, value]) => (
 						<div key={label}><dt>{label}</dt><dd>{value}</dd></div>
 					))}
 				</dl>
+				<BadgeRack earned={trainer.badgeCount} total={summary.badgeTotal} />
 			</section>
 
 			<section className='trainer-tab__section'>
@@ -639,7 +730,7 @@ function TrainerTab({
 					<div><span>Progress</span><h3>Adventure snapshot</h3></div>
 				</div>
 				<div className='trainer-progress'>
-					<ProgressCard label='Badges' value={trainer.badgeCount ?? 0} max={8} display={trainer.badgeCount?.toString() ?? '—'} />
+					<ProgressCard label='Badges' value={trainer.badgeCount ?? 0} max={summary.badgeTotal ?? Math.max(trainer.badgeCount ?? 0, 1)} display={trainer.badgeCount === null ? '—' : `${trainer.badgeCount}/${summary.badgeTotal ?? '?'}`} />
 					<ProgressCard label='Pokédex seen' value={trainer.dexSeen} max={Math.max(detail.pokedex.length, trainer.dexSeen, 1)} display={trainer.dexSeen.toString()} />
 					<ProgressCard label='Pokédex caught' value={trainer.dexCaught} max={Math.max(detail.pokedex.length, trainer.dexCaught, 1)} display={trainer.dexCaught.toString()} />
 					<ProgressCard label='Pokémon stored' value={summary.storedPokemonCount} max={Math.max(summary.storedPokemonCount, 1)} display={summary.storedPokemonCount.toString()} />
@@ -656,10 +747,10 @@ function TrainerTab({
 					value={notes}
 					onChange={(event) => onNotesChange(event.target.value)}
 					placeholder='e.g. Original Emerald cartridge, pre-Elite Four backup…'
-					maxLength={2000}
+					maxLength={4000}
 				/>
 				<div className='trainer-notes__footer'>
-					<span>{notes.length}/2000</span>
+					<span>{notes.length}/4000</span>
 					<button
 						type='button'
 						className='saves-button saves-button--primary'
@@ -800,12 +891,12 @@ function PokemonPreviewCard({
 				{pokemon.isShiny && <span className='is-shiny'>★ Shiny</span>}
 				{pokemon.isEgg && <span>Egg</span>}
 			</div>
-			<div className='pokemon-preview__metadata' title={pokemon.moves.join(', ')}>
-				<span>{pokemon.natureName}</span>
-				<span>{pokemon.abilityName}</span>
-				{pokemon.heldItemName !== 'None' && <span>{pokemon.heldItemName}</span>}
-				{pokemon.moves.length > 0 && <span>{pokemon.moves.join(' · ')}</span>}
+			<div className='pokemon-preview__metadata'>
+				<span><small>Nature</small>{pokemon.natureName || 'Unknown'}</span>
+				<span><small>Ability</small>{pokemon.abilityName || 'Unknown'}</span>
+				{pokemon.heldItemName !== 'None' && <span className='is-wide'><small>Held item</small>{pokemon.heldItemName}</span>}
 			</div>
+			{pokemon.moves.length > 0 && <ul className='pokemon-preview__moves' aria-label={`${pokemon.nickname || pokemon.speciesName} moves`}>{pokemon.moves.map((move) => <li key={move}>{move}</li>)}</ul>}
 			{existing && (
 				<Link className='pokemon-preview__link' to={`/pokemon/${pokemon.existingPokemonId}`}>
 					View in vault <span aria-hidden='true'>→</span>

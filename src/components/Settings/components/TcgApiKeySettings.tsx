@@ -100,6 +100,12 @@ export function TcgApiKeySettings() {
 					{loading ? 'Checking…' : status?.configured ? 'Configured' : 'Not configured'}
 				</span>
 			</div>
+			<div className='settings-tcg-key__guide'>
+				<div><span>1</span><p><strong>Create a free developer account</strong>Open the Pokémon TCG API developer portal and register or sign in.</p></div>
+				<div><span>2</span><p><strong>Copy your API key</strong>Use the key shown in your developer dashboard. Do not paste your account password.</p></div>
+				<div><span>3</span><p><strong>Save it below</strong>BeastVault stores an encrypted server-side copy for your account.</p></div>
+				<a href='https://dev.pokemontcg.io/' target='_blank' rel='noreferrer'>Open Pokémon TCG API developer portal <span aria-hidden='true'>↗</span></a>
+			</div>
 
 			{status?.configured && (
 				<div className='settings-tcg-key__configured'>
@@ -145,7 +151,7 @@ export function TcgApiKeySettings() {
 					{feedback.type === 'error' && !status && <button type='button' onClick={loadStatus}>Retry</button>}
 				</div>
 			)}
-			<small className='settings-tcg-key__privacy'>The key is sent directly to BeastVault and is never stored in Redux or localStorage.</small>
+			<small className='settings-tcg-key__privacy'>This key is for the third-party Pokémon TCG API, not your BeastVault password. It is sent directly to BeastVault and is never stored in Redux or localStorage.</small>
 		</section>
 	)
 }
