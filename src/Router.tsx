@@ -66,6 +66,10 @@ export const router = createBrowserRouter([
 				path: 'cards',
 				element: <CardsPage />,
 			},
+			{
+				path: 'cards/:view',
+				element: <CardsPage />,
+			},
 		],
 	},
 	{

@@ -8,6 +8,7 @@ import {
 	type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
 	addTcgCollectionEntry,
 	deleteTcgCollectionCards,
@@ -37,6 +38,9 @@ type CardsView = 'dashboard' | 'search' | 'sets' | 'collection'
 type Notice = { type: 'success' | 'error'; text: string }
 type SearchFilters = { query: string; setId: string; number: string; speciesId: string }
 type CollectionFilters = { query: string; setId: string; language: string; condition: string }
+
+const parseCardsView = (value: string | undefined): CardsView =>
+	value === 'search' || value === 'sets' || value === 'collection' ? value : 'dashboard'
 
 const SEARCH_PAGE_SIZE = 30
 const GRID_PAGE_SIZE = 60
@@ -658,7 +662,10 @@ function BulkDeleteDialog({ groups, deleting, onCancel, onConfirm }: { groups: T
 }
 
 export function CardsPage() {
-	const [view, setView] = useState<CardsView>('dashboard')
+	const navigate = useNavigate()
+	const { view: routeView } = useParams<{ view?: string }>()
+	const routeCardsView = parseCardsView(routeView)
+	const [view, setView] = useState<CardsView>(routeCardsView)
 	const [sets, setSets] = useState<TcgSetDto[]>([])
 	const [setsLoading, setSetsLoading] = useState(true)
 	const [setsError, setSetsError] = useState<string | null>(null)
@@ -701,6 +708,17 @@ export function CardsPage() {
 	const [editorCardId, setEditorCardId] = useState<number | null>(null)
 	const [detailLoading, setDetailLoading] = useState(false)
 	const requestRef = useRef({ search: 0, set: 0, collection: 0 })
+
+	useEffect(() => {
+		setView(routeCardsView)
+		if (routeView === 'dashboard' || (routeView && routeCardsView === 'dashboard')) {
+			navigate('/cards', { replace: true })
+		}
+	}, [navigate, routeCardsView, routeView])
+
+	const changeView = useCallback((next: CardsView) => {
+		navigate(next === 'dashboard' ? '/cards' : `/cards/${next}`)
+	}, [navigate])
 
 	const loadSets = useCallback(async () => {
 		setSetsLoading(true)
@@ -846,13 +864,13 @@ export function CardsPage() {
 		setSearchDraft(next)
 		setSearchFilters(next)
 		setSearchPage(1)
-		setView('search')
+		changeView('search')
 	}
 
 	const openSet = (providerSetId: string) => {
 		setSelectedSetProviderId(providerSetId)
 		setSetPage(1)
-		setView('sets')
+		changeView('sets')
 	}
 
 	const handleAdded = (entry: UserCardDto) => {
@@ -995,7 +1013,7 @@ export function CardsPage() {
 				{([
 					['dashboard', 'Dashboard'], ['search', 'Search'], ['sets', 'Sets'], ['collection', 'Collection'],
 				] as [CardsView, string][]).map(([key, label]) => (
-					<button type='button' key={key} className={view === key ? 'is-active' : ''} onClick={() => setView(key)} aria-current={view === key ? 'page' : undefined}><TcgIcon name={key} /><span>{label}</span></button>
+					<button type='button' key={key} className={view === key ? 'is-active' : ''} onClick={() => changeView(key)} aria-current={view === key ? 'page' : undefined}><TcgIcon name={key} /><span>{label}</span></button>
 				))}
 			</nav>
 
