@@ -52,6 +52,13 @@ export interface SavePokedexEntryDto {
 	caught: boolean
 }
 
+export interface SavePokedexProgressDto {
+	entries: SavePokedexEntryDto[]
+	seen: number
+	caught: number
+	total: number
+}
+
 export interface SavePokemonPreviewDto {
 	id: number
 	location: 'party' | 'box'
@@ -79,6 +86,8 @@ export interface SaveFileDetailDto {
 	trainer: SaveTrainerDto
 	pokedex: SavePokedexEntryDto[]
 	pokemon: SavePokemonPreviewDto[]
+	regionalPokedex: SavePokedexProgressDto | null
+	nationalPokedex: SavePokedexProgressDto | null
 }
 
 export interface SaveFileUploadResultDto {

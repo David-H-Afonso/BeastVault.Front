@@ -493,7 +493,7 @@ export function SavesPage() {
 										onImport={handleImportPokemon}
 									/>
 								)}
-								{activeTab === 'pokedex' && <PokedexTab entries={detail.pokedex} />}
+ 								{activeTab === 'pokedex' && <PokedexTab regional={detail.regionalPokedex} national={detail.nationalPokedex} fallback={detail.pokedex} />}
 							</div>
 						</>
 					) : (
@@ -731,8 +731,8 @@ function TrainerTab({
 				</div>
 				<div className='trainer-progress'>
 					<ProgressCard label='Badges' value={trainer.badgeCount ?? 0} max={summary.badgeTotal ?? Math.max(trainer.badgeCount ?? 0, 1)} display={trainer.badgeCount === null ? '—' : `${trainer.badgeCount}/${summary.badgeTotal ?? '?'}`} />
-					<ProgressCard label='Pokédex seen' value={trainer.dexSeen} max={Math.max(detail.pokedex.length, trainer.dexSeen, 1)} display={trainer.dexSeen.toString()} />
-					<ProgressCard label='Pokédex caught' value={trainer.dexCaught} max={Math.max(detail.pokedex.length, trainer.dexCaught, 1)} display={trainer.dexCaught.toString()} />
+					<ProgressCard label='Regional Pokédex seen' value={trainer.dexSeen} max={Math.max(detail.regionalPokedex?.total ?? detail.pokedex.length, trainer.dexSeen, 1)} display={trainer.dexSeen.toString()} />
+					<ProgressCard label='Regional Pokédex caught' value={trainer.dexCaught} max={Math.max(detail.regionalPokedex?.total ?? detail.pokedex.length, trainer.dexCaught, 1)} display={trainer.dexCaught.toString()} />
 					<ProgressCard label='Pokémon stored' value={summary.storedPokemonCount} max={Math.max(summary.storedPokemonCount, 1)} display={summary.storedPokemonCount.toString()} />
 				</div>
 			</section>
@@ -924,7 +924,9 @@ function PokemonSprite({ speciesId, speciesName, isShiny = false }: { speciesId:
 	)
 }
 
-function PokedexTab({ entries }: { entries: SavePokedexEntryDto[] }) {
+function PokedexTab({ regional, national, fallback }: { regional: SaveFileDetailDto['regionalPokedex']; national: SaveFileDetailDto['nationalPokedex']; fallback: SavePokedexEntryDto[] }) {
+	const [scope, setScope] = useState<'regional' | 'national'>('regional')
+	const entries = (scope === 'regional' ? regional?.entries : national?.entries) ?? fallback
 	const [filter, setFilter] = useState<PokedexFilter>('caught')
 	const [search, setSearch] = useState('')
 	const counts = useMemo(
@@ -949,6 +951,13 @@ function PokedexTab({ entries }: { entries: SavePokedexEntryDto[] }) {
 
 	return (
 		<div className='save-pokedex'>
+			<div className='save-pokedex__filters' aria-label='Pokédex scope'>
+				{(['regional', 'national'] as const).map((value) => (
+					<button key={value} type='button' className={scope === value ? 'is-active' : ''} onClick={() => setScope(value)} aria-pressed={scope === value}>
+						{value.charAt(0).toUpperCase() + value.slice(1)}
+					</button>
+				))}
+			</div>
 			<div className='save-pokedex__progress'>
 				<div><span>Pokédex completion</span><strong>{counts.caught} <small>/ {entries.length} caught</small></strong></div>
 				<div className='save-pokedex__track' role='progressbar' aria-label='Pokédex completion' aria-valuenow={Math.round(completion)} aria-valuemin={0} aria-valuemax={100}>
