@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
+import { getTcgVariantPrice, slugifyTcgSet } from '@/utils/tcg'
 import {
 	addTcgCollectionEntry,
 	deleteTcgCollectionCards,
@@ -375,8 +376,8 @@ function CardDetailModal({
 	const closeButtonRef = useRef<HTMLButtonElement | null>(null)
 	const dialogRef = useRef<HTMLElement | null>(null)
 	const selectedVariant = variantChoice === '__custom' ? customVariant.trim() : variantChoice
-	const selectedEur = card.prices.variantEur?.[selectedVariant] ?? card.prices.eur
-	const selectedUsd = card.prices.variantUsd?.[selectedVariant] ?? card.prices.usd
+	const selectedEur = getTcgVariantPrice(card.prices.variantEur, selectedVariant, card.prices.eur)
+	const selectedUsd = getTcgVariantPrice(card.prices.variantUsd, selectedVariant, card.prices.usd)
 
 	useEffect(() => {
 		setVariantChoice(card.variants[0] || 'Normal')
@@ -663,8 +664,8 @@ function BulkDeleteDialog({ groups, deleting, onCancel, onConfirm }: { groups: T
 
 export function CardsPage() {
 	const navigate = useNavigate()
-	const { view: routeView } = useParams<{ view?: string }>()
-	const routeCardsView = parseCardsView(routeView)
+	const { view: routeView, setProviderId: routeSetProviderId } = useParams<{ view?: string; setProviderId?: string }>()
+	const routeCardsView: CardsView = routeSetProviderId ? 'sets' : parseCardsView(routeView)
 	const [view, setView] = useState<CardsView>(routeCardsView)
 	const [sets, setSets] = useState<TcgSetDto[]>([])
 	const [setsLoading, setSetsLoading] = useState(true)
@@ -711,10 +712,10 @@ export function CardsPage() {
 
 	useEffect(() => {
 		setView(routeCardsView)
-		if (routeView === 'dashboard' || (routeView && routeCardsView === 'dashboard')) {
+		if (!routeSetProviderId && (routeView === 'dashboard' || (routeView && routeCardsView === 'dashboard'))) {
 			navigate('/cards', { replace: true })
 		}
-	}, [navigate, routeCardsView, routeView])
+	}, [navigate, routeCardsView, routeView, routeSetProviderId])
 
 	const changeView = useCallback((next: CardsView) => {
 		navigate(next === 'dashboard' ? '/cards' : `/cards/${next}`)
@@ -726,13 +727,16 @@ export function CardsPage() {
 		try {
 			const result = await getTcgSets()
 			setSets(result)
-			setSelectedSetProviderId((current) => current ?? result[0]?.providerSetId ?? null)
+			const routeSet = routeSetProviderId
+				? result.find((set) => set.providerSetId === routeSetProviderId || slugifyTcgSet(set.name) === routeSetProviderId)
+				: null
+			setSelectedSetProviderId((current) => routeSet?.providerSetId ?? current ?? result[0]?.providerSetId ?? null)
 		} catch (error) {
 			setSetsError(errorText(error, 'Could not load the card catalog.'))
 		} finally {
 			setSetsLoading(false)
 		}
-	}, [])
+	}, [routeSetProviderId])
 
 	const loadStats = useCallback(async () => {
 		setStatsLoading(true)
@@ -868,9 +872,10 @@ export function CardsPage() {
 	}
 
 	const openSet = (providerSetId: string) => {
+		const set = sets.find((item) => item.providerSetId === providerSetId)
 		setSelectedSetProviderId(providerSetId)
 		setSetPage(1)
-		changeView('sets')
+		navigate(`/cards/sets/${slugifyTcgSet(set?.name ?? providerSetId)}`)
 	}
 
 	const handleAdded = (entry: UserCardDto) => {
@@ -1041,7 +1046,7 @@ export function CardsPage() {
 						<aside className='tcg-set-picker'>
 							<div className='tcg-set-picker__header'><span className='tcg-eyebrow'>Catalog</span><h2>Sets</h2><input type='search' value={setQuery} onChange={(event) => setSetQuery(event.target.value)} placeholder='Search sets…' aria-label='Search card sets' /></div>
 							{setsLoading ? <p className='tcg-set-picker__state'>Loading sets…</p> : setsError ? <div className='tcg-set-picker__state'><p>Set catalog unavailable.</p><button type='button' onClick={loadSets}>Retry</button></div> : filteredSets.length === 0 ? <p className='tcg-set-picker__state'>No sets match “{setQuery}”.</p> : (
-								<div className='tcg-set-picker__list'>{filteredSets.map((set) => <button type='button' key={set.id} className={selectedSetProviderId === set.providerSetId ? 'is-active' : ''} onClick={() => { setSelectedSetProviderId(set.providerSetId); setSetPage(1) }}><span className='tcg-set-picker__symbol'>{set.symbolUrl ? <SafeImage src={set.symbolUrl} /> : <TcgIcon name='cards' />}</span><span><strong>{set.name}</strong><small>{set.series || `${set.total} cards`}</small><ProgressBar value={set.completionPercent} label={set.name} /></span><b>{Math.round(set.completionPercent)}%</b></button>)}</div>
+								<div className='tcg-set-picker__list'>{filteredSets.map((set) => <button type='button' key={set.id} className={selectedSetProviderId === set.providerSetId ? 'is-active' : ''} onClick={() => openSet(set.providerSetId)}><span className='tcg-set-picker__symbol'>{set.symbolUrl ? <SafeImage src={set.symbolUrl} /> : <TcgIcon name='cards' />}</span><span><strong>{set.name}</strong><small>{set.series || `${set.total} cards`}</small><ProgressBar value={set.completionPercent} label={set.name} /></span><b>{Math.round(set.completionPercent)}%</b></button>)}</div>
 							)}
 						</aside>
 						<div className='tcg-set-content'>

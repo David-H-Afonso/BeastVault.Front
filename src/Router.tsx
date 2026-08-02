@@ -67,6 +67,10 @@ export const router = createBrowserRouter([
 				element: <CardsPage />,
 			},
 			{
+				path: 'cards/sets/:setProviderId',
+				element: <CardsPage />,
+			},
+			{
 				path: 'cards/:view',
 				element: <CardsPage />,
 			},

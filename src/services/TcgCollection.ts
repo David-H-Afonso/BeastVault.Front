@@ -129,6 +129,11 @@ export interface TcgCardBatchRefreshDto {
 	truncated: boolean
 }
 
+export interface TcgAssetCacheResultDto {
+	requested: number
+	cached: number
+}
+
 export interface TcgMissingSpeciesDto {
 	speciesId: number
 	speciesName: string
@@ -224,6 +229,13 @@ export function getTcgSetCards(
 	return customFetch<TcgCardPageDto>(
 		tcgUrl(`/tcg/sets/${encodeURIComponent(setProviderId)}/cards`),
 		{ headers, params: { page, pageSize } }
+	)
+}
+
+export function cacheTcgSetAssets(setProviderId: string): Promise<TcgAssetCacheResultDto> {
+	return customFetch<TcgAssetCacheResultDto>(
+		tcgUrl(`/tcg/sets/${encodeURIComponent(setProviderId)}/assets/cache`),
+		{ method: 'POST', headers }
 	)
 }
 
