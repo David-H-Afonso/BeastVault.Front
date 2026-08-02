@@ -50,6 +50,7 @@ export interface SavePokedexEntryDto {
 	speciesName: string
 	seen: boolean
 	caught: boolean
+	isVersionExclusive: boolean
 }
 
 export interface SavePokedexProgressDto {

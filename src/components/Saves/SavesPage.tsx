@@ -988,7 +988,7 @@ function PokedexTab({ regional, national, fallback }: { regional: SaveFileDetail
 					{filtered.map((entry) => (
 						<article className={`pokedex-entry is-${filter}`} key={entry.speciesId}>
 							<PokemonSprite speciesId={entry.speciesId} speciesName={entry.speciesName} />
-							<div><span>#{String(entry.speciesId).padStart(4, '0')}</span><strong>{entry.speciesName}</strong></div>
+							<div><span>#{String(entry.speciesId).padStart(4, '0')}</span><strong>{entry.speciesName}</strong>{entry.isVersionExclusive && <small>Version exclusive</small>}</div>
 							<span className='pokedex-entry__status'>{entry.caught ? 'Caught' : entry.seen ? 'Seen' : 'Missing'}</span>
 						</article>
 					))}
