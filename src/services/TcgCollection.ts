@@ -130,8 +130,9 @@ export interface TcgCardBatchRefreshDto {
 }
 
 export interface TcgAssetCacheResultDto {
-	requested: number
-	cached: number
+	requested?: number
+	cached?: number
+	message?: string
 }
 
 export interface TcgMissingSpeciesDto {

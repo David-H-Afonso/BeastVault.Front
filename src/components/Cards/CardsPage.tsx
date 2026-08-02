@@ -886,7 +886,7 @@ export function CardsPage() {
 		setNotice(null)
 		try {
 			const result = await cacheTcgSetAssets(providerSetId)
-			setNotice({ type: 'success', text: `Cached both image sizes for ${result.cached} of ${result.requested} cards.` })
+			setNotice({ type: 'success', text: result.message ?? `Image cache started for ${result.cached ?? 0} of ${result.requested ?? 0} cards.` })
 		} catch (error) {
 			setNotice({ type: 'error', text: errorText(error, 'Could not cache this set images.') })
 		} finally {
@@ -899,7 +899,7 @@ export function CardsPage() {
 		setNotice(null)
 		try {
 			const result = await cacheAllTcgAssets()
-			setNotice({ type: 'success', text: `Cached both image sizes for ${result.cached} of ${result.requested} cards.` })
+			setNotice({ type: 'success', text: result.message ?? `Image cache started for ${result.cached ?? 0} of ${result.requested ?? 0} cards.` })
 		} catch (error) {
 			setNotice({ type: 'error', text: errorText(error, 'Could not cache all set images.') })
 		} finally {
