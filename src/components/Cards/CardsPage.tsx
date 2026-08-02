@@ -12,6 +12,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { getTcgVariantPrice, slugifyTcgSet } from '@/utils/tcg'
 import {
 	addTcgCollectionEntry,
+	cacheAllTcgAssets,
+	cacheTcgSetAssets,
 	deleteTcgCollectionCards,
 	deleteTcgCollectionEntry,
 	getTcgCard,
@@ -692,6 +694,7 @@ export function CardsPage() {
 	const [setCardsLoading, setSetCardsLoading] = useState(false)
 	const [setCardsError, setSetCardsError] = useState<string | null>(null)
 	const [quickAddingId, setQuickAddingId] = useState<number | null>(null)
+	const [assetCaching, setAssetCaching] = useState<string | null>(null)
 
 	const [collectionDraft, setCollectionDraft] = useState<CollectionFilters>({ query: '', setId: '', language: '', condition: '' })
 	const [collectionFilters, setCollectionFilters] = useState<CollectionFilters>({ query: '', setId: '', language: '', condition: '' })
@@ -878,6 +881,32 @@ export function CardsPage() {
 		navigate(`/cards/sets/${slugifyTcgSet(set?.name ?? providerSetId)}`)
 	}
 
+	const cacheSetAssets = async (providerSetId: string) => {
+		setAssetCaching(providerSetId)
+		setNotice(null)
+		try {
+			const result = await cacheTcgSetAssets(providerSetId)
+			setNotice({ type: 'success', text: `Cached both image sizes for ${result.cached} of ${result.requested} cards.` })
+		} catch (error) {
+			setNotice({ type: 'error', text: errorText(error, 'Could not cache this set images.') })
+		} finally {
+			setAssetCaching(null)
+		}
+	}
+
+	const cacheAllAssets = async () => {
+		setAssetCaching('all')
+		setNotice(null)
+		try {
+			const result = await cacheAllTcgAssets()
+			setNotice({ type: 'success', text: `Cached both image sizes for ${result.cached} of ${result.requested} cards.` })
+		} catch (error) {
+			setNotice({ type: 'error', text: errorText(error, 'Could not cache all set images.') })
+		} finally {
+			setAssetCaching(null)
+		}
+	}
+
 	const handleAdded = (entry: UserCardDto) => {
 		setNotice({ type: 'success', text: `${entry.quantity}× ${entry.card.name} is now in your physical collection.` })
 		replaceCardEverywhere(entry.card)
@@ -1044,13 +1073,13 @@ export function CardsPage() {
 				{view === 'sets' && (
 					<section className='tcg-sets-view'>
 						<aside className='tcg-set-picker'>
-							<div className='tcg-set-picker__header'><span className='tcg-eyebrow'>Catalog</span><h2>Sets</h2><input type='search' value={setQuery} onChange={(event) => setSetQuery(event.target.value)} placeholder='Search sets…' aria-label='Search card sets' /></div>
+							<div className='tcg-set-picker__header'><span className='tcg-eyebrow'>Catalog</span><h2>Sets</h2><input type='search' value={setQuery} onChange={(event) => setSetQuery(event.target.value)} placeholder='Search sets…' aria-label='Search card sets' /><button type='button' className='tcg-button tcg-button--secondary' onClick={cacheAllAssets} disabled={assetCaching !== null}>{assetCaching === 'all' ? 'Caching…' : 'Cache all images'}</button></div>
 							{setsLoading ? <p className='tcg-set-picker__state'>Loading sets…</p> : setsError ? <div className='tcg-set-picker__state'><p>Set catalog unavailable.</p><button type='button' onClick={loadSets}>Retry</button></div> : filteredSets.length === 0 ? <p className='tcg-set-picker__state'>No sets match “{setQuery}”.</p> : (
 								<div className='tcg-set-picker__list'>{filteredSets.map((set) => <button type='button' key={set.id} className={selectedSetProviderId === set.providerSetId ? 'is-active' : ''} onClick={() => openSet(set.providerSetId)}><span className='tcg-set-picker__symbol'>{set.symbolUrl ? <SafeImage src={set.symbolUrl} /> : <TcgIcon name='cards' />}</span><span><strong>{set.name}</strong><small>{set.series || `${set.total} cards`}</small><ProgressBar value={set.completionPercent} label={set.name} /></span><b>{Math.round(set.completionPercent)}%</b></button>)}</div>
 							)}
 						</aside>
 						<div className='tcg-set-content'>
-							{selectedSet ? <header className='tcg-set-content__header'><div className='tcg-set-content__identity'>{selectedSet.logoUrl && <SafeImage src={selectedSet.logoUrl} />}<div><span className='tcg-eyebrow'>{selectedSet.series || 'Pokémon TCG set'}</span><h2>{selectedSet.name}</h2><p>{selectedSet.releaseDate ? `Released ${formatDate(selectedSet.releaseDate)} · ` : ''}{selectedSet.printedTotal} printed · {selectedSet.total} cataloged</p></div></div><div className='tcg-set-content__progress'><strong>{selectedSet.ownedUniqueCards} / {selectedSet.total}</strong><span>unique owned · {selectedSet.ownedCopies} copies</span><ProgressBar value={selectedSet.completionPercent} label={selectedSet.name} /></div></header> : <TcgState title='Choose a set' message='Select a set to open its full printable checklist.' />}
+							{selectedSet ? <header className='tcg-set-content__header'><div className='tcg-set-content__identity'>{selectedSet.logoUrl && <SafeImage src={selectedSet.logoUrl} />}<div><span className='tcg-eyebrow'>{selectedSet.series || 'Pokémon TCG set'}</span><h2>{selectedSet.name}</h2><p>{selectedSet.releaseDate ? `Released ${formatDate(selectedSet.releaseDate)} · ` : ''}{selectedSet.printedTotal} printed · {selectedSet.total} cataloged</p></div></div><div className='tcg-set-content__progress'><strong>{selectedSet.ownedUniqueCards} / {selectedSet.total}</strong><span>unique owned · {selectedSet.ownedCopies} copies</span><ProgressBar value={selectedSet.completionPercent} label={selectedSet.name} /><button type='button' className='tcg-button tcg-button--secondary' onClick={() => cacheSetAssets(selectedSet.providerSetId)} disabled={assetCaching !== null}>{assetCaching === selectedSet.providerSetId ? 'Caching…' : 'Cache set images'}</button></div></header> : <TcgState title='Choose a set' message='Select a set to open its full printable checklist.' />}
 							{selectedSet && (setCardsError ? <TcgState title='This set is temporarily unavailable' message='The provider did not return its card list. Your tracked cards remain safe.' action={{ label: 'Retry set', onClick: () => setRetryVersion((value) => value + 1) }} /> : setCardsLoading ? <TcgState busy title='Opening the checklist' message={`Loading ${selectedSet.name}…`} /> : setResult.items.length === 0 ? <TcgState title='No cards cached for this set' message='The catalog may still be syncing from TCGdex. Retry shortly or choose another set.' action={{ label: 'Retry catalog', onClick: () => setRetryVersion((value) => value + 1) }} /> : <><div className='tcg-set-content__hint'><span>✓ Owned cards show their total quantity.</span><span>Quick +1 uses the first provider variant, NM condition, and ES language.</span></div><TcgCardGrid cards={setResult.items} sets={sets} onOpen={openCard} onQuickAdd={quickAdd} quickAddingId={quickAddingId} setChecklist /><Pagination page={setResult.page} hasMore={setResult.hasMore} totalCount={setResult.totalCount} pageSize={setResult.pageSize} onChange={setSetPage} /></>)}
 						</div>
 					</section>

@@ -239,6 +239,13 @@ export function cacheTcgSetAssets(setProviderId: string): Promise<TcgAssetCacheR
 	)
 }
 
+export function cacheAllTcgAssets(): Promise<TcgAssetCacheResultDto> {
+	return customFetch<TcgAssetCacheResultDto>(tcgUrl('/tcg/assets/cache'), {
+		method: 'POST',
+		headers,
+	})
+}
+
 export function searchTcgCards(params: TcgCardSearchParams): Promise<TcgCardPageDto> {
 	return customFetch<TcgCardPageDto>(tcgUrl('/tcg/cards/search'), {
 		headers,
