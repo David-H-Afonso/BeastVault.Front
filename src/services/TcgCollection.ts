@@ -130,6 +130,48 @@ export interface TcgCardBatchRefreshDto {
 	truncated: boolean
 }
 
+export interface TcgBulkResolveItemDto {
+	index: number
+	input: string
+	quantity: number
+	success: boolean
+	error: string | null
+	card: TcgCardDto | null
+}
+
+export interface TcgBulkResolveResultDto {
+	items: TcgBulkResolveItemDto[]
+	requested: number
+	resolved: number
+	failed: number
+	truncated: boolean
+}
+
+export interface AddTcgCollectionBulkItemRequest {
+	index: number
+	cardId: number
+	variant: string
+	condition: string
+	language: string
+	quantity: number
+	notes: string | null
+}
+
+export interface TcgBulkAddItemDto {
+	index: number
+	cardId: number
+	success: boolean
+	error: string | null
+	entry: UserCardDto | null
+}
+
+export interface TcgBulkAddResultDto {
+	items: TcgBulkAddItemDto[]
+	requested: number
+	added: number
+	failed: number
+}
+
 export interface TcgAssetCacheResultDto {
 	requested?: number
 	cached?: number
@@ -255,6 +297,14 @@ export function searchTcgCards(params: TcgCardSearchParams): Promise<TcgCardPage
 	})
 }
 
+export function resolveTcgCardsBulk(identifiers: string[]): Promise<TcgBulkResolveResultDto> {
+	return customFetch<TcgBulkResolveResultDto>(tcgUrl('/tcg/cards/resolve-bulk'), {
+		method: 'POST',
+		body: { identifiers },
+		headers,
+	})
+}
+
 export function getTcgCard(id: number): Promise<TcgCardDto> {
 	return customFetch<TcgCardDto>(tcgUrl(`/tcg/cards/${id}`), { headers })
 }
@@ -283,6 +333,16 @@ export function addTcgCollectionEntry(
 	return customFetch<UserCardDto>(tcgUrl('/tcg/collection'), {
 		method: 'POST',
 		body: request,
+		headers,
+	})
+}
+
+export function addTcgCollectionBulk(
+	items: AddTcgCollectionBulkItemRequest[]
+): Promise<TcgBulkAddResultDto> {
+	return customFetch<TcgBulkAddResultDto>(tcgUrl('/tcg/collection/bulk'), {
+		method: 'POST',
+		body: { items },
 		headers,
 	})
 }

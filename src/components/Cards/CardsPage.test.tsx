@@ -5,6 +5,7 @@ import type { TcgCardDto, TcgCardPageDto, TcgSetDto } from '@/services/TcgCollec
 
 const {
 	addTcgCollectionEntry,
+	addTcgCollectionBulk,
 	cacheAllTcgAssets,
 	cacheTcgSetAssets,
 	deleteTcgCollectionCards,
@@ -16,10 +17,12 @@ const {
 	getTcgSets,
 	refreshTcgCard,
 	refreshTcgCards,
+	resolveTcgCardsBulk,
 	searchTcgCards,
 	updateTcgCollectionEntry,
 } = vi.hoisted(() => ({
 	addTcgCollectionEntry: vi.fn(),
+	addTcgCollectionBulk: vi.fn(),
 	cacheAllTcgAssets: vi.fn(),
 	cacheTcgSetAssets: vi.fn(),
 	deleteTcgCollectionCards: vi.fn(),
@@ -31,12 +34,14 @@ const {
 	getTcgSets: vi.fn(),
 	refreshTcgCard: vi.fn(),
 	refreshTcgCards: vi.fn(),
+	resolveTcgCardsBulk: vi.fn(),
 	searchTcgCards: vi.fn(),
 	updateTcgCollectionEntry: vi.fn(),
 }))
 
 vi.mock('@/services/TcgCollection', () => ({
 	addTcgCollectionEntry,
+	addTcgCollectionBulk,
 	cacheAllTcgAssets,
 	cacheTcgSetAssets,
 	deleteTcgCollectionCards,
@@ -48,6 +53,7 @@ vi.mock('@/services/TcgCollection', () => ({
 	getTcgSets,
 	refreshTcgCard,
 	refreshTcgCards,
+	resolveTcgCardsBulk,
 	searchTcgCards,
 	updateTcgCollectionEntry,
 }))
@@ -130,12 +136,14 @@ beforeEach(() => {
 	})
 	getTcgSetCards.mockResolvedValue({ ...cardPage, pageSize: 60 })
 	addTcgCollectionEntry.mockResolvedValue({})
+	addTcgCollectionBulk.mockResolvedValue({ items: [], requested: 0, added: 0, failed: 0 })
 	cacheAllTcgAssets.mockResolvedValue({})
 	cacheTcgSetAssets.mockResolvedValue({})
 	deleteTcgCollectionCards.mockResolvedValue(undefined)
 	deleteTcgCollectionEntry.mockResolvedValue(undefined)
 	refreshTcgCard.mockResolvedValue({ success: true, card })
 	refreshTcgCards.mockResolvedValue({ items: [], requested: 0, processed: 0, truncated: false })
+	resolveTcgCardsBulk.mockResolvedValue({ items: [], requested: 0, resolved: 0, failed: 0, truncated: false })
 	updateTcgCollectionEntry.mockResolvedValue({})
 })
 
@@ -144,6 +152,16 @@ afterEach(cleanup)
 function renderSearch() {
 	return render(
 		<MemoryRouter initialEntries={['/cards/search']}>
+			<Routes>
+				<Route path='/cards/:view' element={<CardsPage />} />
+			</Routes>
+		</MemoryRouter>
+	)
+}
+
+function renderBulk() {
+	return render(
+		<MemoryRouter initialEntries={['/cards/bulk']}>
 			<Routes>
 				<Route path='/cards/:view' element={<CardsPage />} />
 			</Routes>
@@ -166,5 +184,38 @@ describe('CardsPage', () => {
 
 		await act(async () => resolveDetail(card))
 		await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Testmon' })).toBeNull())
+	})
+
+	it('resolves and adds selected bulk references in one request', async () => {
+		resolveTcgCardsBulk.mockResolvedValue({
+			items: [{ index: 0, input: 'TST 001 x2', quantity: 2, success: true, error: null, card }],
+			requested: 1,
+			resolved: 1,
+			failed: 0,
+			truncated: false,
+		})
+		addTcgCollectionBulk.mockResolvedValue({
+			items: [{ index: 0, cardId: card.id, success: true, error: null, entry: null }],
+			requested: 1,
+			added: 1,
+			failed: 0,
+		})
+		renderBulk()
+
+		fireEvent.change(screen.getByLabelText('Collector references'), { target: { value: 'TST 001 x2' } })
+		fireEvent.click(screen.getByRole('button', { name: 'Resolve references' }))
+		await screen.findByText('Resolved prints')
+		fireEvent.click(screen.getByRole('button', { name: 'Add 1 selected' }))
+
+		await waitFor(() => expect(addTcgCollectionBulk).toHaveBeenCalledWith([{
+			index: 0,
+			cardId: 42,
+			variant: 'normal',
+			condition: 'NM',
+			language: 'ES',
+			quantity: 2,
+			notes: null,
+		}]))
+		await screen.findByText('Added')
 	})
 })

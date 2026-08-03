@@ -12,6 +12,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { getTcgVariantPrice, slugifyTcgSet } from '@/utils/tcg'
 import {
 	addTcgCollectionEntry,
+	addTcgCollectionBulk,
 	cacheAllTcgAssets,
 	cacheTcgSetAssets,
 	deleteTcgCollectionCards,
@@ -23,6 +24,7 @@ import {
 	getTcgSets,
 	refreshTcgCard,
 	refreshTcgCards,
+	resolveTcgCardsBulk,
 	searchTcgCards,
 	updateTcgCollectionEntry,
 	type TcgCardDto,
@@ -33,17 +35,18 @@ import {
 	type TcgCollectionStatsDto,
 	type TcgDexProgressDto,
 	type TcgSetDto,
+	type TcgBulkResolveItemDto,
 	type UserCardDto,
 } from '@/services/TcgCollection'
 import './CardsPage.scss'
 
-type CardsView = 'dashboard' | 'search' | 'sets' | 'collection'
+type CardsView = 'dashboard' | 'search' | 'sets' | 'collection' | 'bulk'
 type Notice = { type: 'success' | 'error'; text: string }
 type SearchFilters = { query: string; setId: string; number: string; speciesId: string }
 type CollectionFilters = { query: string; setId: string; language: string; condition: string }
 
 const parseCardsView = (value: string | undefined): CardsView =>
-	value === 'search' || value === 'sets' || value === 'collection' ? value : 'dashboard'
+	value === 'search' || value === 'sets' || value === 'collection' || value === 'bulk' ? value : 'dashboard'
 
 const SEARCH_PAGE_SIZE = 30
 const GRID_PAGE_SIZE = 60
@@ -109,13 +112,14 @@ const toCollectionEntry = (entry: UserCardDto): TcgCollectionEntryDto => ({
 
 const clampPercent = (value: number) => Math.min(100, Math.max(0, value))
 
-function TcgIcon({ name }: { name: 'dashboard' | 'search' | 'sets' | 'collection' | 'cards' }) {
+function TcgIcon({ name }: { name: 'dashboard' | 'search' | 'sets' | 'collection' | 'cards' | 'bulk' }) {
 	const paths: Record<typeof name, ReactNode> = {
 		dashboard: <><rect x='3' y='3' width='7' height='7' rx='1' /><rect x='14' y='3' width='7' height='7' rx='1' /><rect x='3' y='14' width='7' height='7' rx='1' /><rect x='14' y='14' width='7' height='7' rx='1' /></>,
 		search: <><circle cx='11' cy='11' r='7' /><path d='m20 20-4-4' /></>,
 		sets: <><rect x='4' y='3' width='14' height='18' rx='2' /><path d='M8 7h6M8 11h6M8 15h4' /><path d='M18 7h2v14a2 2 0 0 1-2 2H8' /></>,
 		collection: <><path d='M4 7h16v13H4z' /><path d='M2 4h20v3H2zM9 11h6' /></>,
 		cards: <><rect x='5' y='2' width='14' height='20' rx='2' /><circle cx='12' cy='11' r='3' /><path d='M5 11h4M15 11h4' /></>,
+		bulk: <><rect x='4' y='5' width='13' height='16' rx='2' /><path d='M8 2h11a2 2 0 0 1 2 2v13M8 9h5M8 13h5' /></>,
 	}
 	return <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>{paths[name]}</svg>
 }
@@ -219,6 +223,132 @@ function TcgCardGrid({
 				</article>
 			))}
 		</div>
+	)
+}
+
+type BulkDraft = TcgBulkResolveItemDto & {
+	include: boolean
+	variant: string
+	condition: string
+	language: string
+	notes: string
+	added: boolean
+}
+
+const toBulkDraft = (item: TcgBulkResolveItemDto): BulkDraft => ({
+	...item,
+	include: item.success && item.card !== null,
+	variant: item.card?.variants[0] || 'normal',
+	condition: 'NM',
+	language: 'ES',
+	notes: '',
+	added: false,
+})
+
+function BulkAddView({ onCollectionChanged }: { onCollectionChanged: () => void }) {
+	const [input, setInput] = useState('')
+	const [rows, setRows] = useState<BulkDraft[]>([])
+	const [resolving, setResolving] = useState(false)
+	const [adding, setAdding] = useState(false)
+	const [error, setError] = useState<string | null>(null)
+	const [status, setStatus] = useState<string | null>(null)
+
+	const updateRow = (index: number, changes: Partial<BulkDraft>) => {
+		setRows((current) => current.map((row) => row.index === index ? { ...row, ...changes } : row))
+	}
+
+	const resolve = async (event: FormEvent) => {
+		event.preventDefault()
+		const identifiers = input.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+		if (identifiers.length === 0) {
+			setError('Paste at least one collector reference.')
+			return
+		}
+		setResolving(true)
+		setError(null)
+		setStatus(null)
+		try {
+			const result = await resolveTcgCardsBulk(identifiers)
+			setRows(result.items.map(toBulkDraft))
+			setStatus(`${result.resolved} resolved, ${result.failed} need attention.${result.truncated ? ' Only the first 500 lines were processed.' : ''}`)
+		} catch (requestError) {
+			setError(errorText(requestError, 'The bulk resolver is unavailable.'))
+		} finally {
+			setResolving(false)
+		}
+	}
+
+	const addSelected = async () => {
+		const selected = rows.filter((row) => row.include && row.card && !row.added)
+		if (selected.length === 0) {
+			setError('Select at least one resolved card.')
+			return
+		}
+		setAdding(true)
+		setError(null)
+		setStatus(null)
+		try {
+			const result = await addTcgCollectionBulk(selected.map((row) => ({
+				index: row.index,
+				cardId: row.card!.id,
+				variant: row.variant,
+				condition: row.condition,
+				language: row.language,
+				quantity: row.quantity,
+				notes: row.notes.trim() || null,
+			})))
+			const responseByIndex = new Map(result.items.map((item) => [item.index, item]))
+			setRows((current) => current.map((row) => {
+				const response = responseByIndex.get(row.index)
+				return response ? { ...row, added: response.success, include: response.success ? false : row.include, error: response.error } : row
+			}))
+			setStatus(`${result.added} rows added.${result.failed ? ` ${result.failed} rows need attention.` : ''}`)
+			if (result.added > 0) onCollectionChanged()
+		} catch (requestError) {
+			setError(errorText(requestError, 'The bulk add failed. No rows were changed.'))
+		} finally {
+			setAdding(false)
+		}
+	}
+
+	const selectedCount = rows.filter((row) => row.include && row.card && !row.added).length
+
+	return (
+		<section className='tcg-bulk-view'>
+			<div className='tcg-view-heading'>
+				<div><span className='tcg-eyebrow'>Fast inventory entry</span><h2>Bulk add cards</h2><p>Paste one collector reference per line. Review the resolved print before adding it to your physical collection.</p></div>
+				{rows.length > 0 && <span>{selectedCount} ready to add</span>}
+			</div>
+			<form className='tcg-bulk-input' onSubmit={resolve}>
+				<label className='tcg-field tcg-field--wide' htmlFor='tcg-bulk-identifiers'><span>Collector references</span><textarea id='tcg-bulk-identifiers' rows={8} value={input} onChange={(event) => setInput(event.target.value)} placeholder={'SVP 210\nMEE 005 x2\nDRI 168'} aria-describedby='tcg-bulk-help' /></label>
+				<div className='tcg-bulk-input__footer'><small id='tcg-bulk-help'>Use <code>SET number</code>, optionally with <code>/printed-total</code> and <code>xquantity</code>. Blank lines are ignored. Maximum 500 lines per pass.</small><button type='submit' className='tcg-button tcg-button--primary' disabled={resolving}>{resolving ? 'Resolving…' : 'Resolve references'}</button></div>
+			</form>
+			{error && <div className='tcg-form-error' role='alert'>{error}</div>}
+			{status && <div className='tcg-inline-status' role='status'>{status}</div>}
+			{rows.length > 0 && (
+				<>
+					<div className='tcg-bulk-results__heading'><div><span className='tcg-eyebrow'>Review queue</span><h3>Resolved prints</h3></div><button type='button' className='tcg-button tcg-button--primary' onClick={addSelected} disabled={adding || selectedCount === 0}>{adding ? 'Adding…' : `Add ${selectedCount} selected`}</button></div>
+					<div className='tcg-bulk-list' aria-label='Resolved cards'>
+						{rows.map((row) => (
+							<article className={`tcg-bulk-row${row.success ? '' : ' tcg-bulk-row--failed'}${row.added ? ' tcg-bulk-row--added' : ''}`} key={`${row.index}-${row.input}`}>
+								<div className='tcg-bulk-row__select'><input type='checkbox' checked={row.include} disabled={!row.card || row.added} onChange={(event) => updateRow(row.index, { include: event.target.checked })} aria-label={`Include ${row.input}`} /></div>
+								<div className='tcg-bulk-row__identity'>
+									{row.card ? <div className='tcg-bulk-row__card'><div className='tcg-bulk-row__image'><CardArtwork card={row.card} /></div><div><strong>{row.card.name}</strong><span>{row.card.setName} · {row.card.collectorReference || row.input}</span><small>{row.input}</small></div></div> : <div><strong>{row.input}</strong><span className='tcg-bulk-row__error'>{row.error || 'Card could not be resolved.'}</span></div>}
+								</div>
+								{row.card && <>
+									<label className='tcg-field'><span>Variant</span><select value={row.variant} disabled={row.added} onChange={(event) => updateRow(row.index, { variant: event.target.value })}>{(row.card.variants.length ? row.card.variants : ['normal']).map((variant) => <option value={variant} key={variant}>{variant}</option>)}</select></label>
+									<label className='tcg-field'><span>Condition</span><select value={row.condition} disabled={row.added} onChange={(event) => updateRow(row.index, { condition: event.target.value })}>{CONDITIONS.map((condition) => <option value={condition} key={condition}>{condition}</option>)}</select></label>
+									<label className='tcg-field'><span>Language</span><select value={row.language} disabled={row.added} onChange={(event) => updateRow(row.index, { language: event.target.value })}>{LANGUAGES.map((language) => <option value={language} key={language}>{language}</option>)}</select></label>
+									<label className='tcg-field tcg-field--quantity'><span>Qty</span><input type='number' min='1' max='9999' value={row.quantity} disabled={row.added} onChange={(event) => updateRow(row.index, { quantity: Math.max(1, Number(event.target.value)) })} /></label>
+									<label className='tcg-field tcg-field--notes'><span>Notes</span><input value={row.notes} disabled={row.added} onChange={(event) => updateRow(row.index, { notes: event.target.value })} placeholder='Optional' /></label>
+									{row.added && <span className='tcg-bulk-row__added'>Added</span>}
+								</>}
+							</article>
+						))}
+					</div>
+				</>
+			)}
+		</section>
 	)
 }
 
@@ -1058,7 +1188,7 @@ export function CardsPage() {
 
 			<nav className='tcg-tabs' aria-label='Card collection views'>
 				{([
-					['dashboard', 'Dashboard'], ['search', 'Search'], ['sets', 'Sets'], ['collection', 'Collection'],
+					['dashboard', 'Dashboard'], ['search', 'Search'], ['bulk', 'Bulk add'], ['sets', 'Sets'], ['collection', 'Collection'],
 				] as [CardsView, string][]).map(([key, label]) => (
 					<button type='button' key={key} className={view === key ? 'is-active' : ''} onClick={() => changeView(key)} aria-current={view === key ? 'page' : undefined}><TcgIcon name={key} /><span>{label}</span></button>
 				))}
@@ -1082,6 +1212,8 @@ export function CardsPage() {
 						{searchError ? <TcgState title='The card catalog is not responding' message='TCGdex may be experiencing an outage. Wait a moment and retry; existing collection data is unaffected.' action={{ label: 'Retry search', onClick: () => setRetryVersion((value) => value + 1) }} /> : searchLoading ? <TcgState busy title='Searching the catalog' message='Matching cards and current ownership…' /> : searchResult.items.length === 0 ? <TcgState title='No matching cards' message='Try a broader name, remove a set filter, or check the collector number.' /> : <><TcgCardGrid cards={searchResult.items} sets={sets} onOpen={openCard} /><Pagination page={searchResult.page} hasMore={searchResult.hasMore} totalCount={searchResult.totalCount} pageSize={searchResult.pageSize} onChange={setSearchPage} /></>}
 					</section>
 				)}
+
+				{view === 'bulk' && <BulkAddView onCollectionChanged={() => { setCollectionVersion((value) => value + 1); setStatsVersion((value) => value + 1) }} />}
 
 				{view === 'sets' && (
 					<section className='tcg-sets-view'>
