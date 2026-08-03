@@ -80,15 +80,15 @@ const getTrainerSpriteUrl = (originGame: number, gender: number) =>
 	`https://play.pokemonshowdown.com/sprites/trainers/${getTrainerSpriteName(originGame, gender)}.png`
 
 const GAME_LOGO_BY_ORIGIN: Record<number, string> = {
-	1: 'sapphire.jpg', 2: 'ruby.jpg', 3: 'emerald.jpg', 4: 'firered.jpg', 5: 'leafgreen.jpg',
+	1: 'sapphire.png', 2: 'ruby.png', 3: 'emerald.png', 4: 'firered.png', 5: 'leafgreen.png',
 	7: 'heartgold.jpg', 8: 'soulsilver.jpg', 10: 'diamond.jpg', 11: 'pearl.jpg', 12: 'platinum.jpg',
 	20: 'white.jpg', 21: 'black.jpg', 22: 'white-2.jpg', 23: 'black-2.jpg', 24: 'x.jpg', 25: 'y.jpg',
 	26: 'alpha-sapphire.jpg', 27: 'omega-ruby.jpg', 30: 'sun.jpg', 31: 'moon.jpg', 32: 'ultra-sun.jpg', 33: 'ultra-moon.jpg',
-	35: 'red-blue.png', 36: 'red-blue.png', 37: 'red-blue.png', 38: 'yellow.png', 39: 'gold.png', 40: 'silver.png', 41: 'crystal.jpg',
+	35: 'red-blue.png', 36: 'red-blue.png', 37: 'red-blue.png', 38: 'yellow.png', 39: 'gold.png', 40: 'silver.png', 41: 'crystal.png',
 	42: 'lets-go-pikachu.jpg', 43: 'lets-go-eevee.jpg', 44: 'sword.jpg', 45: 'shield.jpg', 47: 'legends-arceus.jpg',
 	48: 'brilliant-diamond.jpg', 49: 'shining-pearl.jpg', 50: 'scarlet.jpg', 51: 'violet.jpg', 52: 'legends-z-a.jpg',
 	53: 'red-blue.png', 54: 'red-blue.png', 55: 'gold-silver.png', 56: 'gold-silver.png', 57: 'ruby-sapphire.svg',
-	58: 'emerald.jpg', 59: 'firered.jpg', 60: 'ruby-sapphire.svg', 61: 'ruby-sapphire.svg', 62: 'ruby-sapphire.svg',
+	58: 'emerald.png', 59: 'firered.png', 60: 'ruby-sapphire.svg', 61: 'ruby-sapphire.svg', 62: 'ruby-sapphire.svg',
 	63: 'diamond.jpg', 64: 'platinum.jpg', 65: 'heartgold.jpg', 66: 'black.jpg', 67: 'black-2.jpg', 68: 'x.jpg',
 	69: 'x.jpg', 70: 'omega-ruby.jpg', 71: 'sun.jpg', 72: 'ultra-sun.jpg', 73: 'lets-go-pikachu.jpg', 74: 'sword.jpg',
 	75: 'brilliant-diamond.jpg', 76: 'scarlet.jpg',
