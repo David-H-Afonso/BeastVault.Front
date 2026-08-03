@@ -35,6 +35,7 @@ export interface TcgCardDto {
 	setId: number
 	setProviderId: string
 	setName: string
+	collectorReference: string | null
 	prices: TcgPriceDto
 	owned: TcgOwnedEntryDto[]
 	totalOwned: number

@@ -466,10 +466,10 @@ function CardDetailModal({
 					<div className='tcg-detail__visual'><CardArtwork card={card} large /></div>
 					<div className='tcg-detail__content'>
 						{loading && <div className='tcg-detail__loading' role='status'>Loading latest card details…</div>}
-						<div className='tcg-detail__facts'><span><small>Rarity</small><strong>{card.rarity || 'Unknown'}</strong></span><span><small>Artist</small><strong>{card.artist || 'Unknown'}</strong></span><span><small>National Dex</small><strong>{card.nationalPokedexNumbers.length ? card.nationalPokedexNumbers.map((id) => `#${id}`).join(', ') : '—'}</strong></span></div>
+						<div className='tcg-detail__facts'><span><small>Identifier</small><strong>{card.collectorReference || card.providerCardId}</strong></span><span><small>Rarity</small><strong>{card.rarity || 'Unknown'}</strong></span><span><small>Artist</small><strong>{card.artist || 'Unknown'}</strong></span><span><small>National Dex</small><strong>{card.nationalPokedexNumbers.length ? card.nationalPokedexNumbers.map((id) => `#${id}`).join(', ') : '—'}</strong></span></div>
 						<section className='tcg-prices' aria-label='Market prices'>
-							<div><span>Cardmarket</span><strong>{formatMoney(selectedEur, 'EUR')}</strong>{card.prices.cardmarketUrl && <a href={card.prices.cardmarketUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
-							<div><span>TCGPlayer</span><strong>{formatMoney(selectedUsd, 'USD')}</strong>{card.prices.tcgplayerUrl && <a href={card.prices.tcgplayerUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
+							<div><span>Cardmarket trend</span><strong>{formatMoney(selectedEur, 'EUR')}</strong>{card.prices.cardmarketUrl && <a href={card.prices.cardmarketUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
+							<div><span>TCGPlayer market</span><strong>{formatMoney(selectedUsd, 'USD')}</strong>{card.prices.tcgplayerUrl && <a href={card.prices.tcgplayerUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
 							<button type='button' className='tcg-button tcg-button--secondary' onClick={handleRefresh} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh price'}</button>
 							<small className='tcg-prices__updated'>Updated {formatDate(card.prices.updatedAt)}</small>
 						</section>

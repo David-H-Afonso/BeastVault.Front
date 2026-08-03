@@ -676,7 +676,7 @@
 	&__visual { position: sticky; top: 0; align-self: start; height: min(560px, calc(100dvh - 150px)); padding: 1rem; background: radial-gradient(circle at 50% 35%, var(--surface-secondary), var(--bg-primary)); }
 	&__content { min-width: 0; padding: 0.85rem; border-left: 1px solid var(--border-light); }
 	&__loading { margin-bottom: 0.5rem; padding: 0.4rem; border-radius: var(--radius-sm); background: var(--color-info-bg); color: var(--color-info-light); font-size: 0.65rem; }
-	&__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; margin-bottom: 0.6rem; }
+	&__facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; margin-bottom: 0.6rem; }
 	&__facts > span { padding: 0.45rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--surface-secondary); }
 	&__facts small, &__facts strong { display: block; }
 	&__facts small { font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
@@ -793,7 +793,7 @@
 	.tcg-collection-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.55rem; }
 	.tcg-detail__body { grid-template-columns: 210px minmax(0, 1fr); }
 	.tcg-detail__visual { height: min(420px, calc(100dvh - 150px)); padding: 0.65rem; }
-	.tcg-detail__facts { grid-template-columns: 1fr; }
+	.tcg-detail__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.tcg-prices { grid-template-columns: 1fr 1fr; }
 	.tcg-prices .tcg-button { grid-column: 1 / -1; }
 }
@@ -849,7 +849,7 @@
 	.tcg-detail__body { display: block; }
 	.tcg-detail__visual { position: relative; height: 290px; padding: 0.7rem; }
 	.tcg-detail__content { padding: 0.7rem; border-top: 1px solid var(--border-light); border-left: none; }
-	.tcg-detail__facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.tcg-detail__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.tcg-owned-combinations ul { grid-template-columns: 1fr; }
 	.tcg-confirm-overlay { align-items: flex-end; padding: 0; }
 	.tcg-confirm { border-radius: var(--radius-xl) var(--radius-xl) 0 0; }

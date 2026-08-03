@@ -87,6 +87,7 @@ const card: TcgCardDto = {
 	setId: 1,
 	setProviderId: 'sv08',
 	setName: 'Test Set',
+	collectorReference: 'TST 001',
 	prices: {
 		eur: null,
 		usd: null,
