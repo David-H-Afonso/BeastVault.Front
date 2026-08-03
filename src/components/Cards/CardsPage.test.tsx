@@ -158,6 +158,7 @@ describe('CardsPage', () => {
 		renderSearch()
 
 		fireEvent.click(await screen.findByRole('button', { name: 'Open Testmon details' }))
+		expect(screen.getByText('TST 001')).toBeTruthy()
 		fireEvent.click(screen.getByRole('button', { name: 'Close card details' }))
 		expect(screen.queryByRole('dialog', { name: 'Testmon' })).toBeNull()
 
