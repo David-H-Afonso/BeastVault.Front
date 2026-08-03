@@ -712,6 +712,7 @@ export function CardsPage() {
 	const [editorCardId, setEditorCardId] = useState<number | null>(null)
 	const [detailLoading, setDetailLoading] = useState(false)
 	const requestRef = useRef({ search: 0, set: 0, collection: 0 })
+	const detailRequestRef = useRef(0)
 
 	useEffect(() => {
 		setView(routeCardsView)
@@ -834,29 +835,41 @@ export function CardsPage() {
 	}
 
 	const openCard = useCallback(async (card: TcgCardDto) => {
+		const requestId = ++detailRequestRef.current
 		setEditorCardId(null)
 		setSelectedCard(card)
 		setDetailLoading(true)
 		try {
-			setSelectedCard(await getTcgCard(card.id))
+			const detailedCard = await getTcgCard(card.id)
+			if (detailRequestRef.current === requestId) setSelectedCard(detailedCard)
 		} catch {
 			// The grid payload is complete enough for the panel when a detail refresh fails.
 		} finally {
-			setDetailLoading(false)
+			if (detailRequestRef.current === requestId) setDetailLoading(false)
 		}
 	}, [])
 
 	const openCollectionCard = useCallback(async (group: TcgCollectionGroupDto) => {
+		const requestId = ++detailRequestRef.current
 		setEditorCardId(group.card.id)
 		setSelectedCard(group.card)
 		setDetailLoading(true)
 		try {
-			setSelectedCard(await getTcgCard(group.card.id))
+			const detailedCard = await getTcgCard(group.card.id)
+			if (detailRequestRef.current === requestId) setSelectedCard(detailedCard)
 		} catch {
 			// The grouped collection payload remains editable if a detail refresh fails.
 		} finally {
-			setDetailLoading(false)
+			if (detailRequestRef.current === requestId) setDetailLoading(false)
 		}
+	}, [])
+
+	const closeCard = useCallback(() => {
+		// Ignore an in-flight detail response after the user closes the panel.
+		detailRequestRef.current += 1
+		setSelectedCard(null)
+		setEditorCardId(null)
+		setDetailLoading(false)
 	}, [])
 
 	const replaceCardEverywhere = useCallback((card: TcgCardDto) => {
@@ -1103,7 +1116,7 @@ export function CardsPage() {
 
 			<footer className='tcg-footer'>Card data and images are provided by TCGdex. Market references may link to Cardmarket and TCGplayer. BeastVault is an independent collection tool and is not affiliated with, endorsed, or sponsored by The Pokémon Company, Nintendo, Creatures, Game Freak, Cardmarket, or TCGplayer.</footer>
 
-			{selectedCard && <CardDetailModal card={selectedCard} loading={detailLoading} collectionGroup={selectedCollectionGroup} onClose={() => { setSelectedCard(null); setEditorCardId(null) }} onCardChange={replaceCardEverywhere} onAdded={handleAdded} onEntrySaved={selectedCollectionGroup ? updateCollectionItem : undefined} onEntryDelete={selectedCollectionGroup ? (entry, card) => setDeleteEntry({ entry, card }) : undefined} />}
+			{selectedCard && <CardDetailModal card={selectedCard} loading={detailLoading} collectionGroup={selectedCollectionGroup} onClose={closeCard} onCardChange={replaceCardEverywhere} onAdded={handleAdded} onEntrySaved={selectedCollectionGroup ? updateCollectionItem : undefined} onEntryDelete={selectedCollectionGroup ? (entry, card) => setDeleteEntry({ entry, card }) : undefined} />}
 			{deleteEntry && <DeleteEntryDialog entry={deleteEntry.entry} card={deleteEntry.card} deleting={deletingEntry} onCancel={() => setDeleteEntry(null)} onConfirm={confirmDelete} />}
 			{bulkDeleteOpen && <BulkDeleteDialog groups={selectedGroups} deleting={bulkAction === 'delete'} onCancel={() => setBulkDeleteOpen(false)} onConfirm={confirmBulkDelete} />}
 		</div>
