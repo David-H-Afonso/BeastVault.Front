@@ -963,6 +963,7 @@ function PokemonSprite({ speciesId, speciesName, isShiny = false }: { speciesId:
 
 function PokedexTab({ regional, national, fallback, originGame, gameName }: { regional: SaveFileDetailDto['regionalPokedex']; national: SaveFileDetailDto['nationalPokedex']; fallback: SavePokedexEntryDto[]; originGame: number; gameName: string }) {
 	const [scope, setScope] = useState<'regional' | 'national'>('regional')
+	const gameLogoUrl = getGameLogoUrl(originGame)
 	const entries = (scope === 'regional' ? regional?.entries : national?.entries) ?? fallback
 	const [filter, setFilter] = useState<PokedexFilter>('caught')
 	const [search, setSearch] = useState('')
@@ -1025,7 +1026,7 @@ function PokedexTab({ regional, national, fallback, originGame, gameName }: { re
 					{filtered.map((entry) => (
 						<article className={`pokedex-entry is-${filter}`} key={entry.speciesId}>
 							<PokemonSprite speciesId={entry.speciesId} speciesName={entry.speciesName} />
-							<div><span>#{String(entry.speciesId).padStart(4, '0')}</span><div className='pokedex-entry__name'><strong>{entry.speciesName}</strong>{entry.isVersionExclusive && getGameLogoUrl(originGame) && <img className='pokedex-entry__game-logo' src={getGameLogoUrl(originGame) ?? undefined} alt={`Version exclusive in ${gameName}`} title={`Version exclusive in ${gameName}`} />}</div></div>
+							<div><span>#{String(entry.speciesId).padStart(4, '0')}</span><div className='pokedex-entry__name'><strong>{entry.speciesName}</strong>{entry.isVersionExclusive && gameLogoUrl && <img className='pokedex-entry__game-logo' src={gameLogoUrl} alt={`Version exclusive in ${gameName}`} title={`Version exclusive in ${gameName}`} />}</div></div>
 							<span className='pokedex-entry__status'>{entry.caught ? 'Caught' : entry.seen ? 'Seen' : 'Missing'}</span>
 						</article>
 					))}
