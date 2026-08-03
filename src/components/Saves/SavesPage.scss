@@ -1015,7 +1015,9 @@
 
 	> div { display: flex; flex-direction: column; min-width: 0; }
 	> div span { font-size: 0.54rem; color: var(--text-muted); }
-	> div strong { overflow: hidden; text-overflow: ellipsis; font-size: 0.69rem; color: var(--text-primary); white-space: nowrap; }
+	&__name { display: flex; align-items: center; min-width: 0; gap: 0.3rem; }
+	&__name strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 0.69rem; color: var(--text-primary); white-space: nowrap; }
+	&__game-logo { flex: none; width: 23px; height: 23px; padding: 0.16rem; border: 1px solid var(--border-secondary); border-radius: 50%; background: var(--surface-primary); object-fit: contain; box-shadow: var(--shadow-sm); }
 
 	&__status { padding: 0.12rem 0.32rem; border-radius: var(--radius-full); background: var(--surface-primary); color: var(--text-muted); font-size: 0.52rem; font-weight: 800; }
 	&.is-caught .pokedex-entry__status { background: var(--color-success-bg); color: var(--color-success-light); }

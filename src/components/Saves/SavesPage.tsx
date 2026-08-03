@@ -60,25 +60,44 @@ const getGenderLabel = (gender: number) => {
 
 const getTrainerSpriteName = (originGame: number, gender: number) => {
 	const female = gender === 1
-	if (originGame === 4 || originGame === 5 || (originGame >= 35 && originGame <= 38)) return female ? 'green' : 'red'
-	if (originGame >= 7 && originGame <= 8 || originGame >= 39 && originGame <= 41) return female ? 'lyra' : 'ethan'
-	if (originGame >= 1 && originGame <= 3) return female ? 'may' : 'brendan'
-	if (originGame >= 10 && originGame <= 12 || originGame >= 48 && originGame <= 49) return female ? 'dawn' : 'lucas'
-	if (originGame >= 20 && originGame <= 21) return female ? 'hilda' : 'hilbert'
-	if (originGame >= 22 && originGame <= 23) return female ? 'rosa' : 'nate'
-	if (originGame >= 24 && originGame <= 25) return female ? 'serena' : 'calem'
-	if (originGame >= 26 && originGame <= 27) return female ? 'may' : 'brendan'
-	if (originGame >= 30 && originGame <= 33) return female ? 'selene' : 'elio'
-	if (originGame >= 42 && originGame <= 43) return female ? 'elaine' : 'chase'
-	if (originGame >= 44 && originGame <= 45) return female ? 'gloria' : 'victor'
+	if ([4, 5, 35, 36, 37, 38, 53, 54, 59].includes(originGame)) return female ? 'green' : 'red'
+	if ([7, 8, 39, 40, 41, 55, 56, 65].includes(originGame)) return female ? 'lyra' : 'ethan'
+	if ([1, 2, 3, 57, 58, 60, 61, 62, 70].includes(originGame)) return female ? 'may' : 'brendan'
+	if ([10, 11, 12, 48, 49, 63, 64, 75].includes(originGame)) return female ? 'dawn' : 'lucas'
+	if ([20, 21, 66].includes(originGame)) return female ? 'hilda' : 'hilbert'
+	if ([22, 23, 67].includes(originGame)) return female ? 'rosa' : 'nate'
+	if ([24, 25, 68, 69].includes(originGame)) return female ? 'serena' : 'calem'
+	if ([26, 27, 71].includes(originGame)) return female ? 'may' : 'brendan'
+	if ([30, 31, 32, 33, 72].includes(originGame)) return female ? 'selene' : 'elio'
+	if ([42, 43, 73].includes(originGame)) return female ? 'elaine' : 'chase'
+	if ([44, 45, 74].includes(originGame)) return female ? 'gloria' : 'victor'
 	if (originGame === 47) return female ? 'akari' : 'rei'
-	if (originGame >= 50 && originGame <= 51) return female ? 'juliana-s' : 'florian-s'
-	if (originGame === 52) return female ? 'playerf-go' : 'player-go'
+	if ([50, 51, 52, 76].includes(originGame)) return originGame === 52 ? (female ? 'playerf-go' : 'player-go') : (female ? 'juliana-s' : 'florian-s')
 	return female ? 'may' : 'brendan'
 }
 
 const getTrainerSpriteUrl = (originGame: number, gender: number) =>
 	`https://play.pokemonshowdown.com/sprites/trainers/${getTrainerSpriteName(originGame, gender)}.png`
+
+const GAME_LOGO_BY_ORIGIN: Record<number, string> = {
+	1: 'sapphire.jpg', 2: 'ruby.jpg', 3: 'emerald.jpg', 4: 'firered.jpg', 5: 'leafgreen.jpg',
+	7: 'heartgold.jpg', 8: 'soulsilver.jpg', 10: 'diamond.jpg', 11: 'pearl.jpg', 12: 'platinum.jpg',
+	20: 'white.jpg', 21: 'black.jpg', 22: 'white-2.jpg', 23: 'black-2.jpg', 24: 'x.jpg', 25: 'y.jpg',
+	26: 'alpha-sapphire.jpg', 27: 'omega-ruby.jpg', 30: 'sun.jpg', 31: 'moon.jpg', 32: 'ultra-sun.jpg', 33: 'ultra-moon.jpg',
+	35: 'red-blue.png', 36: 'red-blue.png', 37: 'red-blue.png', 38: 'yellow.png', 39: 'gold.png', 40: 'silver.png', 41: 'crystal.jpg',
+	42: 'lets-go-pikachu.jpg', 43: 'lets-go-eevee.jpg', 44: 'sword.jpg', 45: 'shield.jpg', 47: 'legends-arceus.jpg',
+	48: 'brilliant-diamond.jpg', 49: 'shining-pearl.jpg', 50: 'scarlet.jpg', 51: 'violet.jpg', 52: 'legends-z-a.jpg',
+	53: 'red-blue.png', 54: 'red-blue.png', 55: 'gold-silver.png', 56: 'gold-silver.png', 57: 'ruby-sapphire.svg',
+	58: 'emerald.jpg', 59: 'firered.jpg', 60: 'ruby-sapphire.svg', 61: 'ruby-sapphire.svg', 62: 'ruby-sapphire.svg',
+	63: 'diamond.jpg', 64: 'platinum.jpg', 65: 'heartgold.jpg', 66: 'black.jpg', 67: 'black-2.jpg', 68: 'x.jpg',
+	69: 'x.jpg', 70: 'omega-ruby.jpg', 71: 'sun.jpg', 72: 'ultra-sun.jpg', 73: 'lets-go-pikachu.jpg', 74: 'sword.jpg',
+	75: 'brilliant-diamond.jpg', 76: 'scarlet.jpg',
+}
+
+const getGameLogoUrl = (originGame: number) => {
+	const fileName = GAME_LOGO_BY_ORIGIN[originGame]
+	return fileName ? `/game-logos/${fileName}` : null
+}
 
 export function SavesPage() {
 	const [saves, setSaves] = useState<SaveFileSummaryDto[]>([])
@@ -515,7 +534,7 @@ export function SavesPage() {
 										onImport={handleImportPokemon}
 									/>
 								)}
- 								{activeTab === 'pokedex' && <PokedexTab regional={detail.regionalPokedex} national={detail.nationalPokedex} fallback={detail.pokedex} />}
+								{activeTab === 'pokedex' && <PokedexTab regional={detail.regionalPokedex} national={detail.nationalPokedex} fallback={detail.pokedex} originGame={detail.summary.originGame} gameName={detail.summary.gameName} />}
 							</div>
 						</>
 					) : (
@@ -942,7 +961,7 @@ function PokemonSprite({ speciesId, speciesName, isShiny = false }: { speciesId:
 	)
 }
 
-function PokedexTab({ regional, national, fallback }: { regional: SaveFileDetailDto['regionalPokedex']; national: SaveFileDetailDto['nationalPokedex']; fallback: SavePokedexEntryDto[] }) {
+function PokedexTab({ regional, national, fallback, originGame, gameName }: { regional: SaveFileDetailDto['regionalPokedex']; national: SaveFileDetailDto['nationalPokedex']; fallback: SavePokedexEntryDto[]; originGame: number; gameName: string }) {
 	const [scope, setScope] = useState<'regional' | 'national'>('regional')
 	const entries = (scope === 'regional' ? regional?.entries : national?.entries) ?? fallback
 	const [filter, setFilter] = useState<PokedexFilter>('caught')
@@ -1006,7 +1025,7 @@ function PokedexTab({ regional, national, fallback }: { regional: SaveFileDetail
 					{filtered.map((entry) => (
 						<article className={`pokedex-entry is-${filter}`} key={entry.speciesId}>
 							<PokemonSprite speciesId={entry.speciesId} speciesName={entry.speciesName} />
-							<div><span>#{String(entry.speciesId).padStart(4, '0')}</span><strong>{entry.speciesName}</strong>{entry.isVersionExclusive && <small>Version exclusive</small>}</div>
+							<div><span>#{String(entry.speciesId).padStart(4, '0')}</span><div className='pokedex-entry__name'><strong>{entry.speciesName}</strong>{entry.isVersionExclusive && getGameLogoUrl(originGame) && <img className='pokedex-entry__game-logo' src={getGameLogoUrl(originGame) ?? undefined} alt={`Version exclusive in ${gameName}`} title={`Version exclusive in ${gameName}`} />}</div></div>
 							<span className='pokedex-entry__status'>{entry.caught ? 'Caught' : entry.seen ? 'Seen' : 'Missing'}</span>
 						</article>
 					))}
