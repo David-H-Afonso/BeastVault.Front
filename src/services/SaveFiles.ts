@@ -85,10 +85,10 @@ export interface SavePokemonPreviewDto {
 export interface SaveFileDetailDto {
 	summary: SaveFileSummaryDto
 	trainer: SaveTrainerDto
-	pokedex: SavePokedexEntryDto[]
 	pokemon: SavePokemonPreviewDto[]
 	regionalPokedex: SavePokedexProgressDto | null
-	nationalPokedex: SavePokedexProgressDto | null
+	expandedPokedex: SavePokedexProgressDto | null
+	compatibilityPokedex: SavePokedexProgressDto | null
 }
 
 export interface SaveFileUploadResultDto {

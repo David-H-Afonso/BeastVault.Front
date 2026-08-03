@@ -21,7 +21,6 @@ import {
 	type SaveFileDetailDto,
 	type SaveFileSummaryDto,
 	type SaveFileUploadResultDto,
-	type SavePokedexEntryDto,
 	type SavePokemonPreviewDto,
 } from '@/services/SaveFiles'
 import {
@@ -534,7 +533,7 @@ export function SavesPage() {
 										onImport={handleImportPokemon}
 									/>
 								)}
-								{activeTab === 'pokedex' && <PokedexTab regional={detail.regionalPokedex} national={detail.nationalPokedex} fallback={detail.pokedex} originGame={detail.summary.originGame} gameName={detail.summary.gameName} />}
+								{activeTab === 'pokedex' && <PokedexTab regional={detail.regionalPokedex} expanded={detail.expandedPokedex} compatibility={detail.compatibilityPokedex} originGame={detail.summary.originGame} gameName={detail.summary.gameName} />}
 							</div>
 						</>
 					) : (
@@ -768,8 +767,8 @@ function TrainerTab({
 				</div>
 				<div className='trainer-progress'>
 					<ProgressCard label='Badges' value={trainer.badgeCount ?? 0} max={summary.badgeTotal ?? Math.max(trainer.badgeCount ?? 0, 1)} display={trainer.badgeCount === null ? '—' : `${trainer.badgeCount}/${summary.badgeTotal ?? '?'}`} />
-					<ProgressCard label='Regional Pokédex seen' value={trainer.dexSeen} max={Math.max(detail.regionalPokedex?.total ?? detail.pokedex.length, trainer.dexSeen, 1)} display={trainer.dexSeen.toString()} />
-					<ProgressCard label='Regional Pokédex caught' value={trainer.dexCaught} max={Math.max(detail.regionalPokedex?.total ?? detail.pokedex.length, trainer.dexCaught, 1)} display={trainer.dexCaught.toString()} />
+					<ProgressCard label='Regional Pokédex seen' value={trainer.dexSeen} max={Math.max(detail.regionalPokedex?.total ?? 0, trainer.dexSeen, 1)} display={trainer.dexSeen.toString()} />
+					<ProgressCard label='Regional Pokédex caught' value={trainer.dexCaught} max={Math.max(detail.regionalPokedex?.total ?? 0, trainer.dexCaught, 1)} display={trainer.dexCaught.toString()} />
 					<ProgressCard label='Pokémon stored' value={summary.storedPokemonCount} max={Math.max(summary.storedPokemonCount, 1)} display={summary.storedPokemonCount.toString()} />
 				</div>
 			</section>
@@ -961,10 +960,32 @@ function PokemonSprite({ speciesId, speciesName, isShiny = false }: { speciesId:
 	)
 }
 
-function PokedexTab({ regional, national, fallback, originGame, gameName }: { regional: SaveFileDetailDto['regionalPokedex']; national: SaveFileDetailDto['nationalPokedex']; fallback: SavePokedexEntryDto[]; originGame: number; gameName: string }) {
-	const [scope, setScope] = useState<'regional' | 'national'>('regional')
+function PokedexTab({ regional, expanded, compatibility, originGame, gameName }: { regional: SaveFileDetailDto['regionalPokedex']; expanded: SaveFileDetailDto['expandedPokedex']; compatibility: SaveFileDetailDto['compatibilityPokedex']; originGame: number; gameName: string }) {
+	const [scope, setScope] = useState<'regional' | 'expanded' | 'compatibility'>('regional')
 	const gameLogoUrl = getGameLogoUrl(originGame)
-	const entries = (scope === 'regional' ? regional?.entries : national?.entries) ?? fallback
+	const hasDlcDex = [50, 51, 76].includes(originGame)
+	const scopeOptions = [
+		{
+			key: 'regional' as const,
+			label: 'Regional',
+			description: 'Base-game regional entries',
+			data: regional,
+		},
+		{
+			key: 'expanded' as const,
+			label: hasDlcDex ? 'DLC' : 'National',
+			description: hasDlcDex ? 'Regional Pokédexes included with the DLC' : 'National species tracked by the game',
+			data: expanded,
+		},
+		{
+			key: 'compatibility' as const,
+			label: 'Compatible',
+			description: hasDlcDex ? 'Species supported in-game, including HOME transfers' : 'Species supported by this game outside its regional listing',
+			data: compatibility,
+		},
+	]
+	const selectedScope = scopeOptions.find((option) => option.key === scope) ?? scopeOptions[0]
+	const entries = selectedScope.data?.entries ?? []
 	const [filter, setFilter] = useState<PokedexFilter>('caught')
 	const [search, setSearch] = useState('')
 	const counts = useMemo(
@@ -989,15 +1010,16 @@ function PokedexTab({ regional, national, fallback, originGame, gameName }: { re
 
 	return (
 		<div className='save-pokedex'>
-			<div className='save-pokedex__filters' aria-label='Pokédex scope'>
-				{(['regional', 'national'] as const).map((value) => (
-					<button key={value} type='button' className={scope === value ? 'is-active' : ''} onClick={() => setScope(value)} aria-pressed={scope === value}>
-						{value.charAt(0).toUpperCase() + value.slice(1)}
+			<div className='save-pokedex__scope' aria-label='Pokédex scope'>
+				{scopeOptions.map((option) => (
+					<button key={option.key} type='button' className={scope === option.key ? 'is-active' : ''} onClick={() => setScope(option.key)} aria-pressed={scope === option.key}>
+						<span>{option.label}</span><small>{option.data?.total ?? 0}</small>
 					</button>
 				))}
 			</div>
+			<div className='save-pokedex__scope-summary'><strong>{selectedScope.label}</strong><span>{selectedScope.description}</span></div>
 			<div className='save-pokedex__progress'>
-				<div><span>Pokédex completion</span><strong>{counts.caught} <small>/ {entries.length} caught</small></strong></div>
+				<div><span>{selectedScope.label} completion</span><strong>{counts.caught} <small>/ {entries.length} caught</small></strong></div>
 				<div className='save-pokedex__track' role='progressbar' aria-label='Pokédex completion' aria-valuenow={Math.round(completion)} aria-valuemin={0} aria-valuemax={100}>
 					<i style={{ width: `${completion}%` }} />
 				</div>
