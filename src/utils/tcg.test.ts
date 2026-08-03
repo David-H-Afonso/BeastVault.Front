@@ -4,7 +4,10 @@ import { getTcgVariantPrice, normalizeTcgVariant, slugifyTcgSet } from './tcg'
 describe('TCG data helpers', () => {
 	it('matches provider variant names without changing their meaning', () => {
 		expect(normalizeTcgVariant('Reverse-Holo')).toBe('reverse')
+		expect(normalizeTcgVariant('básico')).toBe('normal')
+		expect(normalizeTcgVariant('reversa')).toBe('reverse')
 		expect(getTcgVariantPrice({ 'reverse-holo': 0.22 }, 'ReverseHolo', 5.68)).toBe(0.22)
+		expect(getTcgVariantPrice({ reverse: 0.22 }, 'reversa', null)).toBe(0.22)
 	})
 
 	it('does not use another variant price as a fallback', () => {

@@ -159,6 +159,8 @@ describe('CardsPage', () => {
 
 		fireEvent.click(await screen.findByRole('button', { name: 'Open Testmon details' }))
 		expect(screen.getByText('TST 001')).toBeTruthy()
+		expect(screen.getByText('Cardmarket trend · normal')).toBeTruthy()
+		expect(screen.getByText(/Reverse holo: foil background/)).toBeTruthy()
 		fireEvent.click(screen.getByRole('button', { name: 'Close card details' }))
 		expect(screen.queryByRole('dialog', { name: 'Testmon' })).toBeNull()
 

@@ -4,9 +4,14 @@ export const normalizeTcgVariant = (value: string) =>
     .replaceAll('_', '-')
     .replace(/([a-z])([A-Z])/g, '$1-$2')
     .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replaceAll('holofoil', 'holo')
     .replaceAll('reverse-holo', 'reverse')
     .replaceAll('first-edition', '1st-edition')
+    .replaceAll('basico', 'normal')
+    .replaceAll('reversa', 'reverse')
+    .replaceAll('holographic', 'holo')
 
 export const getTcgVariantPrice = (
   prices: Record<string, number> | undefined,

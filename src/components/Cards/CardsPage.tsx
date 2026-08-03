@@ -468,8 +468,8 @@ function CardDetailModal({
 						{loading && <div className='tcg-detail__loading' role='status'>Loading latest card details…</div>}
 						<div className='tcg-detail__facts'><span><small>Identifier</small><strong>{card.collectorReference || card.providerCardId}</strong></span><span><small>Rarity</small><strong>{card.rarity || 'Unknown'}</strong></span><span><small>Artist</small><strong>{card.artist || 'Unknown'}</strong></span><span><small>National Dex</small><strong>{card.nationalPokedexNumbers.length ? card.nationalPokedexNumbers.map((id) => `#${id}`).join(', ') : '—'}</strong></span></div>
 						<section className='tcg-prices' aria-label='Market prices'>
-							<div><span>Cardmarket trend</span><strong>{formatMoney(selectedEur, 'EUR')}</strong>{card.prices.cardmarketUrl && <a href={card.prices.cardmarketUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
-							<div><span>TCGPlayer market</span><strong>{formatMoney(selectedUsd, 'USD')}</strong>{card.prices.tcgplayerUrl && <a href={card.prices.tcgplayerUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
+							<div><span>Cardmarket trend · {selectedVariant || 'selected variant'}</span><strong>{formatMoney(selectedEur, 'EUR')}</strong>{card.prices.cardmarketUrl && <a href={card.prices.cardmarketUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
+							<div><span>TCGPlayer market · {selectedVariant || 'selected variant'}</span><strong>{formatMoney(selectedUsd, 'USD')}</strong>{card.prices.tcgplayerUrl && <a href={card.prices.tcgplayerUrl} target='_blank' rel='noreferrer'>View listing ↗</a>}</div>
 							<button type='button' className='tcg-button tcg-button--secondary' onClick={handleRefresh} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh price'}</button>
 							<small className='tcg-prices__updated'>Updated {formatDate(card.prices.updatedAt)}</small>
 						</section>
@@ -484,7 +484,7 @@ function CardDetailModal({
 						<form className='tcg-add-form' onSubmit={handleSubmit}>
 							<div className='tcg-section-heading'><div><span className='tcg-eyebrow'>Physical collection</span><h3>Add a copy</h3></div></div>
 							<div className='tcg-form-grid'>
-								<label className='tcg-field'><span>Variant</span><select value={variantChoice} onChange={(event) => setVariantChoice(event.target.value)}>{card.variants.map((variant) => <option value={variant} key={variant}>{variant}</option>)}{card.variants.length === 0 && <option value='Normal'>Normal</option>}<option value='__custom'>Custom…</option></select></label>
+								<label className='tcg-field'><span>Variant</span><select value={variantChoice} aria-describedby='tcg-variant-help' onChange={(event) => setVariantChoice(event.target.value)}>{card.variants.map((variant) => <option value={variant} key={variant}>{variant}</option>)}{card.variants.length === 0 && <option value='Normal'>Normal</option>}<option value='__custom'>Custom…</option></select><small id='tcg-variant-help' className='tcg-field__hint'>Reverse holo: foil background with Poké Ball pattern. Holo: foil concentrated on the artwork.</small></label>
 								{variantChoice === '__custom' && <label className='tcg-field'><span>Custom variant</span><input value={customVariant} onChange={(event) => setCustomVariant(event.target.value)} required placeholder='e.g. Reverse holo' /></label>}
 								<label className='tcg-field'><span>Condition</span><select value={condition} onChange={(event) => setCondition(event.target.value)}>{CONDITIONS.map((item) => <option key={item}>{item}</option>)}</select></label>
 								<label className='tcg-field'><span>Language</span><select value={languageChoice} onChange={(event) => setLanguageChoice(event.target.value)}>{LANGUAGES.map((item) => <option key={item}>{item}</option>)}<option value='__custom'>Custom…</option></select></label>
