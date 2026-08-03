@@ -58,6 +58,28 @@ const getGenderLabel = (gender: number) => {
 	return 'Unspecified'
 }
 
+const getTrainerSpriteName = (originGame: number, gender: number) => {
+	const female = gender === 1
+	if (originGame === 4 || originGame === 5 || (originGame >= 35 && originGame <= 38)) return female ? 'green' : 'red'
+	if (originGame >= 7 && originGame <= 8 || originGame >= 39 && originGame <= 41) return female ? 'lyra' : 'ethan'
+	if (originGame >= 1 && originGame <= 3) return female ? 'may' : 'brendan'
+	if (originGame >= 10 && originGame <= 12 || originGame >= 48 && originGame <= 49) return female ? 'dawn' : 'lucas'
+	if (originGame >= 20 && originGame <= 21) return female ? 'hilda' : 'hilbert'
+	if (originGame >= 22 && originGame <= 23) return female ? 'rosa' : 'nate'
+	if (originGame >= 24 && originGame <= 25) return female ? 'serena' : 'calem'
+	if (originGame >= 26 && originGame <= 27) return female ? 'may' : 'brendan'
+	if (originGame >= 30 && originGame <= 33) return female ? 'selene' : 'elio'
+	if (originGame >= 42 && originGame <= 43) return female ? 'elaine' : 'chase'
+	if (originGame >= 44 && originGame <= 45) return female ? 'gloria' : 'victor'
+	if (originGame === 47) return female ? 'akari' : 'rei'
+	if (originGame >= 50 && originGame <= 51) return female ? 'juliana-s' : 'florian-s'
+	if (originGame === 52) return female ? 'playerf-go' : 'player-go'
+	return female ? 'may' : 'brendan'
+}
+
+const getTrainerSpriteUrl = (originGame: number, gender: number) =>
+	`https://play.pokemonshowdown.com/sprites/trainers/${getTrainerSpriteName(originGame, gender)}.png`
+
 export function SavesPage() {
 	const [saves, setSaves] = useState<SaveFileSummaryDto[]>([])
 	const [selectedSaveId, setSelectedSaveId] = useState<number | null>(null)
@@ -539,19 +561,15 @@ function UploadResults({ results }: { results: SaveFileUploadResultDto[] }) {
 	)
 }
 
-function TrainerAvatar({ name, gender, compact = false }: { name: string; gender: number; compact?: boolean }) {
+function TrainerAvatar({ name, gender, originGame, compact = false }: { name: string; gender: number; originGame: number; compact?: boolean }) {
 	const initial = name.trim().charAt(0).toUpperCase() || '?'
 	const style = gender === 1 ? 'female' : gender === 0 ? 'male' : 'neutral'
+	const spriteName = getTrainerSpriteName(originGame, gender)
+	const [imageFailed, setImageFailed] = useState(false)
+	useEffect(() => setImageFailed(false), [spriteName])
 	return (
 		<span className={`trainer-avatar trainer-avatar--${style}${compact ? ' trainer-avatar--compact' : ''}`} aria-label={`${name || 'Unknown trainer'} ${style} trainer avatar`} role='img'>
-			<svg className='trainer-avatar__sprite' viewBox='0 0 64 76' aria-hidden='true'>
-				<path className='trainer-avatar__body' d='M11 74c1-17 9-25 21-25s20 8 21 25H11Z' />
-				<path className='trainer-avatar__neck' d='M27 45h10v10H27z' />
-				<circle className='trainer-avatar__face' cx='32' cy='29' r='16' />
-				<path className={`trainer-avatar__hair trainer-avatar__hair--${style}`} d={style === 'female' ? 'M16 30c-2-15 5-24 17-24 13 0 18 10 15 27l-6-5-2-10c-7 5-14 7-23 6l-1 10-3-4Z' : 'M16 27C15 13 21 6 32 6c12 0 18 8 16 22l-7-7c-6 2-13 1-20-2l-5 8Z'} />
-				<path className='trainer-avatar__visor' d='M23 30h7M34 30h7M30 30h4' />
-				<path className='trainer-avatar__scarf' d='m22 50 10 8 10-8 5 7-15 10-15-10 5-7Z' />
-			</svg>
+			{imageFailed ? <span className='trainer-avatar__fallback' aria-hidden='true'>{initial}</span> : <img className='trainer-avatar__sprite' src={getTrainerSpriteUrl(originGame, gender)} alt='' aria-hidden='true' onError={() => setImageFailed(true)} />}
 			<span className='sr-only'>{initial}</span>
 		</span>
 	)
@@ -597,7 +615,7 @@ function SaveSummaryCard({
 			{save.title && <span className='save-summary__game-name'>{save.gameName}</span>}
 			<span className='save-summary__filename' title={save.originalFileName}>{save.originalFileName}</span>
 			<div className='save-summary__trainer'>
-				<TrainerAvatar name={save.trainerName} gender={save.trainerGender} compact />
+				<TrainerAvatar name={save.trainerName} gender={save.trainerGender} originGame={save.originGame} compact />
 				<span><small>Trainer</small><strong>{save.trainerName || 'Unknown'}</strong></span>
 				<span className='save-summary__playtime'><small>Play time</small><strong>{save.playTime}</strong></span>
 			</div>
@@ -714,7 +732,7 @@ function TrainerTab({
 					<small>Imported {formatDate(summary.importedAt)}</small>
 				</div>
 				<div className='trainer-dossier__identity'>
-					<TrainerAvatar name={trainer.trainerName} gender={trainer.gender} />
+					<TrainerAvatar name={trainer.trainerName} gender={trainer.gender} originGame={summary.originGame} />
 					<div><span>{summary.gameName}</span><h4>{trainer.trainerName || 'Unknown trainer'}</h4><p>{getGenderLabel(trainer.gender)} · {trainer.language || 'Unknown language'} · {trainer.playTime} played</p></div>
 				</div>
 				<dl className='trainer-facts'>

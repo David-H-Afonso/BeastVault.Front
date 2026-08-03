@@ -673,19 +673,13 @@
 	box-shadow: inset 0 -13px 0 color-mix(in srgb, var(--accent-teal) 10%, transparent), var(--shadow-sm);
 	overflow: hidden;
 
-	&::before { content: ''; position: absolute; top: 12px; width: 34px; height: 34px; border: 2px solid currentColor; border-radius: 50% 50% 45% 45%; opacity: 0.28; }
-	&::after { content: ''; position: absolute; bottom: -12px; width: 58px; height: 42px; border: 2px solid currentColor; border-radius: 50% 50% 0 0; opacity: 0.2; }
-	&__sprite { position: relative; z-index: 1; width: 76%; height: 88%; overflow: visible; }
-	&__body { fill: currentColor; opacity: 0.32; }
-	&__neck, &__face { fill: var(--surface-primary); stroke: currentColor; stroke-width: 1.4; }
-	&__hair { fill: currentColor; opacity: 0.88; }
-	&__visor { fill: none; stroke: var(--surface-primary); stroke-width: 1.5; stroke-linecap: round; }
-	&__scarf { fill: var(--color-warning); opacity: 0.9; }
+	&__sprite { position: relative; z-index: 1; width: 76%; height: 88%; object-fit: contain; image-rendering: pixelated; }
+	&__fallback { position: relative; z-index: 1; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border: 2px solid currentColor; border-radius: 50%; font-size: 1.05rem; font-weight: 900; }
 	&--female { color: #d58aac; }
 	&--male { color: #58a9c5; }
 	&--compact { width: 32px; height: 32px; border-radius: 50%; box-shadow: none; }
-	&--compact::before, &--compact::after { display: none; }
 	&--compact .trainer-avatar__sprite { width: 78%; height: 84%; }
+	&--compact .trainer-avatar__fallback { width: 1.3rem; height: 1.3rem; border-width: 1px; font-size: 0.68rem; }
 }
 
 .trainer-dossier {
