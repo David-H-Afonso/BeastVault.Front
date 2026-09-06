@@ -38,6 +38,8 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
           tags: ${{ steps.meta.outputs.tags }}

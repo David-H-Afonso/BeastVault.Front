@@ -1,5 +1,6 @@
-# Build
-FROM node:20-alpine AS build
+# The Vite output is architecture-independent. Build it once on the native
+# runner platform so multi-arch builds never execute Node under QEMU.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 WORKDIR /app
 
 # Toolchain para deps nativas (solo en build)
@@ -19,7 +20,7 @@ ARG VITE_API_URL=""
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-# Runtime — nginx con reverse proxy al API (igual que los demás proyectos)
+# Runtime remains target-platform specific (amd64/arm64).
 FROM nginx:alpine
 
 # Copiar archivos construidos
