@@ -34,8 +34,9 @@ export function DexHuntTargetRow({ item, spriteType, busy, canMove, onToggle, on
 				type='button'
 				{...attributes}
 				{...listeners}
+				disabled={!canMove || busy}
 				aria-label={`Drag to reorder ${item.speciesName}`}
-				title='Drag to reorder'>
+				title={canMove ? 'Drag to reorder' : 'Use manual order without filters to reorder'}>
 				<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' aria-hidden='true'>
 					<circle cx='9' cy='5' r='1' fill='currentColor' /><circle cx='15' cy='5' r='1' fill='currentColor' />
 					<circle cx='9' cy='12' r='1' fill='currentColor' /><circle cx='15' cy='12' r='1' fill='currentColor' />

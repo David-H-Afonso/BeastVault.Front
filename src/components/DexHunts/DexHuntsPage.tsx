@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
 	addDexHuntItem,
 	createDexHunt,
@@ -65,7 +65,10 @@ export function DexHuntsPage() {
 	const [descending, setDescending] = useState(() => searchParams.get('direction') === 'desc')
 	const [view, setView] = useState<'cards' | 'rows'>(() => searchParams.get('view') === 'rows' ? 'rows' : 'cards')
 	const selectedId = Number(listId) || null
-	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+	)
 
 	const filters: DexHuntFilters = { search: deferredSearch.trim(), status, priority, generation, type, sortBy, descending }
 	const isManualView = !deferredSearch.trim() && status === 'all' && priority === null && generation === null && !type && sortBy === 'manual' && !descending
@@ -86,12 +89,17 @@ export function DexHuntsPage() {
 		if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true })
 	}, [search, status, priority, generation, type, sortBy, descending, view, searchParams, setSearchParams])
 
+	const huntUrl = (id: number) => {
+		const query = searchParams.toString()
+		return `/hunts/${id}${query ? `?${query}` : ''}`
+	}
+
 	const loadLists = async (preferredId?: number) => {
 		const loaded = await getDexHunts()
 		setLists(loaded)
 		const targetId = preferredId ?? selectedId
 		if (targetId && loaded.some((list) => list.id === targetId)) return
-		if (loaded.length > 0) navigate(`/hunts/${loaded[0].id}`, { replace: true })
+		if (loaded.length > 0) navigate(huntUrl(loaded[0].id), { replace: true })
 		else if (listId) navigate('/hunts', { replace: true })
 	}
 
@@ -102,7 +110,7 @@ export function DexHuntsPage() {
 				if (!active) return
 				setLists(loadedLists)
 				setGames(loadedGames)
-				if ((!selectedId || !loadedLists.some((list) => list.id === selectedId)) && loadedLists[0]) navigate(`/hunts/${loadedLists[0].id}`, { replace: true })
+				if ((!selectedId || !loadedLists.some((list) => list.id === selectedId)) && loadedLists[0]) navigate(huntUrl(loadedLists[0].id), { replace: true })
 			})
 			.catch((reason) => active && setError(message(reason, 'Could not load Dex Hunts.')))
 			.finally(() => active && setLoadingLists(false))
@@ -142,7 +150,7 @@ export function DexHuntsPage() {
 			} else {
 				const created = await createDexHunt(value)
 				await loadLists(created.id)
-				navigate(`/hunts/${created.id}`)
+				navigate(huntUrl(created.id))
 				setNotice('Dex Hunt created. Add your first target.')
 			}
 			setFormMode(null)
@@ -256,7 +264,7 @@ export function DexHuntsPage() {
 			const payload = JSON.parse(await file.text()) as DexHuntExport
 			const created = await importDexHunt(payload)
 			await loadLists(created.id)
-			navigate(`/hunts/${created.id}`)
+			navigate(huntUrl(created.id))
 			setNotice(`Imported “${created.name}”.`)
 		} catch (reason) { setError(message(reason, 'Could not import this JSON file.')) }
 		finally { if (importInput.current) importInput.current.value = '' }
@@ -291,7 +299,7 @@ export function DexHuntsPage() {
 						<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorderLists}>
 							<SortableContext items={lists.map((list) => list.id)} strategy={verticalListSortingStrategy}>
 								<div className='dex-hunts-sidebar__list'>
-									{lists.map((list) => <DexHuntSortableNavCard key={list.id} list={list} active={selectedId === list.id} onSelect={() => navigate(`/hunts/${list.id}`)} />)}
+									{lists.map((list) => <DexHuntSortableNavCard key={list.id} list={list} active={selectedId === list.id} onSelect={() => navigate(huntUrl(list.id))} />)}
 								</div>
 							</SortableContext>
 						</DndContext>
@@ -325,7 +333,7 @@ export function DexHuntsPage() {
 								<select value={generation ?? ''} onChange={(event) => setGeneration(event.target.value === '' ? null : Number(event.target.value))} aria-label='Filter by generation'><option value=''>All generations</option>{Array.from({ length: 9 }, (_, index) => <option key={index + 1} value={index + 1}>Gen {index + 1}</option>)}</select>
 								<select value={type} onChange={(event) => setType(event.target.value)} aria-label='Filter by type'><option value=''>All types</option>{TYPES.map((entry) => <option key={entry} value={entry}>{entry[0].toUpperCase() + entry.slice(1)}</option>)}</select>
 								<select value={sortBy} onChange={(event) => setSortBy(event.target.value as DexHuntSort)} aria-label='Sort targets'><option value='manual'>Manual order</option><option value='number'>Pokédex number</option><option value='name'>Name</option><option value='generation'>Generation</option><option value='priority'>Priority</option><option value='added'>Date added</option><option value='caught'>Date caught</option></select>
-								<button className={`dex-hunt-toolbar__direction${descending ? ' is-active' : ''}`} type='button' onClick={() => setDescending((value) => !value)} aria-label={descending ? 'Sort ascending' : 'Sort descending'} title={descending ? 'Descending' : 'Ascending'}>{descending ? '↓' : '↑'}</button>
+								{sortBy !== 'manual' && <button className={`dex-hunt-toolbar__direction${descending ? ' is-active' : ''}`} type='button' onClick={() => setDescending((value) => !value)} aria-label={descending ? 'Sort ascending' : 'Sort descending'} title={descending ? 'Descending' : 'Ascending'}>{descending ? 'DESC' : 'ASC'}</button>}
 								<div className='dex-hunt-toolbar__view' role='group' aria-label='Target view'>
 									<button type='button' className={view === 'cards' ? 'is-active' : ''} onClick={() => setView('cards')} aria-label='Card view' aria-pressed={view === 'cards'}>
 										<svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden='true'><rect x='3' y='3' width='7' height='7' rx='1' /><rect x='14' y='3' width='7' height='7' rx='1' /><rect x='3' y='14' width='7' height='7' rx='1' /><rect x='14' y='14' width='7' height='7' rx='1' /></svg>
@@ -339,7 +347,7 @@ export function DexHuntsPage() {
 							{!isManualView && <p className='dex-hunts-workspace__hint'>Clear filters and select Manual order to move targets.</p>}
 							{loadingDetail ? <div className='dex-hunts-workspace__state'>Updating targets…</div> : detail.items.length === 0 ? <div className='dex-hunts-workspace__empty'><strong>{total === 0 ? 'No targets yet' : 'No targets match these filters'}</strong><span>{total === 0 ? 'Search the Pokédex and add every species you still need.' : 'Change or clear the filters to see the rest of the hunt.'}</span>{total === 0 && <button className='dex-hunt-button dex-hunt-button--primary' onClick={openPicker}>Add Pokédex targets</button>}</div> : (
 								<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTargetDragEnd}>
-									<SortableContext items={detail.items.map((item) => item.id)} strategy={view === 'cards' ? horizontalListSortingStrategy : verticalListSortingStrategy}>
+									<SortableContext items={detail.items.map((item) => item.id)} strategy={view === 'cards' ? rectSortingStrategy : verticalListSortingStrategy}>
 										<div className={`dex-hunt-targets dex-hunt-targets--${view}`}>
 											{detail.items.map((item) => <DexHuntTargetRow key={item.id} item={item} spriteType={spriteType} busy={busyItemId === item.id} canMove={isManualView} onToggle={(target) => mutateItem(target, { isCaught: !target.isCaught })} onPriority={(target, value) => mutateItem(target, { priority: value })} onNotes={(target, value) => mutateItem(target, { notes: value })} onDelete={removeItem} view={view} />)}
 										</div>
