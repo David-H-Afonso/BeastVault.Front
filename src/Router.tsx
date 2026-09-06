@@ -11,6 +11,7 @@ import PokemonDeepLink from '@/components/PokemonDeepLink/PokemonDeepLink'
 import HouseholdAuthorization from '@/components/HouseholdAuthorization/HouseholdAuthorization'
 import SavesPage from '@/components/Saves/SavesPage'
 import { CardsPage } from '@/components/Cards/CardsPage'
+import { DexHuntsPage } from '@/components/DexHunts/DexHuntsPage'
 
 export const router = createBrowserRouter([
 	{
@@ -53,6 +54,14 @@ export const router = createBrowserRouter([
 			{
 				path: 'dex/:speciesId',
 				element: <DexPage />,
+			},
+			{
+				path: 'hunts',
+				element: <DexHuntsPage />,
+			},
+			{
+				path: 'hunts/:listId',
+				element: <DexHuntsPage />,
 			},
 			{
 				path: 'pokemon/:id',
