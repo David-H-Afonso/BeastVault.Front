@@ -189,7 +189,7 @@ function PokemonTable({
 						})}
 					</div>
 					<div className='browse-table__origin'>
-						Gen {pokemon.originGeneration} / Gen {pokemon.capturedGeneration}
+						{pokemon.originRegion} / {pokemon.capturedRegion}
 					</div>
 					<div className='browse-table__actions'>
 						<button type='button' disabled={selectionMode} onClick={() => onManageTags(pokemon)}>
@@ -374,6 +374,10 @@ const HomeComponent = ({
 	const [sortPreset, setSortPreset] = useState<SortPreset>('smart')
 	const [shinyFilter, setShinyFilter] = useState<'all' | 'shiny' | 'regular'>('all')
 	const [pokeballId, setPokeballId] = useState<string>('all')
+	const [originRegion, setOriginRegion] = useState(currentFilters.OriginRegion || 'all')
+	const [capturedRegion, setCapturedRegion] = useState(currentFilters.CapturedRegion || 'all')
+	const [sid, setSid] = useState(currentFilters.Sid?.toString() || '')
+	const [otName, setOtName] = useState(currentFilters.OtName || '')
 	const [isFilterDockOpen, setFilterDockOpen] = useState(false)
 
 	// Bulk selection state
@@ -446,6 +450,10 @@ const HomeComponent = ({
 			sortPreset: SortPreset
 			shinyFilter: 'all' | 'shiny' | 'regular'
 			pokeballId: string
+			originRegion: string
+			capturedRegion: string
+			sid: string
+			otName: string
 		}> = {}
 	) => {
 		const nextSearch = overrides.search ?? search
@@ -456,6 +464,10 @@ const HomeComponent = ({
 		const nextSortPreset = overrides.sortPreset ?? sortPreset
 		const nextShinyFilter = overrides.shinyFilter ?? shinyFilter
 		const nextPokeballId = overrides.pokeballId ?? pokeballId
+		const nextOriginRegion = overrides.originRegion ?? originRegion
+		const nextCapturedRegion = overrides.capturedRegion ?? capturedRegion
+		const nextSid = overrides.sid ?? sid
+		const nextOtName = overrides.otName ?? otName
 
 		const filters: PokemonListFilterDto = {
 			...currentFilters,
@@ -464,6 +476,10 @@ const HomeComponent = ({
 			IsShiny:
 				nextShinyFilter === 'shiny' ? true : nextShinyFilter === 'regular' ? false : undefined,
 			PokeballId: nextPokeballId === 'all' ? undefined : Number.parseInt(nextPokeballId, 10),
+			OriginRegion: nextOriginRegion === 'all' ? undefined : nextOriginRegion,
+			CapturedRegion: nextCapturedRegion === 'all' ? undefined : nextCapturedRegion,
+			Sid: nextSid.trim() === '' ? undefined : Number.parseInt(nextSid, 10),
+			OtName: nextOtName.trim() || undefined,
 			Skip: 0,
 			Take: currentFilters.Take || itemsPerPage,
 			tagIds: undefined,
@@ -566,6 +582,10 @@ const HomeComponent = ({
 	const filtersAreActive =
 		shinyFilter !== 'all' ||
 		pokeballId !== 'all' ||
+		originRegion !== 'all' ||
+		capturedRegion !== 'all' ||
+		sid.trim() !== '' ||
+		otName.trim() !== '' ||
 		generation !== 'all' ||
 		noTagsFilter ||
 		activeTagIds.size > 0 ||
@@ -579,6 +599,10 @@ const HomeComponent = ({
 		setGeneration('all')
 		setShinyFilter('all')
 		setPokeballId('all')
+		setOriginRegion('all')
+		setCapturedRegion('all')
+		setSid('')
+		setOtName('')
 		applyFilters({
 			search: '',
 			activeTagIds: new Set(),
@@ -587,6 +611,10 @@ const HomeComponent = ({
 			generation: 'all',
 			shinyFilter: 'all',
 			pokeballId: 'all',
+			originRegion: 'all',
+			capturedRegion: 'all',
+			sid: '',
+			otName: '',
 		})
 	}
 
@@ -628,6 +656,46 @@ const HomeComponent = ({
 				onRemove: () => {
 					setGeneration('all')
 					applyFilters({ generation: 'all' })
+				},
+			})
+		}
+		if (originRegion !== 'all') {
+			activeChips.push({
+				key: 'origin-region',
+				label: `Origin: ${originRegion}`,
+				onRemove: () => {
+					setOriginRegion('all')
+					applyFilters({ originRegion: 'all' })
+				},
+			})
+		}
+		if (capturedRegion !== 'all') {
+			activeChips.push({
+				key: 'captured-region',
+				label: `Caught in: ${capturedRegion}`,
+				onRemove: () => {
+					setCapturedRegion('all')
+					applyFilters({ capturedRegion: 'all' })
+				},
+			})
+		}
+		if (sid.trim()) {
+			activeChips.push({
+				key: 'sid',
+				label: `SID: ${sid.trim()}`,
+				onRemove: () => {
+					setSid('')
+					applyFilters({ sid: '' })
+				},
+			})
+		}
+		if (otName.trim()) {
+			activeChips.push({
+				key: 'ot',
+				label: `OT: ${otName.trim()}`,
+				onRemove: () => {
+					setOtName('')
+					applyFilters({ otName: '' })
 				},
 			})
 		}
@@ -822,6 +890,40 @@ const HomeComponent = ({
 										</select>
 									</div>
 								)}
+
+								<div className='filter-pop__group'>
+									<span className='filter-pop__label'>Regions</span>
+									<div className='filter-pop__field-grid'>
+										<label>
+											<span>Species origin</span>
+											<select className='filter-pop__select' value={originRegion} onChange={(event) => { setOriginRegion(event.target.value); applyFilters({ originRegion: event.target.value }) }}>
+												<option value='all'>All regions</option>
+												{['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar', 'Hisui', 'Paldea'].map((region) => <option key={region} value={region}>{region}</option>)}
+											</select>
+										</label>
+										<label>
+											<span>Caught in</span>
+											<select className='filter-pop__select' value={capturedRegion} onChange={(event) => { setCapturedRegion(event.target.value); applyFilters({ capturedRegion: event.target.value }) }}>
+												<option value='all'>All regions</option>
+												{['Kanto', 'Johto', 'Hoenn', 'Orre', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Pokémon GO', 'Galar', 'Hisui', 'Paldea'].map((region) => <option key={region} value={region}>{region}</option>)}
+											</select>
+										</label>
+									</div>
+								</div>
+
+								<div className='filter-pop__group'>
+									<span className='filter-pop__label'>Trainer</span>
+									<div className='filter-pop__field-grid'>
+										<label>
+											<span>Original Trainer</span>
+											<input className='filter-pop__input' value={otName} maxLength={12} placeholder='OT name' onChange={(event) => setOtName(event.target.value)} onBlur={() => applyFilters({ otName })} onKeyDown={(event) => event.key === 'Enter' && applyFilters({ otName: event.currentTarget.value })} />
+										</label>
+										<label>
+											<span>Secret ID</span>
+											<input className='filter-pop__input' value={sid} inputMode='numeric' pattern='[0-9]*' placeholder='SID' onChange={(event) => setSid(event.target.value.replace(/\D/g, '').slice(0, 6))} onBlur={() => applyFilters({ sid })} onKeyDown={(event) => event.key === 'Enter' && applyFilters({ sid: event.currentTarget.value })} />
+										</label>
+									</div>
+								</div>
 
 								{availableTags.length > 0 && (
 									<div className='filter-pop__group'>

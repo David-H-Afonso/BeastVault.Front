@@ -547,8 +547,12 @@ export function PokemonDetailPanel({
 			{detail && tab === 'origin' && (
 				<div className='pokemon-detail__section'>
 					<div className='pokemon-detail__section-title'>Trainer Notes</div>
-					<Row label='Game' value={detail.originGameName} />
-					<Row label='Generation' value={`Gen ${detail.originGeneration}`} />
+						<Row label='Game' value={detail.originGameName} />
+						<Row label='Species Origin' value={detail.originRegion} />
+						<Row label='Caught Region' value={detail.capturedRegion} />
+						<Row label='Generation' value={`Gen ${detail.originGeneration}`} />
+						<Row label='Trainer ID' value={detail.tid} />
+						<Row label='Secret ID' value={detail.sid} />
 					<Row label='Met Level' value={`Lv.${detail.metLevel}`} />
 					<Row label='Met Location' value={detail.metLocationName} />
 					{detail.metDate && (

@@ -29,6 +29,8 @@ interface Props {
 		spriteKey: string
 		originGeneration: number
 		capturedGeneration: number
+		originRegion: string
+		capturedRegion: string
 		hasMegaStone: boolean
 	}[]
 	backgroundOptions: CardBackgroundTypeName[]

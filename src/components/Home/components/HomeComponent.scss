@@ -2437,7 +2437,30 @@
 		}
 	}
 
-	.filter-pop__select {
+	.filter-pop__field-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.5rem;
+
+		label {
+			display: grid;
+			gap: 0.25rem;
+			min-width: 0;
+
+			> span {
+				font-size: 0.67rem;
+				font-weight: 600;
+				color: var(--text-muted);
+			}
+		}
+
+		@media (max-width: 420px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.filter-pop__select,
+	.filter-pop__input {
 		width: 100%;
 		height: 36px;
 		padding: 0 0.6rem;
@@ -2447,13 +2470,14 @@
 		color: var(--text-primary);
 		font: inherit;
 		font-size: 0.85rem;
-		cursor: pointer;
 		outline: none;
 
 		&:focus {
 			border-color: var(--color-primary);
 		}
 	}
+
+	.filter-pop__select { cursor: pointer; }
 
 	.filter-pop__tags {
 		display: flex;

@@ -91,6 +91,8 @@ export interface PokemonDetailDto {
 	natureBoostedStat?: string | null
 	natureReducedStat?: string | null
 	originGeneration: number
+	originRegion: string
+	capturedRegion: string
 
 	// Clean display fields from backend mapper
 	originGameName: string
@@ -146,6 +148,8 @@ export interface PokemonMetadata {
 	pokeballs: PokemonBall[]
 	natures: PokemonNature[]
 	generations: number[]
+	originRegions: string[]
+	capturedRegions: string[]
 	genders: { id: number; name: string }[]
 	sortFields: { name: string; value: number }[]
 	typeFilterModes: { name: string; value: number }[]
@@ -252,6 +256,10 @@ export interface PokemonListFilterDto {
 	Gender?: number
 	OriginGeneration?: number
 	CapturedGeneration?: number
+	OriginRegion?: string
+	CapturedRegion?: string
+	Sid?: number
+	OtName?: string
 	PokeballId?: number
 	HeldItemId?: number
 

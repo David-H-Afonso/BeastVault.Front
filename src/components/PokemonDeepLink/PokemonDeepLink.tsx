@@ -25,6 +25,8 @@ function toListItem(detail: PokemonDetailDto): PokemonListItemDto {
 		spriteKey: detail.spriteKey ?? '',
 		originGeneration: detail.originGeneration,
 		capturedGeneration: detail.originGeneration,
+		originRegion: detail.originRegion,
+		capturedRegion: detail.capturedRegion,
 		canGigantamax: false,
 		hasMegaStone: false,
 		tags: [],

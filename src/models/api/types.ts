@@ -262,6 +262,8 @@ export interface PokemonListItemDto {
 	originGeneration: number
 	/** Generación donde este Pokémon específico fue capturado/obtenido (campo calculado) */
 	capturedGeneration: number
+	originRegion: string
+	capturedRegion: string
 	/** Si este Pokémon puede Gigantamax (solo archivos Gen 8+) */
 	canGigantamax: boolean
 	/** Si este Pokémon tiene una Mega Piedra equipada (afecta la visualización de la forma) */

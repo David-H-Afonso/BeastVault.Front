@@ -51,6 +51,8 @@ const CHARIZARD_DEFAULT_VALUES = {
 	spriteKey: '1025_n_0',
 	originGeneration: 1,
 	capturedGeneration: 9,
+	originRegion: 'Kanto',
+	capturedRegion: 'Paldea',
 	hasMegaStone: true,
 }
 
