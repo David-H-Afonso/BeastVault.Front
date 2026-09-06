@@ -1,5 +1,7 @@
 import { useDeferredValue, useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
 	addDexHuntItem,
 	createDexHunt,
@@ -29,6 +31,7 @@ import { useUISettings } from '@/hooks/useUISettings'
 import { DexHuntFormDialog } from './DexHuntFormDialog'
 import { DexHuntSpeciesPicker } from './DexHuntSpeciesPicker'
 import { DexHuntTargetRow } from './DexHuntTargetRow'
+import { DexHuntSortableNavCard } from './DexHuntSortableNavCard'
 import './DexHuntsPage.scss'
 
 const TYPES = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy']
@@ -36,6 +39,7 @@ const TYPES = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting'
 export function DexHuntsPage() {
 	const navigate = useNavigate()
 	const { listId } = useParams<{ listId: string }>()
+	const [searchParams, setSearchParams] = useSearchParams()
 	const { spriteType } = useUISettings()
 	const importInput = useRef<HTMLInputElement>(null)
 	const [lists, setLists] = useState<DexHuntListSummary[]>([])
@@ -51,18 +55,36 @@ export function DexHuntsPage() {
 	const [formBusy, setFormBusy] = useState(false)
 	const [formError, setFormError] = useState<string | null>(null)
 	const [busyItemId, setBusyItemId] = useState<number | null>(null)
-	const [search, setSearch] = useState('')
+	const [search, setSearch] = useState(() => searchParams.get('q') ?? '')
 	const deferredSearch = useDeferredValue(search)
-	const [status, setStatus] = useState<DexHuntStatus>('all')
-	const [priority, setPriority] = useState<DexHuntPriority | null>(null)
-	const [generation, setGeneration] = useState<number | null>(null)
-	const [type, setType] = useState('')
-	const [sortBy, setSortBy] = useState<DexHuntSort>('manual')
-	const [descending, setDescending] = useState(false)
+	const [status, setStatus] = useState<DexHuntStatus>(() => parseStatus(searchParams.get('status')))
+	const [priority, setPriority] = useState<DexHuntPriority | null>(() => parsePriority(searchParams.get('priority')))
+	const [generation, setGeneration] = useState<number | null>(() => parseNumber(searchParams.get('generation')))
+	const [type, setType] = useState(() => searchParams.get('type') ?? '')
+	const [sortBy, setSortBy] = useState<DexHuntSort>(() => parseSort(searchParams.get('sort')))
+	const [descending, setDescending] = useState(() => searchParams.get('direction') === 'desc')
+	const [view, setView] = useState<'cards' | 'rows'>(() => searchParams.get('view') === 'rows' ? 'rows' : 'cards')
 	const selectedId = Number(listId) || null
+	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
 	const filters: DexHuntFilters = { search: deferredSearch.trim(), status, priority, generation, type, sortBy, descending }
 	const isManualView = !deferredSearch.trim() && status === 'all' && priority === null && generation === null && !type && sortBy === 'manual' && !descending
+
+	useEffect(() => {
+		const next = new URLSearchParams(searchParams)
+		const values: Record<string, string | null> = {
+			q: search.trim() || null,
+			status: status === 'all' ? null : status,
+			priority: priority === null ? null : String(priority),
+			generation: generation === null ? null : String(generation),
+			type: type || null,
+			sort: sortBy === 'manual' ? null : sortBy,
+			direction: descending ? 'desc' : null,
+			view: view === 'cards' ? null : view,
+		}
+		Object.entries(values).forEach(([key, value]) => value ? next.set(key, value) : next.delete(key))
+		if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true })
+	}, [search, status, priority, generation, type, sortBy, descending, view, searchParams, setSearchParams])
 
 	const loadLists = async (preferredId?: number) => {
 		const loaded = await getDexHunts()
@@ -187,30 +209,31 @@ export function DexHuntsPage() {
 		finally { setBusyItemId(null) }
 	}
 
-	const moveItem = async (item: DexHuntItem, direction: -1 | 1) => {
-		if (!selectedId || !detail || !isManualView) return
-		const index = detail.items.findIndex((candidate) => candidate.id === item.id)
-		const target = index + direction
-		if (index < 0 || target < 0 || target >= detail.items.length) return
+	const reorderLists = async (event: DragEndEvent) => {
+		if (!event.over || event.active.id === event.over.id) return
+		const oldIndex = lists.findIndex((list) => list.id === event.active.id)
+		const newIndex = lists.findIndex((list) => list.id === event.over?.id)
+		if (oldIndex < 0 || newIndex < 0) return
+		const previous = lists
+		const reordered = arrayMove(lists, oldIndex, newIndex)
+		setLists(reordered)
+		try { await reorderDexHunts(reordered.map((list) => list.id)) }
+		catch (reason) { setLists(previous); setError(message(reason, 'Could not reorder Dex Hunts.')) }
+	}
+
+	const reorderItems = async (event: DragEndEvent) => {
+		if (!isManualView || !detail || !selectedId || !event.over || event.active.id === event.over.id) return
+		const oldIndex = detail.items.findIndex((item) => item.id === event.active.id)
+		const newIndex = detail.items.findIndex((item) => item.id === event.over?.id)
+		if (oldIndex < 0 || newIndex < 0) return
 		const previous = detail
-		const reordered = [...detail.items]
-		;[reordered[index], reordered[target]] = [reordered[target], reordered[index]]
+		const reordered = arrayMove(detail.items, oldIndex, newIndex)
 		setDetail({ ...detail, items: reordered })
-		try { await reorderDexHuntItems(selectedId, reordered.map((candidate) => candidate.id)); await reloadSelected() }
+		try { await reorderDexHuntItems(selectedId, reordered.map((item) => item.id)); await reloadSelected() }
 		catch (reason) { setDetail(previous); setError(message(reason, 'Could not reorder targets.')) }
 	}
 
-	const moveList = async (id: number, direction: -1 | 1) => {
-		const index = lists.findIndex((list) => list.id === id)
-		const target = index + direction
-		if (index < 0 || target < 0 || target >= lists.length) return
-		const previous = lists
-		const reordered = [...lists]
-		;[reordered[index], reordered[target]] = [reordered[target], reordered[index]]
-		setLists(reordered)
-		try { await reorderDexHunts(reordered.map((list) => list.id)); await loadLists(id) }
-		catch (reason) { setLists(previous); setError(message(reason, 'Could not reorder Dex Hunts.')) }
-	}
+	const handleTargetDragEnd = (event: DragEndEvent) => void reorderItems(event)
 
 	const exportList = async () => {
 		if (!detail) return
@@ -265,23 +288,13 @@ export function DexHuntsPage() {
 				<aside className='dex-hunts-sidebar' aria-label='Dex Hunts'>
 					<div className='dex-hunts-sidebar__title'><span>Your hunts</span><b>{lists.length}</b></div>
 					{loadingLists ? <p className='dex-hunts-sidebar__state'>Loading…</p> : lists.length === 0 ? <div className='dex-hunts-sidebar__empty'><strong>No hunts yet</strong><span>Create one or import a JSON list.</span></div> : (
-						<div className='dex-hunts-sidebar__list'>
-							{lists.map((list, index) => {
-								const listPercent = list.totalCount ? Math.round((list.caughtCount / list.totalCount) * 100) : 0
-								return <div key={list.id} className={`dex-hunt-nav-card${selectedId === list.id ? ' is-active' : ''}`}>
-									<button className='dex-hunt-nav-card__main' type='button' onClick={() => navigate(`/hunts/${list.id}`)} aria-current={selectedId === list.id ? 'page' : undefined}>
-										<span className='dex-hunt-nav-card__game'>{list.gameName}</span>
-										<strong>{list.name}</strong>
-										<span className='dex-hunt-nav-card__stats'>{list.caughtCount}/{list.totalCount} caught · {listPercent}%</span>
-										<i style={{ width: `${listPercent}%` }} />
-									</button>
-									<div className='dex-hunt-nav-card__move'>
-										<button type='button' onClick={() => moveList(list.id, -1)} disabled={index === 0} aria-label={`Move ${list.name} up`}>↑</button>
-										<button type='button' onClick={() => moveList(list.id, 1)} disabled={index === lists.length - 1} aria-label={`Move ${list.name} down`}>↓</button>
-									</div>
+						<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={reorderLists}>
+							<SortableContext items={lists.map((list) => list.id)} strategy={verticalListSortingStrategy}>
+								<div className='dex-hunts-sidebar__list'>
+									{lists.map((list) => <DexHuntSortableNavCard key={list.id} list={list} active={selectedId === list.id} onSelect={() => navigate(`/hunts/${list.id}`)} />)}
 								</div>
-							})}
-						</div>
+							</SortableContext>
+						</DndContext>
 					)}
 				</aside>
 
@@ -313,13 +326,25 @@ export function DexHuntsPage() {
 								<select value={type} onChange={(event) => setType(event.target.value)} aria-label='Filter by type'><option value=''>All types</option>{TYPES.map((entry) => <option key={entry} value={entry}>{entry[0].toUpperCase() + entry.slice(1)}</option>)}</select>
 								<select value={sortBy} onChange={(event) => setSortBy(event.target.value as DexHuntSort)} aria-label='Sort targets'><option value='manual'>Manual order</option><option value='number'>Pokédex number</option><option value='name'>Name</option><option value='generation'>Generation</option><option value='priority'>Priority</option><option value='added'>Date added</option><option value='caught'>Date caught</option></select>
 								<button className={`dex-hunt-toolbar__direction${descending ? ' is-active' : ''}`} type='button' onClick={() => setDescending((value) => !value)} aria-label={descending ? 'Sort ascending' : 'Sort descending'} title={descending ? 'Descending' : 'Ascending'}>{descending ? '↓' : '↑'}</button>
+								<div className='dex-hunt-toolbar__view' role='group' aria-label='Target view'>
+									<button type='button' className={view === 'cards' ? 'is-active' : ''} onClick={() => setView('cards')} aria-label='Card view' aria-pressed={view === 'cards'}>
+										<svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden='true'><rect x='3' y='3' width='7' height='7' rx='1' /><rect x='14' y='3' width='7' height='7' rx='1' /><rect x='3' y='14' width='7' height='7' rx='1' /><rect x='14' y='14' width='7' height='7' rx='1' /></svg>
+									</button>
+									<button type='button' className={view === 'rows' ? 'is-active' : ''} onClick={() => setView('rows')} aria-label='Row view' aria-pressed={view === 'rows'}>
+										<svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden='true'><path d='M4 6h16M4 12h16M4 18h16' /></svg>
+									</button>
+								</div>
 							</div>
 
 							{!isManualView && <p className='dex-hunts-workspace__hint'>Clear filters and select Manual order to move targets.</p>}
 							{loadingDetail ? <div className='dex-hunts-workspace__state'>Updating targets…</div> : detail.items.length === 0 ? <div className='dex-hunts-workspace__empty'><strong>{total === 0 ? 'No targets yet' : 'No targets match these filters'}</strong><span>{total === 0 ? 'Search the Pokédex and add every species you still need.' : 'Change or clear the filters to see the rest of the hunt.'}</span>{total === 0 && <button className='dex-hunt-button dex-hunt-button--primary' onClick={openPicker}>Add Pokédex targets</button>}</div> : (
-								<div className='dex-hunt-targets'>
-									{detail.items.map((item, index) => <DexHuntTargetRow key={item.id} item={item} spriteType={spriteType} canMove={isManualView} isFirst={index === 0} isLast={index === detail.items.length - 1} busy={busyItemId === item.id} onToggle={(target) => mutateItem(target, { isCaught: !target.isCaught })} onPriority={(target, value) => mutateItem(target, { priority: value })} onNotes={(target, value) => mutateItem(target, { notes: value })} onMove={moveItem} onDelete={removeItem} />)}
-								</div>
+								<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTargetDragEnd}>
+									<SortableContext items={detail.items.map((item) => item.id)} strategy={view === 'cards' ? horizontalListSortingStrategy : verticalListSortingStrategy}>
+										<div className={`dex-hunt-targets dex-hunt-targets--${view}`}>
+											{detail.items.map((item) => <DexHuntTargetRow key={item.id} item={item} spriteType={spriteType} busy={busyItemId === item.id} canMove={isManualView} onToggle={(target) => mutateItem(target, { isCaught: !target.isCaught })} onPriority={(target, value) => mutateItem(target, { priority: value })} onNotes={(target, value) => mutateItem(target, { notes: value })} onDelete={removeItem} view={view} />)}
+										</div>
+									</SortableContext>
+								</DndContext>
 							)}
 						</>
 					) : loadingDetail ? <div className='dex-hunts-workspace__state'>Loading Dex Hunt…</div> : null}
@@ -336,6 +361,23 @@ function message(reason: unknown, fallback: string) {
 	if (!(reason instanceof Error)) return fallback
 	const details = reason.message.match(/"details":"([^"]+)"/)?.[1]
 	return details?.replaceAll('\\n', ' ') || reason.message || fallback
+}
+
+function parseStatus(value: string | null): DexHuntStatus {
+	return value === 'open' || value === 'caught' ? value : 'all'
+}
+
+function parsePriority(value: string | null): DexHuntPriority | null {
+	return value === '0' || value === '1' || value === '2' ? Number(value) as DexHuntPriority : null
+}
+
+function parseNumber(value: string | null): number | null {
+	return value && /^\d+$/.test(value) ? Number(value) : null
+}
+
+function parseSort(value: string | null): DexHuntSort {
+	const options: DexHuntSort[] = ['manual', 'number', 'name', 'generation', 'priority', 'added', 'caught']
+	return options.includes(value as DexHuntSort) ? value as DexHuntSort : 'manual'
 }
 
 export default DexHuntsPage
